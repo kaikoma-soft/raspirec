@@ -1,0 +1,11 @@
+
+
+- require_relative 'prg_dialog.rb'
+- dp = Dialog_pid.new( @pid )
+
+doctype html
+
+div
+  table.striped
+    == dp.printTable()
+

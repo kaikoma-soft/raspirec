@@ -10,8 +10,10 @@
 
 * Raspberry Pi のようなシングルボードコンピュータ(SBC)でも実行できるように、
   機能はシンプルで小型、軽量。
-* 同時録画本数を多くする為に低負荷を目指す。
+* 処理能力の低いPCでも動作するように最適化。
+* 同時録画本数を多くする為に録画中は負荷を掛けない。
   (raspberyy Pi 3B+ で 6本までは確認)
+* インストールが容易
 * WEBインターフェースで、EPG番組表から録画予約が可能。
 * 条件検索を設定することで、自動予約登録が可能。
 * 録画したTSファイルを、親機にコピーする機能
@@ -39,7 +41,8 @@
 
 * jquery,Materialize を参照しているので、インターネットにアクセス出来る環境
   で動作させる事が必要。
-  だたし、あらかじめダウンロードして置けばオフラインでも動作させる事ができる。
+  だたし、あらかじめ参照ファイルをダウンロードして置けばオフラインでも動作
+  させる事ができる。( doc/jquery_local.md を参照 )
 
 * セキュリティにはあまり考慮していないので、インターネット側から
   アクセス出来る状態にしないで下さい。
@@ -76,33 +79,39 @@
 
 * 本体
 
-  インストールするディレクトリに移動して
-  
-  % git clone https://github.com/kaikoma-soft/raspirec.git
+    1. インストールするディレクトリに移動して
 
-* 環境に合わせてカスタマイズ
+       `% git clone https://github.com/kaikoma-soft/raspirec.git`
 
-  * 雛形の config.rb を $HOME/raspirec/config.rb にコピー
-  * コピーした config.rb をテキストエディタを使って、自分の環境に合わせるように     修正する。 必須なのは
+    1. 環境に合わせてカスタマイズ
 
-      * Recpt1_cmd
-      * Epgdump
-      * BaseDir
-      * DataDir
-      * GR_EPG_channel
+       * 雛形の config.rb.sample を $HOME/raspirec/config.rb にコピー
+       * コピーした config.rb をテキストエディタを使って、
+         自分の環境に合わせるように修正する。 必須なのは次のもの。
+         
+         ```
+         Recpt1_cmd        : recpt1 コマンドの path を指定する。
+         Epgdump           : epgdump コマンドの path を指定する。
+         BaseDir           : raspirec がインストールされているディレクトリを設定する。 ( raspirec.rb があるディレクトリ )
+         DataDir           : データベースや録画したファイルの置き場所を指定する。
+         GR_EPG_channel    : 地デジ EPG 受信局を設定する。
+         GR_tuner_num      : 地デジチュナー数
+         BSCS_tuner_num    : BSCSチュナー数
+         ```
 
-* 実行
+* 実行方法
 
-  % ruby ${BaseDir}/raspirec.rb
+  `% ruby ${BaseDir}/raspirec.rb`
 
-  でデーモンモードで起動する。
+  でデーモンモードで起動する。(BaseDirはインストールしたディレクトリ)
+  <br>
   すぐに終了するが、バックグラウンドでサービスは走っているので、
   WEBブラウザ で http://ホスト名:4567/ でアクセスする。
   ( ポート番号の 4567はデフォルトの値で、config で変更可)
 
   なお、PC の boot時に、自動で起動させたい場合は crontab に
 
-  @reboot /usr/bin/ruby ${BaseDir}/raspirec.rb
+  `@reboot /usr/bin/ruby ${BaseDir}/raspirec.rb`
 
   を記述する。
 
@@ -112,7 +121,7 @@
   * ディレクトリ BaseDir, DataDir 以下のファイルを削除
   * インストールしたパッケージを apt remove で削除
 
-  
+
 
 ## ライセンス
 このソフトウェアは、Apache License Version 2.0 ライセンスのも

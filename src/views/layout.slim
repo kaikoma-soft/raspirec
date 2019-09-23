@@ -1,0 +1,119 @@
+doctype html
+
+html
+  head
+    title  = @title
+    meta http-equiv='Content-Type' content='text/html' charset='utf-8'
+    meta name= 'viewport' content='width=device-width, initial-scale=1.0'
+
+  body
+    - if Local_jquery == false
+      script src='https://code.jquery.com/jquery-3.3.1.min.js'
+      script src='https://code.jquery.com/ui/1.12.0/jquery-ui.min.js'
+      link rel='stylesheet' href='http://code.jquery.com/ui/1.12.1/themes/pepper-grinder/jquery-ui.css'
+
+      link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"
+      script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"
+
+    - if Local_jquery == true
+      script src='/jquery-3.3.1.min.js'
+      script src='/jquery-ui.min.js'
+      link rel='stylesheet' href='/jquery-ui.css'
+      link rel='stylesheet' href='/materialize.min.css' media='screen,projection'
+      script src='/materialize.min.js'
+
+    link rel='stylesheet' href='/style.css'
+    link rel='stylesheet' href='/overlaid.css'
+    link rel='stylesheet' href='/nav.css'
+
+    nav
+      div.nav-wrapper 
+        /! .yellow.darken-3
+        a.right.brand-logo href='/' 
+          | raspirec
+        a.sidenav-trigger.top-nav href="#!" data-target="mobile-demo" 
+          i.material-icons menu
+        ul.left.hide-on-med-and-down#nav-mobile
+          li
+            a.dropdown-trigger href="#!" data-target="DD0" style="padding-left:3em;padding-right:3em;"  番組表
+          li
+            a.dropdown-trigger href="#!" data-target="DD1" style="padding-left:4em;padding-right:4em;"  予約
+          li
+            a.dropdown-trigger href="#!" data-target="DD2" style="padding-left:4em;padding-right:4em;"  その他
+
+    ul.dropdown-content id="DD0" style="padding-left:0em;padding-right:0em;"
+      li
+        a href='/prg_tbl/GR0' 地デジ 番組表
+      - if BSCS_tuner_num > 0
+        li
+          a href='/prg_tbl/BS0' BS 番組表
+        li
+          a href='/prg_tbl/CS0' CS 番組表
+      li
+        a href='/ch_tbl_list' 局毎 番組表
+      li
+        a href='/fil_list'    フィルター
+
+    ul.dropdown-content id="DD1" style="padding-left:0em;padding-right:0em;"
+      li
+        a href='/rsv_list'     予約一覧
+      li
+        a href='/rsv_tbl'      予約状況表
+      li
+        a href='/rsv_list_old' 録画済み一覧
+      li
+        a href='/aut_rsv_list' 自動予約
+
+    ul.dropdown-content id="DD2" style="padding-left:0em;padding-right:0em;"
+      li
+        a href='/search'         番組検索
+      li
+        a href='/log_view'       ログ
+      li
+        a href='/control'        コントロールパネル
+      li
+        a href='/config'          config
+      li
+        a href='/help'            help
+
+    ul.sidenav#mobile-demo
+      li
+        a href='/prg_tbl/GR0' 地デジ 番組表
+      - if BSCS_tuner_num > 0
+        li
+          a href='/prg_tbl/BS0' BS 番組表
+        li
+          a href='/prg_tbl/CS0' CS 番組表
+      li
+        a href='/ch_tbl_list' 局毎 番組表
+      li
+        a href='/fil_list'    フィルター
+
+      li
+        a href='/rsv_list'     予約一覧
+      li
+        a href='/rsv_tbl'      予約状況表
+      li
+        a href='/rsv_list_old' 録画済み一覧
+      li
+        a href='/aut_rsv_list' 自動予約
+
+      li
+        a href='/search'         番組検索
+      li
+        a href='/log_view'       ログ
+      li
+        a href='/control'        コントロールパネル
+      li
+        a href='/config'          config
+      li
+        a href='/help'            help
+    p
+
+    == yield
+    javascript:
+      $(".dropdown-trigger").dropdown();
+      $(document).ready(function(){
+          $('.sidenav').sidenav();
+      });
+

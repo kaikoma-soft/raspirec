@@ -1,0 +1,14 @@
+#
+#
+#
+
+css:
+  td,th {
+    padding: 5px ;
+  }
+
+- require_relative 'ch_tbl_list.rb'
+- pt = ChTblList.new(  )
+
+table.striped
+  == pt.printTable()

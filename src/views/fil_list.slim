@@ -1,0 +1,80 @@
+/
+/  フィルター一覧 兼 自動予約一覧
+/
+
+css:
+  #item {
+    width:8em;
+  }
+  #title {
+     margin-bottom: 2em;
+  }
+  a.btn {
+     margin: 1em 2em 2em 2em;
+  }
+  #button {
+     margin: 0px 5px 0px 5px;
+  }
+  #cbcomm {
+    color: #000000;
+  }
+  #title {
+     margin: 0.5em 0.5em 0.5em 0.5em;
+     font-size: 1.5em
+  }
+  td,th {
+     padding-top: 7px;
+     padding-bottom: 7px;
+  }
+
+- require_relative 'fil_list.rb'
+- dp = FilterList.new( @parms, session )
+
+
+div
+  h1#title ==dp.printTitle()
+  br
+  // a.btn.waves-effect.waves-light#button-a href="/fil_ins" 新規登録
+
+  table.striped
+    tr
+      th No
+      th タイトル or 検索文字列
+      th 件数
+      th アクション
+    == dp.printTable()
+
+
+div id="sample-dialog" title="詳細" style="display:none;"
+  p 削除しますか？
+
+
+javascript:
+    $(".item").click(function(event){
+        //event.preventDefault();
+        var rid = $(this).attr('rid');
+        $("#sample-dialog").dialog({
+             modal: true,
+             maxWidth: 1200,
+             width:    1000,
+             buttons: { //ボタン
+               "削除": function() {
+                   $.ajax({
+                       url: '/fil_del/' + rid,
+                       type:"POST",
+                   })
+                   $(this).dialog("close");
+                   location.reload();
+               },
+               "閉じる": function() {
+                   $(this).dialog("close");
+               }
+             },
+             open: function() {
+               $( this ).siblings('.ui-dialog-buttonpane').find('button:eq(2)').focus();
+             }
+           });
+        return false;
+    });
+
+== Commlib::include( SrcDir + "/views/move_top.html" )

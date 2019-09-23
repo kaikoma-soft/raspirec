@@ -1,0 +1,50 @@
+/
+/  録画予約登録 確認
+/
+
+css:
+  #item {
+    width:8em;
+  }
+  #title {
+     margin-bottom: 2em;
+  }
+  #submit {
+     margin-top: 1em;
+  }
+  .nowrap {
+    white-space: nowrap;
+  }
+  th {
+     padding-right: 1em;
+  }
+  #in,#email_inline {
+    height: 2em;
+  }
+  #email_inline {
+    width: 50%;
+    margin-left:  1em;
+  }
+
+- require_relative 'rsv_conf.rb'
+- dp = ReservationConfirm.new(  )
+- d = dp.setPara(  )
+
+
+form id="form" method="POST" action="/rsv/add"
+  table.striped
+    tr
+      th.nowrap オプション
+      td.nowrap 
+        .row
+          .col
+            | 保存サブディレクトリ
+          .col
+            input#email_inline( type="text" list="dlist" name="dir" size="60" class="validate" value="" autocomplete="off" )
+            datalist#dlist
+              | #{{d[:dirs]}}
+        .row
+          label
+            input.filled-in( type="checkbox" name="jitan" checked=(d[:jitanchk]))
+            span#cbcomm チューナーが競合した場合に録画時間の短縮を許可する。
+                

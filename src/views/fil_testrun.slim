@@ -1,0 +1,26 @@
+/
+/  フィルター条件 検索結果
+/
+
+- require_relative 'fil_testrun.rb'
+- fi = FilterTest.new( @id, @parms, session )
+
+
+table.striped
+  tr
+    th.nowrap No
+    th.nowrap 放送局
+    th.nowrap 日付
+    th.nowrap 時間
+    th.nowrap 予約
+    th.nowrap タイトル
+    th.nowrap 概要
+  == fi.testrun(@params)
+
+div id="sample-dialog" title="詳細" style="display:none;"
+  p 
+
+div id="sample-dialog2" title="確認" style="display:none;"
+  p 
+
+== Commlib::include( SrcDir + "/views/fil_res_dsp.js" )

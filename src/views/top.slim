@@ -1,0 +1,41 @@
+
+css:
+  .tbl {
+     position: absolute;
+     top: 0px;
+     right: 0px;
+     bottom: 0px;
+     left: 0px;
+     margin: auto;
+
+     width: 800px;
+     height: 500px;
+  }
+
+- require_relative 'top.rb'
+- top = Top.new.setup
+
+.card.tbl
+  .card-content
+    span#title.card-title ステータス表示
+    table
+      tr
+        td.nowrap  状況
+        td.nowrap  #{top[:stat]}
+      tr
+        td.nowrap  現/次番組名
+        td.nowrap  #{{top[:stat2]}}
+      tr
+        td.nowrap  Disk 使用量/全容量
+        td.nowrap  #{top[:diskUsed]} / #{top[:diskTotal]} ( #{top[:diskWari]} )
+      tr
+        td.nowrap  予約数
+        td.nowrap  #{top[:reserveNum]}
+      tr
+        td.nowrap  チューナー不足数
+        td.nowrap  #{top[:ConflictNum]}
+      tr
+        td.nowrap  プログラム
+        td.nowrap  #{Const::ProgName} #{Const::ProgVer} 
+
+

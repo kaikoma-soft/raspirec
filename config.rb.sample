@@ -1,0 +1,101 @@
+#!/usr/local/bin/ruby
+# -*- coding: utf-8 -*-
+
+#
+#  http port
+#
+Http_port  = 4567
+
+#
+#  ディレクトリ、ファイル関係
+#
+Recpt1_cmd = "/usr/local/bin/recpt1"
+Recpt1_opt = %w( )
+Epgdump    = "/usr/local/bin/epgdump"
+
+BaseDir    = ENV["HOME"] + "/raspirec"
+DataDir    = ENV["HOME"] + "/raspirec_data"
+
+
+#
+# 録画タイミング関係
+#
+Start_margin  = 7               # 録画開始前マージン(秒)
+After_margin  = 3               # 録画終了後マージン(秒)
+Gap_time      = 5               # 録画終了-次番組開始間隔(秒)
+
+#
+#  チューナー関係
+#
+GR_tuner_num      = 2           # 地デジチュナー数
+BSCS_tuner_num    = 2           # BSCSチュナー数
+Total_tuner_limit = 4           # トータルチュナー数制限
+
+#
+#  EPG関係
+#
+GR_EPG_channel = %w( 27 26 25 24 22 23 21 16 )    # 地デジ EPG 受信局
+BS_EPG_channel = %w( BS15_0 BS09_0 BS03_0 )       # BS EPG 受信局
+CS_EPG_channel = %w( CS4 CS2 )                    # CS EPG 受信局
+GR_EpgRsvTime  = 60                               # EPG受信時間 (秒)
+BS_EpgRsvTime  = 300                              # EPG受信時間 (秒)
+CS_EpgRsvTime  = 240                              # EPG受信時間 (秒)
+EPGperiod      = 8                                # EPG 取得周期 (H)
+
+#
+#   ダイアログのオプション初期値 ( true でチェック付き )
+#
+D_FreeOnly = false              # 無料放送のみ
+D_dedupe   = true               # 重複予約は無効化する
+D_jitan    = true               # チューナー不足の場合に時短を許可
+
+
+#
+#   TSファイル scp 転送
+#
+TSFT       = false              # true=する true以外=しない
+TSFT_host  = "XXXXX"            # 宛先ホスト名
+TSFT_user  = "YYYYY"            # login名
+TSFT_toDir = "/data/spool"      # 送り先Dir
+TSFT_rate  = 15                 # 想定転送速度 ( Mbyte/秒 )
+
+
+#
+#   その他
+#
+LogSaveDay     = 7         # ログの保持期間(日)
+RsvHisSaveDay  = 180       # 録画済み記録の保持期間(日)
+DiskKeepPercent = false    # 古いTSファイルを削除してDiskの容量確保(%)
+Local_jquery    = false    # jquery等をローカルに用意した場合に true
+
+#
+#   以下は必要がなければ変更不要
+#
+
+TSDir        = DataDir + "/TS"
+DBDir        = DataDir + "/db"
+SrcDir       = BaseDir + "/src"
+DbFname      = DBDir + "/epg.db"
+EPGLockFN    = DBDir + "/epg.lock"
+MainLockFN   = DBDir + "/main.lock"
+DbupdateFN   = DBDir + "/db.update"
+
+LogDir       = DataDir + '/log'
+JsonDir      = DataDir + '/json'
+PidFile      = LogDir + '/raspirec.pid'
+TimerPidFile = LogDir + '/timer.pid'
+HttpdPidFile = LogDir + '/httpd.pid'
+ConfDir      = BaseDir + '/Conf.d'
+
+LogFname     = LogDir + '/raspirec.log'
+StdoutM      = LogDir + "/main_out.log"  # main debug 標準出力ファイル
+StderrM      = LogDir + "/main_err.log"  # main debug 標準エラーファイル
+StdoutH      = LogDir + "/httpd_out.log" # httpd debug 標準出力ファイル
+StderrH      = LogDir + "/httpd_err.log" # httpd debug 標準エラーファイル
+StdoutT      = LogDir + "/timer_out.log" # timer debug 標準出力ファイル
+StderrT      = LogDir + "/timer_err.log" # timer debug 標準エラーファイル
+
+EpgRsvTime = [ GR_EpgRsvTime, BS_EpgRsvTime, CS_EpgRsvTime ].max * 1.5
+
+Debug      = false              # log ファイルへ出力するように
+Debug_mem  = false              # メモリの消費量の表示

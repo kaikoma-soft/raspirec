@@ -1,0 +1,89 @@
+html
+  head
+    title  = @title
+    meta http-equiv='Content-Type' content='text/html' charset='utf-8'
+    link rel='stylesheet' href='/materialize/css/materialize.css' media='screen,projection'
+    meta name= 'viewport' content='width=device-width, initial-scale=1.0'
+
+  body
+    script src="//code.jquery.com/jquery-1.11.3.min.js"
+    script src="//code.jquery.com/jquery-migrate-1.2.1.min.js"
+
+css:
+  .line{
+      position: absolute;
+      border-top: solid 1px #FF4981;
+      -moz-transform-origin:0% 0%;
+      -webkit-transform-origin:0% 0%;
+      transform-origin:0% 0%;
+      float: left;
+  }
+
+javascript:
+  function DrawLine(params) {
+    var param = jQuery.extend({
+                ID: 0
+              , x1: 0
+              , y1: 0
+              , x2: 0
+              , y2: 0
+              , line_style: "solid"
+              , line_color: "#000"
+              , line_width: "1px"
+              , parent: $("body")
+              , callback: function(){}
+    }, params);
+    if(param.x1 < param.x2){
+      sx = param.x1;
+      sy = param.y1;
+      ex = param.x2;
+      ey = param.y2;
+    }
+    else {
+      sx = param.x2;
+      sy = param.y2;
+      ex = param.x1;
+      ey = param.y1;
+    }
+    var w = Math.sqrt(Math.pow((sx - ex) ,2) + Math.pow((sy - ey) ,2));
+    var base = Math.max(sx, ex) - Math.min(sx, ex);
+    var tall = Math.max(sy, ey) - Math.min(sy, ey);
+    var aTan = Math.atan(tall / base);
+    var deg = aTan * 180 / Math.PI;
+    deg = sy > ey ? 0 - deg: deg;
+    var line = $("<div id=" + param.ID + "></div>")
+      .addClass("line")
+      .css({
+        "left": sx,
+        "top": sy,
+        "width": w,
+        "transform": "rotate(" + deg + "deg)",
+        "-webkit-transform": "rotate(" + deg + "deg)",
+        "border-top-style": param.line_style,
+        "border-top-color": param.line_color,
+        "border-top-width": param.line_width,
+      });
+    $(param.parent).append(line);
+  }
+   
+  $(document).ready(function()
+  {
+    DrawLine({
+      ID: "L2SW11P0-L2SW12P0",
+      x1: 0,
+      y1: 0,
+      x2: 100,
+      y2: 100,
+    });
+    DrawLine({
+      ID: "L2SW11P1-L2SW12P1",
+      x1: 100,
+      y1: 100,
+      x2: 200,
+      y2: 0,
+    });
+    for(var i=0; i<=10; i++){
+      $('#L2SW11P1-L2SW12P1').css({"left": 100 - i*10});
+      alert();
+    }
+  });
