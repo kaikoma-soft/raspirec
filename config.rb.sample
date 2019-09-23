@@ -35,7 +35,7 @@ Total_tuner_limit = 4           # トータルチュナー数制限
 #  EPG関係
 #
 GR_EPG_channel = %w( 27 26 25 24 22 23 21 16 )    # 地デジ EPG 受信局
-BS_EPG_channel = %w( BS15_0 BS09_0 BS03_0 )       # BS EPG 受信局
+BS_EPG_channel = %w( BS15_0 )                     # BS EPG 受信局
 CS_EPG_channel = %w( CS4 CS2 )                    # CS EPG 受信局
 GR_EpgRsvTime  = 60                               # EPG受信時間 (秒)
 BS_EpgRsvTime  = 300                              # EPG受信時間 (秒)

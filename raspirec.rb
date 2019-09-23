@@ -18,7 +18,7 @@ require 'require.rb'
 $opt = {
   :f => false,                  # forground
   :lc => false,                 # log clear
-  :ac => false,                 # all clear
+  :dc => false,                 # db clear
 }
 $debug = Debug
 
@@ -179,6 +179,12 @@ end
 #
 # 初期化
 #
+
+[ DataDir, LogDir, JsonDir, DBDir, TSDir].each do |dir|
+  Dir.mkdir( dir ) unless test( ?d, dir )
+  raise "can not make dir(#{dir})" unless test( ?d, dir )
+end
+
 File.open( MainLockFN, File::RDWR|File::CREAT, 0644) do |fl|
   if fl.flock(File::LOCK_EX|File::LOCK_NB) == false
     puts("raspirec locked\n")
@@ -192,14 +198,6 @@ File.open( MainLockFN, File::RDWR|File::CREAT, 0644) do |fl|
   end
   $rec_pid = {}
   $endParoc = false
-
-  #
-  # make dir 
-  #
-  [ BaseDir, LogDir, JsonDir, DBDir, TSDir].each do |dir|
-    Dir.mkdir( dir ) unless test( ?d, dir )
-    raise "can not make dir(#{dir})" unless test( ?d, dir )
-  end
 
   setTrap()
   
