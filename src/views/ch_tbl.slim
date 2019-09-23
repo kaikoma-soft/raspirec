@@ -1,0 +1,24 @@
+
+#
+#
+#
+
+- require_relative 'ch_tbl.rb'
+- pt = ChTbl.new( @ch )
+
+.row
+  div style="display:table;border-collapse: separate;border-spacing: 3px 0;"
+    .dtr
+      div.station  style="width:2.3em;"
+        a href="/cate_color" style="color:white;" 色
+      == pt.yokojiku()
+    .dtr
+      .dtc
+        == pt.tatejiku()
+      == pt.prgTable( @ch ) 
+
+
+== Commlib::include( SrcDir + "/views/move_top.html" )
+
+== Commlib::include( SrcDir + "/views/prg_tbl.cssjs" )
+

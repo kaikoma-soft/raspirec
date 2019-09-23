@@ -1,0 +1,83 @@
+
+css:
+  .tbl {
+    position: absolute;
+    width: 800px;
+    height: 500px;
+    margin-left: 1em;
+    margin-top: 1em;
+  }
+  .filesel {
+    width: 800px;
+  }
+  .btn, .switch {
+     margin-left: 3em;
+  }
+  label { color: #000000} 
+
+- require_relative 'control.rb'
+- dp = Control.new.getData()
+
+span#title.card-title コントロール パネル
+
+form( id="form" method="post" action="/control/fcopy" )
+  table.tbl
+    tr
+      td.nowrap  EPG取得の強制
+      td.nowrap  colspan="2"
+        a.btn.waves-effect.waves-light.green.darken-4 href="/control/epg" 実行
+    tr
+      td.nowrap  フィルター、自動予約の再構成
+      td.nowrap  colspan="2"
+        a.btn.waves-effect.waves-light.green.darken-4 href="/control/filupd" 実行
+    - if TSFT == true
+      tr
+        td.nowrap  自動 TSファイル転送
+        td.nowrap  colspan="2"
+          div.switch
+            label
+              | 許可
+              input#tsft type="checkbox" checked=(dp[:tsft])
+              span.lever
+              | 不許可
+      tr
+        td.nowrap  手動 TSファイル転送
+        td.nowrap  
+          div.input-field.filesel
+            select.filesel( name="fname" )
+              option( value="" disabled selected )
+                | ファイルを選択して下さい
+              == dp[:tsfile]
+        td.nowrap  
+          input type="submit" value="送信する" name="fcopy"
+
+    tr
+      td.nowrap  ログの削除
+      td.nowrap  colspan="2"
+        a.btn.waves-effect.waves-light.green.darken-4 href="/control/logdel/all" 実行
+    tr
+      td.nowrap  プログラムの再起動
+      td.nowrap  colspan="2"
+        a.btn.waves-effect.waves-light.green.darken-4 href="/control/restart" 実行
+    tr
+      td.nowrap  プログラムの停止
+      td.nowrap  colspan="2"
+        a.btn.waves-effect.waves-light.green.darken-4 href="/control/stop" 実行
+
+
+javascript:
+  $('#tsft').change(function() {
+    $('#tsft').each(function() {
+      var r = $(this).prop('checked');
+      console.log(r);
+      $.ajax({
+        url: '/control/tsft/' + r,
+          type:"get",
+          async: false,
+      })
+    })
+  })
+
+  $(document).ready(function(){
+    $('select').formSelect();
+  });

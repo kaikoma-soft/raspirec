@@ -1,0 +1,144 @@
+
+- require_relative 'rsv_tbl.rb'
+- pt = RsvTbl.new( @day, @time )
+- timeHref = pt.getTimeHref()
+
+.row
+  .col
+    .div
+  == pt.dateSel()
+  .col
+    a.btn.waves-effect.waves-light href="#{timeHref[0]}" 朝
+  .col
+    a.btn.waves-effect.waves-light href="#{timeHref[1]}" 昼
+  .col
+    a.btn.waves-effect.waves-light href="#{timeHref[2]}" 夜
+  .col
+    a.btn.waves-effect.waves-light href="#{timeHref[3]}" 深夜
+  .col
+    a.btn.waves-effect.waves-light.btn-small.lime.darken-4 href="#{timeHref[4]}" -3H
+  .col
+    a.btn.waves-effect.waves-light.btn-small.lime.darken-4 href="#{timeHref[5]}" +3H
+
+.row
+  div style="display:table;border-collapse: separate;border-spacing: 3px 0;"
+    .dtr
+      div.station  style="width:2.3em;"
+        a href="/cate_color" style="color:white;" 色
+      == pt.yokojiku()
+    .dtr
+      .dtc
+        == pt.tatejiku()
+      == pt.prgTable() 
+
+== pt.nowLine()
+
+
+div id="sample-dialog" title="詳細" style="display:none;"
+   p 
+
+== Commlib::include( SrcDir + "/views/move_top.html" )
+
+css:
+  .inline-block {
+    display: inline-block;      /* インラインブロック要素にする */
+    /* background-color:#66cc33; */
+    padding: 0px;
+    margin:  0px 2px 0px 2px;
+  }
+  div.dtr {
+    display:table-row;
+  }
+
+  div.dtc {
+    display:table-cell;
+  }
+
+  div.item {
+    margin:  0px 0px 0px 0px;
+    padding: 0px;
+    width:   160px;
+    opacity: 0.9;
+    overflow:hidden;
+  }
+
+  div.time {
+    height:  176px;
+    margin:  4px;
+    padding: 5px;
+    color:   white;
+    background-color:#333;
+    width:   2em;
+  }
+  div.station {
+      width:160px;
+      margin: 0px;
+      padding: 5px;
+      border:  none;
+      color:   white;
+      background-color:#333;
+      display: table-cell;
+  }
+
+  .ui-dialog-buttonset {
+    width: 100%;
+    display: flex;
+    display: -webkit-flex;
+    text-align: center;
+    justify-content: space-around;
+    -webkit-justify-content: space-around;
+  }
+
+javascript:
+    $('.dropdown-trigger').dropdown();
+
+    $(document).ready(function(){ $('.tabs').tabs(); });
+
+    $(document).ready(function(){ $('select').formSelect(); });
+
+    $(".item").hover(function() {
+        $(this).css('border','solid #a23456 1px');
+    }, function() {
+        $(this).css('border','');
+    });
+
+    $(document).ready(function(){
+       $('.item').tooltip();
+    });
+
+    $(".item").click(function(event){
+        var rid = $(this).attr('rid');
+        //event.preventDefault();
+        $("#sample-dialog").load('/rsv_list_D/' + rid );
+        $("#sample-dialog").dialog({
+             modal: true,
+             maxWidth: 1200,
+             width:    1000,
+             buttons: { //ボタン
+               "修正": function() {
+                   $.ajax({
+                       url: '/rsv_list/Mod/' + rid,
+                       type:"POST",
+                       data:  $('form').serialize() + '&param=1',
+                   })
+                   $(this).dialog("close");
+                   location.reload();
+               },
+               "削除": function() {
+                   $.ajax({
+                       url: '/rsv_list/Del/' + rid,
+                       type:"POST",
+                   })
+                   $(this).dialog("close");
+                   location.reload();
+               },
+               "閉じる": function() {
+                   $(this).dialog("close");
+               }
+             },
+             open: function() {
+               $( this ).siblings('.ui-dialog-buttonpane').find('button:eq(2)').focus();
+             }
+           });
+        return false;
+    });

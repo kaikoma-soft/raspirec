@@ -1,0 +1,61 @@
+
+css:
+  a {
+    color: white ;
+  }
+ #band {
+  margin-left:    10px;
+  margin-right:   10px;
+  padding-left:   10px;
+  padding-right:  10px;
+ }
+ #date {
+   margin-left:    10px;
+   margin-right:   10px;
+   width:  120px;
+ }
+
+- require_relative 'prg_tbl.rb'
+- pt = PrgTbl.new( @band, @day, @time )
+- timeHref = pt.getTimeHref()
+- d = pt.setFormPara()
+
+
+.row
+  .col
+    == pt.dateSel()
+  .col
+    a.btn.waves-effect.waves-light.btn-small.green.darken-4 href="#{timeHref[0]}" 朝
+  .col
+    a.btn.waves-effect.waves-light.btn-small.green.darken-4 href="#{timeHref[1]}" 昼
+  .col
+    a.btn.waves-effect.waves-light.btn-small.green.darken-4 href="#{timeHref[2]}" 夜
+  .col
+    a.btn.waves-effect.waves-light.btn-small.green.darken-4 href="#{timeHref[3]}" 深夜
+  .col
+    a.btn.waves-effect.waves-light.btn-small.lime.darken-4 href="#{timeHref[4]}" -3H
+  .col
+    a.btn.waves-effect.waves-light.btn-small.lime.darken-4 href="#{timeHref[5]}" +3H
+  .col
+    == pt.bandSel()
+  .col
+    == pt.pageSel()
+
+
+.row
+  div style="display:table;border-collapse: separate;border-spacing: 3px 0;"
+    .dtr
+      div.station  style="width:2.3em;"
+        a href="/cate_color" style="color:white;" 色
+      == pt.yokojiku()
+
+    .dtr
+      .dtc
+        == pt.tatejiku()
+      == pt.prgTable() 
+
+== pt.nowLine()
+
+== Commlib::include( SrcDir + "/views/prg_tbl.cssjs" )
+
+== Commlib::include( SrcDir + "/views/move_top.html" )

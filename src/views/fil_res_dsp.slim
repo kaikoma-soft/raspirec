@@ -1,0 +1,69 @@
+/
+/  フィルター条件 検索結果
+/
+
+- require_relative 'fil_res_dsp.rb'
+- fd = FilterDisp.new( @params )
+- r = fd.print( @id, session )
+
+css:
+  th {
+     padding-right: 1em;
+  }
+  td,th {
+    padding: 8px ;
+  }
+  .list-inline {
+    padding-left: 0;
+    margin-left: -5px;
+    list-style: none;
+  }
+  .list-inline > li {
+    display: inline-block;
+    padding-right: 5px;
+    padding-left: 5em;
+  }
+  label { color: #000000} 
+
+form
+  ul.list-inline
+    li #{{r[:title]}}
+    - if fd.filter?()
+      li
+        label
+          input.cb type="checkbox" name="freeOnly" id="cb" checked=(fd.fo?) 
+            span 予約済みは表示しない
+
+table.striped
+  tr
+    th No
+    th 放送局
+    th 日付
+    th 時間
+    th 予約
+    th タイトル
+    th 概要
+  | #{{r[:table]}}
+
+div id="sample-dialog" title="詳細" style="display:none;"
+  p 
+
+div id="sample-dialog2" title="確認" style="display:none;"
+  p 
+
+== Commlib::include( SrcDir + "/views/move_top.html" )
+
+== Commlib::include( SrcDir + "/views/fil_res_dsp.js" )
+
+javascript:
+
+  $(function(){
+    $('.cb').on('change', function () {
+       if ($(this).prop('checked')) {
+         var url="/fil_res_dsp/#{@id}" +"?FO=on";
+      } else {
+         var url="/fil_res_dsp/#{@id}";
+      }
+      window.location.href = url ;
+    });
+  });

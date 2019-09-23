@@ -1,0 +1,46 @@
+
+css:
+  .title {
+    margin: 0.5em 0.5em 0.5em 0.5em ;
+    font-size: 1.5em ;
+  }
+
+h1.title Help
+
+div
+  ol
+    li.title
+      a name="search" 検索文字列
+    
+    ul.collection.with-header
+      li.collection-header
+        h1.title
+          | 単純文字列
+        p 
+         | 
+           空白で区切った文字列を検索対象から検索し and を取る。
+           下記の例では、1 と 2 は結果は等しい。
+           <p style="padding-left:2em">
+           例： 
+           <br>  1. ワールドカップ &nbsp; ラグビー
+           <br>  2. ラグビー &nbsp; ワールドカップ
+
+      li.collection-header
+        h1.title
+          | 正規表現
+        p
+          a href="https://docs.ruby-lang.org/ja/2.5.0/doc/spec=2fregexp.html"       ruby での正規表現
+          |
+            で検索対象から文字列検索を行う。
+          table
+            tr
+              td
+               | or を取る場合
+              td
+                | (ＢＳ世界のドキュメンタリー|ＢＳ１スペシャル|ＮＨＫスペシャル)
+            tr
+              td
+               | 新番組検出
+              td
+               | [\[(［【<]新[>】］)\]]| 新$|第[0０]*[1一―ー壱１][話回夜弾]|[#＃♯](0*1|０*１)(?!\p{N})
+              

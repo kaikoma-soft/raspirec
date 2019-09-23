@@ -1,0 +1,74 @@
+/
+/  予約一覧
+/
+
+css:
+  td,th {
+    padding: 5px ;
+  }
+  .inline-block {
+    display: inline-block;      /* インラインブロック要素にする */
+    padding: 0px;
+    margin:  0px 2px 0px 2px;
+  }
+  .pagination {
+    margin-left:  3em;
+  }
+
+- require_relative 'rsv_list_old.rb'
+- dp = ReservationListOld.new( @params, @page )
+- data = dp.getData()
+
+form id="form" method="POST" action="/rsv_list_old"
+  .inline
+      | 検索文字列
+      input#email_inline( type="text" name="search"  class="validate" value="" autocomplete="off" )
+      input( type="submit" value="検索実行" )
+        == dp.pageSel()
+            
+div
+  table.striped
+    tr
+      th No
+      th 放送局
+      th 日付
+      th 時間
+      th 状態
+      - if TSFT == true
+        th 転送
+      th 種別
+      th タイトル
+    == dp.printTable()
+
+
+div id="sample-dialog" title="詳細" style="display:none;"
+  p データを削除しますか？
+
+== Commlib::include( SrcDir + "/views/move_top.html" )
+
+javascript:
+    $(".dialog").click(function(event){
+        var rid = $(this).attr('rid');
+        $("#sample-dialog").dialog({
+             modal: true,
+             maxWidth: 1200,
+             width:    1000,
+             buttons: { //ボタン
+               "削除": function() {
+                   $.ajax({
+                       url: '/rsv_list/Del/' + rid,
+                       type:"POST",
+                   })
+                   $(this).dialog("close");
+                   location.reload();
+               },
+               "キャンセル": function() {
+                   $(this).dialog("close");
+               }
+             },
+             open: function() {
+               $( this ).siblings('.ui-dialog-buttonpane').find('button:eq(2)').focus();
+             }
+           });
+        return false;
+    });

@@ -1,0 +1,14 @@
+/
+/  予約一覧 詳細ダイアログ
+/
+
+
+- require_relative 'rsv_list_D.rb'
+- dp = ReservationListD.new(  )
+- data = dp.getData( @rid )
+
+div
+  form id="form"
+    table.striped
+      == dp.printTable( @rid )
+

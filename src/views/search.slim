@@ -1,0 +1,175 @@
+/
+/  番組検索
+/
+
+css:
+  label { color: #000000} 
+  #title2 {
+     margin: 0.5em 0.5em 0.5em 0.5em;
+     font-size: 1.5em
+  }
+  .btn {
+     margin-top: 0.5em;
+     margin-left:4em;
+  }
+  #cb {
+    padding-right:2em;
+  }
+  td,th {
+    padding-top: 7px;
+    padding-bottom: 7px;
+  }
+  #freeCA {
+    padding-left:4em;
+  }
+  .inline {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+  }
+  .row {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+  }
+
+- require_relative 'search.rb'
+- sp = Search.new( )
+- dp = sp.getData( proid: @proid, filid: @filid )
+
+.row
+  .col
+    h1#title2 番組検索
+  .col
+    a.btn.waves-effect.waves-light#testrun href="/" 検索実行
+  .col
+    a.btn.waves-effect.waves-light.submit#fil_reg data-act="/sea_add/fil" フィルター登録
+  .col
+    a.btn.waves-effect.waves-light.submit#auto_reg data-act="/sea_add/auto" 自動予約登録
+  .col
+    a.btn.waves-effect.waves-light href="javascript:history.back()" 戻る
+.row
+  form id="form2" method="POST" action="/search2"
+    == sp.p_hidden( @filid )
+    table.striped
+      tr
+        th 題名
+        td
+          input.validate#in name="title1"  type="text" value="#{dp[:title1]}"
+      tr
+        th.nowrap 
+          | 検索文字列 &nbsp;
+          a href="/help#search" ？
+        td
+          input.validate#in name="key" type="text" value="#{dp[:key]}"
+      tr
+        th 除外文字列
+        td
+          input.validate#in name="exclude" type="text" value="#{dp[:exclude]}"
+      tr
+        th 検索方法
+        td
+          label
+            input name="stype" type="radio" value="text" checked=(dp[:stype][:simple]) 
+            span#cb 
+              | 単純文字列 
+          label
+            input name="stype" type="radio" value="regex" checked=(dp[:stype][:regex]) 
+            span#cb
+              | 正規表現
+      tr
+        th.nowrap 検索対象
+        td
+          label
+            input.filled-in type="radio" name="target" value="T" checked=(dp[:target][:title]) 
+            span#cb  タイトルのみ
+          label
+            input.filled-in type="radio" name="target" value="TD" checked=(dp[:target][:titleP]) 
+            span#cb タイトル＋概要(あれば詳細)
+          label#freeCA
+            input.filled-in type="checkbox" name="freeOnly" checked=(dp[:freeOnly]) 
+            span#cb 無料放送のみ
+      tr
+        th ジャンル
+        td 
+          == sp.p_cate_sel(dp)
+      tr
+        th バンド
+        td 
+          .col.m4
+            label
+              input.filled-in type="checkbox" name="band_gr" checked=(dp[:band][:gr]) 
+              span#cb  地デジ
+            label
+              input.filled-in type="checkbox" name="band_bs" checked=(dp[:band][:bs]) 
+              span#cb BS
+            label
+              input.filled-in type="checkbox" name="band_cs" checked=(dp[:band][:cs]) 
+              span#cb CS
+
+      tr
+        th 放送局
+        td 
+           == sp.p_ch_sel(dp)
+
+      tr
+        th オプション<br>(自動予約時)
+        td 
+          .col.m4
+            .row
+              label
+                input.filled-in type="checkbox" name="jitan" checked=(dp[:jitan]) 
+                span
+                  | チューナーが競合した場合に録画時間の短縮を許可する。
+
+            .row
+              label
+                input.filled-in type="checkbox" name="dedupe" checked=(dp[:dedupe]) 
+                span
+                  | 過去に録画したタイトルと一致した場合は無効にする。
+          .col.m8
+            div.input-field.inline 
+              span 保存サブディレクトリ
+              input id="email_inline" type="text" list="dlist" name="dir" size="60" class="validate" value="#{dp[:subdir]}" autocomplete="off"
+              datalist id="dlist"
+                  == sp.dirList
+
+
+hr
+div id="sample-dialog1" title="検索結果" style="display:none;"
+  p 
+
+
+
+javascript:
+  $(document).ready(function(){
+    $('select').formSelect();
+  });
+
+
+  $("#testrun").click(function(event){
+    event.preventDefault();
+    $.ajax({
+      url: '/fil_testrun',
+      type:"POST",
+      async: false,
+      data:  $("#form2").serialize() + '&param=1'
+    })
+    .then(
+      function(data) {
+        $("#sample-dialog1").html(data);
+        $("#sample-dialog1").show();
+      }
+    )
+    return false;
+  });
+
+  $('.submit').click(function(event) {
+    event.preventDefault();
+    $('#form2').attr('action', $(this).data('act'));
+    $('#form2').submit();
+  });
+
+
+
+== Commlib::include( SrcDir + "/views/move_top.html" )
+
+== Commlib::include( SrcDir + "/views/fil_res_dsp.js" )

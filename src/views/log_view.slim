@@ -1,0 +1,64 @@
+/
+/  ログの表示
+/
+
+css:
+  td,th {
+    padding: 5px ;
+  }
+  label {
+    margin: 10px ;
+    color:  black;
+    font-size: 1em;
+  }
+  .inline-block {
+    display: inline-block;      /* インラインブロック要素にする */
+    padding: 0px;
+    margin:  0px 2px 0px 2px;
+  }
+  .pagination {
+    margin-left:  3em;
+  }
+
+- require_relative 'log_view.rb'
+- dp = LogView.new( @level, @page )
+- radio = dp.radio()
+
+div
+  form
+    label      表示レベル
+    label
+      input( type="radio" name="level" value="1" checked=(radio[:debug])) 
+        span DEBUG
+    label
+      input(type="radio" name="level" value="2"  checked=(radio[:info]))
+        span 情報
+    label
+      input(type="radio" name="level" value="3" checked=(radio[:atte])) 
+        span 注意
+    label
+      input(type="radio" name="level" value="4" checked=(radio[:warn]))
+        span 警告
+    label
+      input(type="radio" name="level" value="4" checked=(radio[:err]))
+        span エラー
+    == dp.pageSel()
+
+  p
+  table.striped
+    tr
+      th.nowrap レベル
+      th.nowrap 日時
+      th.nowrap 内容
+    == dp.printTable()
+
+== Commlib::include( SrcDir + "/views/move_top.html" )
+
+javascript:
+  $(function(){
+    $( 'input[name="level"]:radio' ).change( function() {
+      var radioval = $(this).val();
+      console.log(radioval)
+      window.location.href = "/log_view/" + radioval
+    });
+  });
