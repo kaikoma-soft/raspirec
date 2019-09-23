@@ -163,10 +163,15 @@ class GetEPG
     if nameList.size > 0 and nameList.size < 3 
       DBlog::sto( %Q(old> #{nameList.join(" ")}))
     end
+
+    if GR_tuner_num > 0
+      GR_EPG_channel.each {|v| chs[ Const::GR ][v] = GR_EpgRsvTime if chlist[v] == nil }
+    end
+    if BSCS_tuner_num > 0
+      BS_EPG_channel.each {|v| chs[Const::BSCS][v] = BS_EpgRsvTime if chlist[v] == nil}
+      CS_EPG_channel.each {|v| chs[Const::BSCS][v] = CS_EpgRsvTime if chlist[v] == nil}
+    end
     
-    GR_EPG_channel.each {|v| chs[ Const::GR ][v] = GR_EpgRsvTime if chlist[v] == nil }
-    BS_EPG_channel.each {|v| chs[Const::BSCS][v] = BS_EpgRsvTime if chlist[v] == nil}
-    CS_EPG_channel.each {|v| chs[Const::BSCS][v] = CS_EpgRsvTime if chlist[v] == nil}
     return false if chs[Const::GR].size == 0 and chs[Const::BSCS].size == 0
 
     DBaccess.new().open do |db|

@@ -15,9 +15,9 @@
   % wget https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js
 ```
 
-- $HOME/.config/raspirec/config.rb の下記のパラメータを変更する。
+- $HOME/.config/raspirec/config.rb の下記のパラメータを true に変更する。
 
- `Local_jquery = false -> true`
+ `Local_jquery = true`
 
 - プログラムを再起動する。
 

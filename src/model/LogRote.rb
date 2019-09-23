@@ -29,9 +29,11 @@ class LogRote
   #
   def need?()
     @flist.each do |fn|
-      size = File.size( fn )
-      if size > Limit
-        return true
+      if test( ?f, fn )
+        size = File.size( fn )
+        if size > Limit
+          return true
+        end
       end
     end
     false
