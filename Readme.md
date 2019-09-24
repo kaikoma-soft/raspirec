@@ -20,6 +20,11 @@
 * チューナーの数とは別に、同時録画の本数で制限を掛ける事が可能。
   (SBCの場合、能力不足により本数制限が必要になる。)
 
+## スクリーンショット
+
+|![](https://github.com/kaikoma-soft/raspirec/wiki/images/top.png)|![](https://github.com/kaikoma-soft/raspirec/wiki/images/prg_tbl.png)|![](https://github.com/kaikoma-soft/raspirec/wiki/images/rsv_tbl.png)|![](https://github.com/kaikoma-soft/raspirec/wiki/images/search.png)|
+|---|---|---|---|
+
 ## ステータス
 
 * 現在運用試験中。
