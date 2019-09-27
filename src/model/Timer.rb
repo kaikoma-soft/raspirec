@@ -9,6 +9,7 @@ class Timer
 
   def initialize( )
     @sleepT = 5
+    @loopT  = 1800
   end
 
   
@@ -68,7 +69,33 @@ class Timer
   #   タイマー main 開始
   #
   def start()
-    st = 600
+
+    #
+    # ディスク容量確保
+    #
+    if DiskKeepPercent != false and DiskKeepPercent.to_i > 0
+      Thread.new do
+        begin
+          DBlog::sto( "DiskKeep start" )
+          lastTimeD = Time.now
+          while true
+            if $recCount == 0
+              if ( Time.now - lastTimeD ) > ( 6 * 3600 )
+                $mutex.synchronize do
+                  DBaccess.new().open do |db|
+                    db.transaction do
+                      DiskKeep.new.start(db)
+                    end
+                  end
+                end
+                lastTimeD = Time.now
+              end
+            end
+            sleep( 3600 )
+          end
+        end
+      end
+    end
     
     while true
       now = Time.now.to_i
@@ -90,13 +117,12 @@ class Timer
 
       waitT = nextRecTime - now
       if waitT > 3600
-        st = 1800
+        st = @loopT
         daily()
       else
         st = waitT / 2
       end
       st = 5 if st < 5
-      #DBlog::sto("wait time = #{waitT}; sleep time = #{st}" ) if $debug == true
 
       if $recCount == 0
         if 600 > st and st > 300
@@ -171,7 +197,7 @@ class Timer
             now = Time.now.to_i
             DBlog.new.deleteOld( db, now - LogSaveDay * 24 * 3600 )
             DBreserve.new.deleteOld( db, now - RsvHisSaveDay * 24 * 3600 )
-            DiskKeep.new.start(db)
+            #DiskKeep.new.start(db)
 
             lr = LogRote.new()
             if lr.need?() == true
@@ -284,7 +310,7 @@ class Timer
       if data[:svid] == 101 or data[:svid] == 102 # NHK BS は遅い
         waitT = retryC + 5
       end
-      pp arg
+
       pid = Recpt1.new.recTS( arg, fname, waitT )
       $mutex.synchronize do
         #DBlog::sto( "pid=#{pid}")
@@ -387,7 +413,7 @@ class Timer
             row2 = phchid.select(db, chid: chid )
             if row2.size > 0
               tmp = row2.pop
-              if tmp[:updatetime] < ( now - 1800 )
+              if tmp[:updatetime] < ( now - @loopT )
                 t = now - ( 3600 * 24 )
                 phchid.touch( db, t, chid: tmp[:chid]  )
                 res << tmp[:chid]

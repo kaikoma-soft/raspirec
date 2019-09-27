@@ -20,40 +20,51 @@ module Base
                     tend: nil,
                     limit: nil,
                     keyid: nil,
-                    updatetime: nil
+                    updatetime: nil,
+                    skip:   nil
                    )
+    where = []
     args = []
     sql = "select " + para.join(",") + " from #{tname} "
     if id != nil
-      sql += " where id = ? "
+      where << " id = ? "
       args << id
     elsif pid != nil
-      sql += " where pid = ? "
+      where << " pid = ? "
       args << pid
     elsif type != nil
-      sql += " where type = ? "
+      where << " type = ? "
       args << type
     elsif name != nil
-      sql += " where name = ? "
+      where << " name = ? "
       args << name
     elsif chid != nil and evid != nil
-      sql += " where chid = ? and evid = ? "
-      args = [ chid, evid ]
+      where << " chid = ? and evid = ? "
+      args += [ chid, evid ]
     elsif tstart != nil and tend != nil
-      sql += " where ? < end and start < ? "
-      args = [ tstart, tend ]
+      where << " ( ? < end and start < ? ) "
+      args += [ tstart, tend ]
     elsif tstart == nil and tend != nil
-      sql += " where ? < end "
+      where << " ? < end "
       args << tend
     elsif chid != nil
-      sql += " where chid = ? "
+      where << " chid = ? "
       args << chid
     elsif keyid != nil
-      sql += " where keyid = ? "
+      where << " keyid = ? "
       args << keyid
     elsif updatetime != nil 
-      sql += " where updatetime < ?  "
+      where << " updatetime < ?  "
       args << updatetime
+    end
+
+  if skip != nil 
+      where << " skip = ? "
+      args << skip
+    end
+    
+    if where.size > 0
+      sql += " where " + where.join(" and ")
     end
     
     if order == nil

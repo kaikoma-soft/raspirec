@@ -8,7 +8,7 @@
 module Const
 
   ProgName = "raspirec β"
-  ProgVer  = "Ver 0.1.0 "
+  ProgVer  = "Ver 0.1.1 "
     
   GR   = "GR"
   GRJ  = "地デジ"
@@ -49,6 +49,7 @@ module RsvConst
   AbNormalEnd= 3                   # 異常終了
   RecNow     = 4                   # 録画中
   RecStop    = 5                   # 録画中止
+  RecStop2   = 6                   # 手動による録画中止
   NotUse     = 9                   # 予約無効
   WaitStat   = [0,1]               # 予約中の status
   EndStat    = [2,3,5]             # 終了した status

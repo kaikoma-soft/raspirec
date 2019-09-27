@@ -4,6 +4,7 @@
 #
 #  EPG 取得
 #
+require 'timeout'
 
 class GetEPG
 
@@ -196,7 +197,6 @@ class GetEPG
             break
           end
       
-          #DBlog::debug(nil, "ch=#{ch} time=#{time}" )
           outfname = JsonDir + "/#{ch}.json"
           outfname_tmp = outfname + ".tmp"
           if fileUseF == false or
@@ -217,26 +217,30 @@ class GetEPG
               next
             end
           end
-          if false
-            readJson( outfname, ch, band, nil )
-          else
-            $mutex.synchronize {
-              reader, writer = IO.pipe
-              pid = fork do       # json の読み込みで、メモリが肥大する対策
-                reader.close
-                readJson( outfname, ch, band, writer )
-              end
-              writer.close
-              while message = reader.gets()
-                if message =~ /(ins|upd|same)=(\d+)/
-                  type = $1
-                  n = $2.to_i
-                  count[type.to_sym] += n
+          $mutex.synchronize {
+            reader, writer = IO.pipe
+            pid = fork do       # json の読み込みで、メモリが肥大する対策
+              reader.close
+              begin
+                Timeout.timeout( 10 ) do
+                  readJson( outfname, ch, band, writer )
                 end
+              rescue Timeout::Error
+                pid2 = Process.pid
+                DBlog::sto("readJson() time out kill #{pid2}" )
+                Process.kill(:KILL, pid2 );
               end
-              Process.waitpid( pid )
-            }
-          end
+            end
+            writer.close
+            while message = reader.gets()
+              if message =~ /(ins|upd|same)=(\d+)/
+                type = $1
+                n = $2.to_i
+                count[type.to_sym] += n
+              end
+            end
+            Process.waitpid( pid )
+          }
         end
       end
     end
@@ -247,7 +251,6 @@ class GetEPG
     # ガーベージコレクション
     #
     DBaccess.new().open do |db|
-      DBlog::debug(db,"gc start" )
       chs = channel.select( db )
     end
 
@@ -284,11 +287,15 @@ class GetEPG
       phlist[ v ] = true
     end
     row = phchid.select( db )
+    delList = {}
     row.each do |r|
       if phlist[ r[:phch] ] == nil
-        DBlog::debug( db,"phchid_gc( #{r[:phch]}" )
-        #phchid.delete( db,r[:phch]  )
+        delList[ r[:phch] ] = true
       end
+    end
+    delList.keys.each do |phch|
+      DBlog::debug( db,"phchid_gc( #{phch})" )
+      phchid.delete( db, phch )
     end
   end
   

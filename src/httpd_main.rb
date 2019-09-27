@@ -82,6 +82,9 @@ end
 
 get '/ch_tbl/*' do |ch|
   @ch = ch
+  if @params["skip"] != nil
+    ChannelM.new.set( @ch, @params["skip"] )
+  end
   slim :ch_tbl
 end
 
@@ -137,6 +140,11 @@ end
 #
 #  filtering 番組表
 #
+get '/fil_listD/*' do |id|
+  @id = id
+  slim :fil_listD, layout: false
+end
+
 get '/fil_list' do              # フィルター一覧
   session[:fa_type] = :filter
   slim :fil_list

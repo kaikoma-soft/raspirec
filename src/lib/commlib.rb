@@ -233,7 +233,7 @@ EOS
       stat =  "×"
       stat += " (#{come})" if come != nil
       clasS << "alertR"
-    when RsvConst::RecStop then
+    when RsvConst::RecStop,RsvConst::RecStop2 then
       stat =  "中止"
       stat += " (#{come})" if come != nil
     when RsvConst::NotUse then

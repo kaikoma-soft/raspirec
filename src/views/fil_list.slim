@@ -53,6 +53,7 @@ javascript:
     $(".item").click(function(event){
         //event.preventDefault();
         var rid = $(this).attr('rid');
+        $("#sample-dialog").load('/fil_listD/' + rid );
         $("#sample-dialog").dialog({
              modal: true,
              maxWidth: 1200,

@@ -36,7 +36,7 @@
    cd recpt1/recpt1
    sh autogen.sh
    ./configure
-   PX-Q3U4 用に デバイス名を変更する。
+   PX-Q3U4 用に デバイス名を変更する。( recpt1_px4.patch 参照 )
    make
    sudo make install
 ```
@@ -81,4 +81,4 @@
    `http://localhost:4567/`
 
   にアクセスし、画面が出れば正常
-  なお初回は、番組表取得するまでは多少の時間が掛かる。
+  なお初回は、EPG番組表のデータ取得するまで多少の時間が掛かる。
