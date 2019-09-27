@@ -214,6 +214,25 @@ class DBreserve
   end
 
   #
+  #   変更(その他)
+  #
+  def updateA( db, id, title: nil )
+    sql = "update reserve set "
+    para = []
+    args = []
+    if title != nil
+      para << " title = ? "
+      args << title
+    end
+
+    if para.size > 0
+      sql += para.join("," ) + "where id = ? ;"
+      args << id
+      db.execute( sql, args )
+    end
+  end
+
+  #
   #   変更
   #
   def updateStat( db, id,

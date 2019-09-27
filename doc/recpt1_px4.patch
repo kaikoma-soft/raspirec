@@ -1,0 +1,52 @@
+--- recpt1/recpt1/pt1_dev.h	2019-09-24 20:29:13.818064078 +0900
++++ recpt1-px4/recpt1/pt1_dev.h	2019-09-24 20:30:08.485287187 +0900
+@@ -3,32 +3,28 @@
+ #define _PT1_DEV_H_
+ 
+ char *bsdev[NUM_BSDEV] = {
+-    "/dev/pt1video1",
+     "/dev/pt1video0",
+-    "/dev/pt1video5",
+-    "/dev/pt1video4",
+-    "/dev/pt1video9",
+-    "/dev/pt1video8",
+-    "/dev/pt1video13",
+-    "/dev/pt1video12",
+-    "/dev/pt3video1",
+-    "/dev/pt3video0",
+-    "/dev/pt3video5",
+-    "/dev/pt3video4"
++    "/dev/pt1video1",
++    "/dev/px4video0",
++    "/dev/px4video1",
++    "/dev/px4video4",
++    "/dev/px4video5",
++    "/dev/px4-DTV0",
++    "/dev/px4-DTV1",
++    "/dev/px4-DTV4",
++    "/dev/px4-DTV5",
+ };
+ char *isdb_t_dev[NUM_ISDB_T_DEV] = {
+     "/dev/pt1video2",
+     "/dev/pt1video3",
+-    "/dev/pt1video6",
+-    "/dev/pt1video7",
+-    "/dev/pt1video10",
+-    "/dev/pt1video11",
+-    "/dev/pt1video14",
+-    "/dev/pt1video15",
+-    "/dev/pt3video2",
+-    "/dev/pt3video3",
+-    "/dev/pt3video6",
+-    "/dev/pt3video7"
++    "/dev/px4video2",
++    "/dev/px4video3",
++    "/dev/px4video6",
++    "/dev/px4video7",
++    "/dev/px4-DTV2",
++    "/dev/px4-DTV3",
++    "/dev/px4-DTV6",
++    "/dev/px4-DTV7",
+ };
+ 
+ // 変換テーブル(ISDB-T用)

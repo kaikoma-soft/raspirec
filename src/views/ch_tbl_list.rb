@@ -11,13 +11,15 @@ class ChTblList
   Base = "/ch_tbl"
   
   def initialize(  )
+    @tate = 24
     @ret = {}
     channel = DBchannel.new
     DBaccess.new().open do |db|
       db.transaction do
         row = channel.select(db, order: "order by svid")
         row.each do |r|
-          tmp = sprintf(%Q{ <a href=#{Base}/%s > %s </a> },r[:chid],r[:name])
+          cl = r[:skip] == 0 ? "disp" : "skip"
+          tmp = sprintf(%Q{ <a class="%s" href=#{Base}/%s > %s </a> },cl,r[:chid],r[:name])
           @ret[ r[:band] ] ||= []
           @ret[ r[:band] ] <<  tmp
         end
@@ -37,8 +39,8 @@ class ChTblList
       tmp[ band ] ||= {}
       tmp[ band ][ n ] ||= []
       
-      if @ret[band] != nil and @ret[band].size > 20
-        @ret[band].each_slice(20) do |part|
+      if @ret[band] != nil and @ret[band].size > @tate
+        @ret[band].each_slice( @tate ) do |part|
           tmp[ band ][ n ] ||= []
           tmp[ band ][ n ] = part
           n += 1

@@ -443,6 +443,7 @@ class FilterM
     if fd[:freeonly] == RsvConst::FO
       where << "( freeCA = 0 )"
     end
+    where << "( c.skip = 0 )"
     
     if where.size > 0
       sql += " where " + where.join(" and ")

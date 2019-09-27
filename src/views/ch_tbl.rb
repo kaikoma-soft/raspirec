@@ -9,6 +9,8 @@
 class ChTbl
 
   Base = "/ch_tbl"
+
+  attr_reader :name, :skip, :phch, :svid
   
   def initialize( chid )
 
@@ -20,8 +22,30 @@ class ChTbl
     @stByDay = {}
     @rsv = {}
     @chData = getPrgData( @chid )
+    
   end
 
+  #
+  #  channelデータの取得
+  #
+  def getChData( db, chid )
+    channel = DBchannel.new
+
+    row = channel.select( db, chid: chid )
+    if row.size > 0
+      r = row.first
+      @name = r[:name]
+      @skip = r[:skip] == 1 ? true : false 
+      @svid = r[:svid]
+      @phch = case r[:band]
+              when Const::GR, Const::CS
+                r[:stinfo_tp].to_s
+              when Const::BS
+                sprintf("%s_%s",r[:stinfo_tp], r[:stinfo_slot] )
+              end
+    end
+  end
+  
   #
   #  番組データの取得
   #
@@ -34,6 +58,7 @@ class ChTbl
     zeroji = Time.local( now.year,now.mon,now.day ).to_i
     DBaccess.new().open do |db|
       db.transaction do
+        getChData( db, chid )
         row = programs.selectSP(db, chid: chid, tend: zeroji )
         row.each do |r|
           day = Commlib::stet_to_s( r[:start], r[:end] )[0]
@@ -135,11 +160,19 @@ class ChTbl
 
           if @rsv[chid] != nil and @rsv[chid][tmp[:evid]] != nil
             stat = @rsv[chid][tmp[:evid]]
-            if stat == RsvConst::Normal or stat == RsvConst::RecNow
-              cls << "alertR"
-            elsif stat == RsvConst::NotUse or stat == RsvConst::RecStop
-              cls << "alertBD"
-            end
+            cls << case stat
+                   when RsvConst::Normal, RsvConst::RecNow
+                   then "alertR"
+                   when RsvConst::NotUse, RsvConst::RecStop,RsvConst::RecStop2
+                   then "alertBD"
+                   end
+            # if stat == RsvConst::Normal or stat == RsvConst::RecNow
+            #   cls << "alertR"
+            # elsif stat == RsvConst::NotUse or
+            #      stat == RsvConst::RecStop or
+            #      stat == RsvConst::RecStop2
+            #   cls << "alertBD"
+            # end
           elsif tmp[:jitanExe] == RsvConst::JitanEOn
             cls << "alertGD"
           end

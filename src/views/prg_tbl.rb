@@ -28,7 +28,7 @@ class PrgTbl
     end
 
     @tate = 6                   # 縦の長さ (H)
-    @page_limit = 6             # 1ページ当たりの放送局数 (個)
+    @page_limit = StationPage   # 1ページ当たりの放送局数 (個)
     @hour_pixel = 180           # 1時間の長さ (px)
     
     ( @chData, @prgData, @rsvData ) = getPrgData( @time )
@@ -74,7 +74,7 @@ class PrgTbl
     reserve = DBreserve.new
     DBaccess.new(DbFname).open do |db|
       order = "order by c.band_sort,c.svid,p.start"
-      row = programs.selectSP( db, tstart: start, tend: fin, order: order )
+      row = programs.selectSP( db, tstart: start, tend: fin, order: order, skip: 0 )
 
       if row != nil
         row.each do |tmp|

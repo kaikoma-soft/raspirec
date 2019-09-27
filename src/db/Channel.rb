@@ -45,11 +45,11 @@ class DBchannel
   end
 
   #
-  #  phch の更新
+  #  skip の更新
   #
-  def updatePhch( db, phch, id )
-    sql = "update #{@tbl_name} set phch = ? where id = ? "
-    db.execute( sql, phch, id )
+  def updateSkip( db, skip, chid )
+    sql = "update #{@tbl_name} set skip = ? where chid = ? "
+    db.execute( sql, skip, chid )
   end
 
   #
@@ -133,7 +133,7 @@ class DBchannel
     # 本放送以外はスキップ flag を立てる
     if band == Const::BS or band == Const::CS
       svid = h[:svid].to_i
-      if svid > 699 or ( svid == 101 and band == Const::CS )
+      if ( band == Const::BS and svid > 699 ) or ( svid == 101 and band == Const::CS )
         DBlog::sto( "set skip ch #{h["name"]} #{svid}")
         h[:skip] = 1
       end

@@ -23,7 +23,7 @@ class DBfilterResult
   def insert(db, pid, rid )
     data = { id: nil, pid: pid, rid: rid }
     ( sql, args ) = makeInsSql( @list, @para, @tbl_name, data )
-    #pp sql,args
+
     db.execute( sql, *args )
   end
 
@@ -33,7 +33,7 @@ class DBfilterResult
   #
   def select(db, pid: nil, tend: nil )
     ( sql, args ) = makeSelectSql( @para,@tbl_name, pid: pid, tend: tend )
-    #pp sql,args
+
     row = db.execute( sql, *args )
     row2hash( @list, row )
   end
@@ -52,7 +52,7 @@ class DBfilterResult
   #
   def update( db, data, id )
     ( sql, args ) = makeUpdSql( @list, @tbl_name, data, id )
-    #pp sql,args
+
     db.execute( sql, *args )
   end
   

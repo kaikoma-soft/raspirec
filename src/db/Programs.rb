@@ -264,12 +264,21 @@ class DBprograms
     end
   end
 
-  def selectSP( db,proid: nil,order: nil,chid: nil,evid: nil,tstart: nil,tend: nil )
+  def selectSP( db,
+                proid: nil,
+                order: nil,
+                chid: nil,
+                evid: nil,
+                tstart: nil,
+                tend: nil,
+                skip: nil
+              )
     list = {
       chid:          "c.chid",
       svid:          "c.svid",
       band:          "c.band",
       name:          "c.name",
+      skip:          "c.skip",
       pid:           "p.id",
       evid:          "p.evid",
       title:         "p.title",
@@ -289,28 +298,39 @@ class DBprograms
     para = []
     list.each_pair { |k,v| para << v }
     
-    args = []
     sql = "select " + para.join(",") + " from programs p inner join channel c on c.chid = p.chid "
+    where = []
+    args = []
+    
     if proid != nil and proid.class == Array
-      sql += " where p.id in ( " + proid.join(", ") + " )"
+      where << " p.id in ( " + proid.join(", ") + " )"
     elsif chid != nil and evid != nil 
-      sql += "where p.chid = ? and p.evid = ? "
+      where << " p.chid = ? and p.evid = ? "
       args = [ chid, evid ]
     elsif tstart != nil and tend != nil 
-      sql += "where p.end > ? and p.start < ? "
+      where <<  " p.end > ? and p.start < ? "
       args = [ tstart, tend ]
     elsif chid != nil and tend != nil 
-      sql += "where p.end > ? and p.chid = ? "
+      where << " p.end > ? and p.chid = ? "
       args = [ tend , chid ]
     elsif proid != nil 
-      sql += "where p.id = ? "
+      where <<  " p.id = ? "
       args << proid
     elsif tstart != nil
-      sql += "where p.start > ? "
+      where << " p.start > ? "
       args << tstart
     elsif chid != nil
-      sql += "where p.chid = ? "
+      where <<  " p.chid = ? "
       args << chid
+    end
+
+    if skip != nil
+      where <<  " c.skip = ? "
+      args << skip
+    end
+    
+    if where.size > 0
+      sql += " where " + where.join( " and " )
     end
 
     if order != nil
@@ -319,11 +339,7 @@ class DBprograms
       sql += " order by p.start ;"
     end
 
-    if args.size > 0
-      row = db.execute( sql, *args )
-    else
-      row = db.execute( sql )
-    end
+    row = db.execute( sql, *args )
     row2 = row2hash( list, row )
     row2.each do |tmp|
       tmp[:categoryA] = blob2array( tmp[:category] )

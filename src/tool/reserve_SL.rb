@@ -20,12 +20,12 @@ require 'require.rb'
 $opt = {
   :mode      => :save,          # save or load 
   :f         => nil,            # output file (デフォルトは標準出力)
-  :a         => false,          # 過去の予約データも
+  :old       => true,           # 過去の予約データも
   :fo        => false,          # フィルター only
 }
 
 OptionParser.new do |opt|
-  opt.on('-a')     { $opt[:a] = true }
+  opt.on('-o')     { $opt[:old] = false }
   opt.on('-s')     { $opt[:mode] = :save }
   opt.on('-l')     { $opt[:mode] = :load }
   opt.on('--fo')   { $opt[:fo] = true }
@@ -73,13 +73,12 @@ elsif $opt[:mode] == :load
   DBaccess.new().open do |db|
     db.transaction do
       data[:fil].each do |d|
-        #d[:id] = nil
         filter.insert(db, d )
       end
   
       if $opt[:fo] == false
         data[:rsv].each do |d|
-          if d[:end] > now or $opt[:a] == true
+          if d[:end] > now or $opt[:old] == true
             d[:id] = nil
             reserve.insert( db, d )
           end

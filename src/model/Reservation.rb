@@ -26,7 +26,7 @@ class Reservation
       if r[:dedupe] == RsvConst::Dedupe
         dupchk << r
       end
-      row2 = programs.select( db, chid: r[:chid], evid: r[:evid] )
+      row2 = programs.selectSP( db, chid: r[:chid], evid: r[:evid], skip: 0 )
       if row2.size == 0
         (day, time, w) = Commlib::stet_to_s( r[:start], r[:end] )
         come1 = "番組消失"
@@ -42,10 +42,36 @@ class Reservation
           DBlog::atte(db, come2 )
           reserve.updateT( db, pro[:start], pro[:end], pro[:duration],r[:id] )
         end
+
+        if pro[:title] != r[:title]
+          come1 = "タイトル変更"
+          (day, time, w) = Commlib::stet_to_s( pro[:start], pro[:end] )
+          come2 = sprintf("%s: %s %s %s %s -> %s",come1, day, time, r[:name],r[:title],pro[:title])
+          DBlog::atte(db, come2 )
+          reserve.updateA( db, r[:id], title: pro[:title] )
+        end
       end
     end
 
+    #
+    # 消失からの復帰
+    #
+    row1 = reserve.selectSP( db, stat: RsvConst::RecStop )
+    row1.each do |r|
+      row2 = programs.selectSP( db, chid: r[:chid], evid: r[:evid], skip: 0 )
+      if row2.size > 0
+        pro = row2[0]
+        come1 = "番組復帰"
+        (day, time, w) = Commlib::stet_to_s( pro[:start], pro[:end] )
+        come2 = sprintf("%s: %s %s %s %s",come1, day, time, r[:name],r[:title])
+        DBlog::atte(db, come2 )
+        reserve.updateStat( db,r[:id],stat: RsvConst::Normal, comment: "" )
+      end
+    end
+
+    #
     # 重複 check
+    #
     dupchk.each do |r|
       # title = Commlib::deleteOptStr( r[:title] )
       title = r[:title].sub(/【再】/,'')
@@ -145,7 +171,7 @@ class Reservation
               end
             end
             DBlog::info(db,"録画中止: #{r[:title]}")
-            reserve.updateStat( db,r[:id],stat: RsvConst::RecStop )
+            reserve.updateStat( db,r[:id],stat: RsvConst::RecStop2 )
           end
         end
         self.check( db )

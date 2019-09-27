@@ -3,11 +3,50 @@
 #
 #
 
+
+css:
+  th {
+     padding-right: 1em;
+  }
+  td,th {
+    padding: 8px ;
+  }
+  .list-inline {
+    padding-left: 0;
+    margin-left: -5px;
+    list-style: none;
+  }
+  .list-inline > li {
+    display: inline-block;
+    padding-right: 5px;
+    padding-left: 5em;
+    font-size: 1.2em ;
+  }
+  .l {
+    font-size: 1.3em ;
+  }
+  .m {
+    padding-left: 0.5em;
+    font-size: 1.1em ;
+  }
+  label { color: #000000} 
+
 - require_relative 'ch_tbl.rb'
 - pt = ChTbl.new( @ch )
 
+ul.list-inline
+  li 
+    span.l 
+      | #{pt.name}  
+    span.m 
+      | ( ch:#{pt.phch}, svid:#{pt.svid} )
+  li
+    label
+      input.cb type="checkbox" name="skip" id="cb"  checked=(pt.skip) 
+      span 番組表、検索の対象から外す。
+
 .row
-  div style="display:table;border-collapse: separate;border-spacing: 3px 0;"
+div style="display:table;border-collapse: separate;border-spacing: 3px 0;"
     .dtr
       div.station  style="width:2.3em;"
         a href="/cate_color" style="color:white;" 色
@@ -22,3 +61,16 @@
 
 == Commlib::include( SrcDir + "/views/prg_tbl.cssjs" )
 
+javascript:
+
+  $(function(){
+    $('.cb').on('change', function () {
+       var url="/ch_tbl/#{@ch}"
+       if ($(this).prop('checked')) {
+         url = url + "?skip=on";
+      } else {
+         url = url + "?skip=off";
+      }
+      window.location.href = url ;
+    });
+  });
