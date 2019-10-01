@@ -39,7 +39,7 @@ BS_EPG_channel = %w( BS15_0 )                     # BS EPG 受信局
 CS_EPG_channel = %w( CS4 CS2 )                    # CS EPG 受信局
 GR_EpgRsvTime  = 60                               # EPG受信時間 (秒)
 BS_EpgRsvTime  = 300                              # EPG受信時間 (秒)
-CS_EpgRsvTime  = 240                              # EPG受信時間 (秒)
+CS_EpgRsvTime  = 300                              # EPG受信時間 (秒)
 EPGperiod      = 8                                # EPG 取得周期 (H)
 
 #

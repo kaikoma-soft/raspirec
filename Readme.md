@@ -52,6 +52,7 @@
   アクセス出来る状態にしないで下さい。
 
 * android版(Fire HD10)のブラウザでは、一部機能が動作しない。
+  ( firefox と opera では、動作しない箇所が違う。)
 
 ## インストール方法 ( Raspbian buster lite の場合 )
 
@@ -92,7 +93,8 @@
 
        * 雛形の config.rb.sample を $HOME/raspirec/config.rb にコピー
        * コピーした config.rb をテキストエディタを使って、
-         自分の環境に合わせるように修正する。 最低限必須なのは次のもの。
+         自分の環境に合わせるように修正する。
+         とりあえず最低限必須なのは次のもの。詳細は doc/config.md を参照
          
          ```
          Recpt1_cmd        : recpt1 コマンドの path を指定する。
