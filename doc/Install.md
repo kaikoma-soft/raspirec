@@ -2,12 +2,12 @@
 ### インストール例
 
 #### 条件
-```
-     PC           :  raspberrypi zero w
-     TVチューナー    :  PLEX PX-Q3U4 
-     OS           :  raspbian-buster-lite
-     ドライバー      :  px4_drv
-```
+
+        PC             raspberrypi zero w
+        TVチューナー      PLEX PX-Q3U4 
+        OS             raspbian-buster-lite
+        ドライバー        px4_drv
+
 
 #### インストール
 

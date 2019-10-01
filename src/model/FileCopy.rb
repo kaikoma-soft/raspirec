@@ -163,7 +163,7 @@ class FileCopy
     if subDir != nil and subDir != ""
       toDir3  = Shellwords.escape(toDir + "/" + subDir)
     else
-      toDir3  =  endtoDir2
+      toDir3  =  toDir2
     end
     fname = Shellwords.escape( fromFname  )
 

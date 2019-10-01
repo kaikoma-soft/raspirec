@@ -222,12 +222,12 @@ class GetEPG
             pid = fork do       # json の読み込みで、メモリが肥大する対策
               reader.close
               begin
-                Timeout.timeout( 10 ) do
+                Timeout.timeout( 60 ) do
                   readJson( outfname, ch, band, writer )
                 end
               rescue Timeout::Error
                 pid2 = Process.pid
-                DBlog::sto("readJson() time out kill #{pid2}" )
+                DBlog::sto("readJson() time out kill #{pid2} #{ch}" )
                 Process.kill(:KILL, pid2 );
               end
             end
