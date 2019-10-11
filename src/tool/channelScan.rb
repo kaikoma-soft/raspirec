@@ -18,11 +18,13 @@ require 'require.rb'
 
 
 $opt = {
+  :d         => false,          # debug 
   :w         => false,          # write config
   :t         => 10,             # scan time
 }
 
 OptionParser.new do |opt|
+  opt.on('-d')     { $opt[:d] = true }
   opt.on('-w')     { $opt[:w] = true }
   opt.on('-t n')   {|v| $opt[:t] = v.to_i }
   opt.parse!(ARGV)
@@ -64,7 +66,11 @@ GR_start.upto(GR_end) do |ch|
     end
   end
 
-  printf("%02d : %02.1fdB  %s %s (%d)\n",ch, cn, id, name, now2 - now1  )
+  if $opt[:d] == true 
+    printf("%02d : %03.1fdB  %s %s (%d)\n",ch, cn, id, name, now2 - now1  )
+  else
+    printf("%02d : %03.1fdB  %s %s\n",ch, cn, id, name )
+  end
   if name != ""
     r << sprintf("%d \t# %s %s\n",ch, id, name)
   end
@@ -72,10 +78,3 @@ GR_start.upto(GR_end) do |ch|
   sleep(0.1)
 end
 
-if $opt[:w] = true
-  File.open( GR_channel_conf, "w") do |fp|
-    r.each do |str|
-      fp.puts( str )
-    end
-  end
-end

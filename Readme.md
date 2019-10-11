@@ -2,7 +2,15 @@
 
 ## 目的
 
-本プログラムは、recpt1,epgdump を使って TV番組を録画する為の管理ソフトです。
+本プログラム(raspirec) は Linux 系OS上で、
+recpt1,epgdump を使って TV番組を録画する録画サーバーを構築するための
+プログラムです。
+
+特に、ラズパイのようなシングルボードコンピュータ(SBC)で動作させる事に最適化しています。
+
+なお動作には recpt1 に対応しているドライバーがあるTVチューナー
+( アースソフト社製 PT1〜3, PLEX社製 PX-W3U4、PX-W3PE4、PX-Q3U4、PX-Q3PE4 等)
+が必要です。
 
 
 ## 特徴
@@ -27,7 +35,7 @@
 ## ステータス
 
 * 現在運用試験中。
-* とりあえず録画で出来る所まで出来たので、βリリースで公開開始
+* とりあえず録画で出来る所まで出来たので、β版で公開開始
 
 
 ## 実行に必要な環境
@@ -122,11 +130,35 @@
 
   を記述する。
 
+* 停止方法
+
+  `% ruby ${BaseDir}/raspirec.rb --kill`
+
+  で、デーモンが停止する。
 
 ## アンインストール方法
 
   * ディレクトリ BaseDir, DataDir 以下のファイルを削除
   * インストールしたパッケージを apt remove で削除
+
+## 動作確認環境
+
+ |              |  その１             | その２                      |
+ |--------------|---------------------|-----------------------------|
+ | 機種         |  raspberry pi 3B+   | AMD Ryzen 7 2700 + MEM 16G  |
+ | OS           |  Raspbian Stretch   | Ubuntu 18.04.3 LTS          |
+ | TVチューナー |  PX-Q3U4            | PT2                         |
+ | ドライバー   |  px4_drv            | pt1_drv                     |
+
+
+## リンク
+
++ [gitHub raspirec](https://github.com/kaikoma-soft/raspirec )
++ [gitHub recpt1]( https://github.com/stz2012/recpt1 )
++ [gitHub epgdump]( https://github.com/Piro77/epgdump )
++ [gitHub px4_drv]( https://github.com/nns779/px4_drv )
++ [PLEX社 Linux用ドライバー]( http://www.plex-net.co.jp/download/ )
+
 
 
 
