@@ -227,7 +227,7 @@ class GetEPG
                 end
               rescue Timeout::Error
                 pid2 = Process.pid
-                DBlog::sto("readJson() time out kill #{pid2} #{ch}" )
+                DBlog::debug(nil, "readJson() time out kill #{pid2} #{ch}" )
                 Process.kill(:KILL, pid2 );
               end
             end
