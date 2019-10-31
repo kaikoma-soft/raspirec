@@ -64,6 +64,18 @@
 | TSFT_toDir         | 送り先Dir |
 | TSFT_rate          | 想定転送速度 ( Mbyte/秒 ) <br>この数字を使って、空き時間に転送する／しないを判断します。|
 
+
+#### TSファイル転送
+
+| 定数名             | 説明 |
+|--------------------|------|
+| MonitorFunc        | true=モニタ機能を有効 |
+| StreamDir          |  ストリーム出力先ディレクトリ |
+| MonitorWidth       |  モニタ画面の横幅 |
+| HlsConvCmd         |  HLS変換コマンド |
+| PlayListFname      |  playList ファイル名(基本的に変更不要)
+
+
 #### その他
 
 | 定数名             | 説明 |

@@ -69,15 +69,21 @@ module Commlib
   module_function :printTR
 
 
-  def printTR2( data, rid: nil, trcl: nil, tdcl: nil, id: nil )
+  def printTR2( data, rid: nil, trcl: nil, tdcl: nil, id: nil, tdclf: nil )
     trcls  = trcl  != nil ? "class=\"" + trcl.join(" ") + "\"" : ""
     tdcls  = tdcl  != nil ? "class=\"" + tdcl.join(" ") + "\"" : ""
     rids = rid != nil ? "rid=\"#{rid}\""  :  "" 
     ids  = id  != nil ? "id=\"#{id}\"" : "" 
     
     a = [ %Q{ <tr #{ids} #{trcls}> } ]
+    n = 1
     data.each do |tmp|
-      a << %Q{ <td #{tdcls} #{rids}> #{tmp} </td>}
+      if tdclf == nil or n > tdclf 
+        a << %Q{ <td #{tdcls} #{rids}> #{tmp} </td>}
+      else
+        a << %Q{ <td #{rids}> #{tmp} </td>}
+      end
+      n += 1
     end
     a << %Q{ </tr> }
     a.join("\n")
@@ -105,6 +111,17 @@ module Commlib
   module_function :datalist_dir
 
 
+  def makeTSfname( subdir, fname )
+    path = TSDir + "/"
+    if subdir != nil and subdir != ""
+      subdir2 = normStr( subdir )
+      path += subdir2.sub(/^\//,'').sub(/\/$/,'').strip + "/"
+    end
+    path += fname
+  end
+  module_function :makeTSfname
+  
+  
   def normStr( str )
     fn = str.dup
     fn.gsub!(/\//,'／')

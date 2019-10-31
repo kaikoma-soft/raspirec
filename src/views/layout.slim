@@ -69,12 +69,18 @@ html
         a href='/search'         番組検索
       li
         a href='/log_view'       ログ
+      - if MonitorFunc == true
+        li
+          a href='/monitor'       モニター
       li
         a href='/control'        コントロールパネル
       li
         a href='/config'          config
       li
         a href='/help'            help
+      - if Debug == true
+        li
+          a href='/kill'            kill
 
     ul.sidenav#mobile-demo
       li
@@ -100,6 +106,8 @@ html
 
       li
         a href='/search'         番組検索
+      li
+        a href='/monitor'       モニター
       li
         a href='/log_view'       ログ
       li

@@ -97,7 +97,12 @@ class Top
         r[:stat] = "-"
       end
     end
-    r[:ConflictNum] = conflictNum
+    if conflictNum > 0 
+      r[:ConflictNum] = %Q( <font color="red"> #{conflictNum} </font> )
+    else
+      r[:ConflictNum] = conflictNum
+    end
+      
     r[:reserveNum] = reserveNum
 
     r

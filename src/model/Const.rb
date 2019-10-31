@@ -8,7 +8,7 @@
 module Const
 
   ProgName = "raspirec β"
-  ProgVer  = "Ver 0.1.2"
+  ProgVer  = "Ver 0.2.0"
     
   GR   = "GR"
   GRJ  = "地デジ"
@@ -27,7 +27,8 @@ module Const
   LastEpgTime = "lastepgtime"
   GB          = 1024 * 1024 * 1024
   MB          = 1024 * 1024
-  
+  PlayListFname = "playlist.m3u8" # playList ファイル名
+
 end
 
 module StrConst

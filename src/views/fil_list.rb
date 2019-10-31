@@ -76,7 +76,12 @@ class FilterList
       end.each do |t|
         b = sprintf( b1 + b2 + b3, t[:id],t[:id],t[:id] )
         title = ( t[:title] != nil and t[:title] != "" )? t[:title] : t[:key]
-        r << printTR( t[:id], classs, count, title,t[:result], b )
+        if t[:result] == 0
+          result = %Q( <font color="red" > #{t[:result]} </font>)
+        else
+          result = t[:result]
+        end
+        r << printTR( t[:id], classs, count, title,result, b )
         count += 1
       end
     end

@@ -1,0 +1,124 @@
+/
+/  モニター
+/
+
+- require_relative 'monitor.rb'
+- pt = Monitor.new(  )
+
+css:
+  td,th {
+    padding: 5px ;
+  }
+  label {
+    margin: 10px ;
+    color:  black;
+    font-size: 1em;
+  }
+  .inline-block {
+    display: inline-block;      /* インラインブロック要素にする */
+    padding: 0px;
+    margin:  0px 2px 0px 2px;
+  }
+  .pagination {
+    margin-left:  3em;
+  }
+  #live {
+    margin-left:  1em;
+  }
+  #band {
+    margin-top:  1em;
+  }
+
+script src="https://cdn.jsdelivr.net/hls.js/latest/hls.min.js"
+
+div
+  video#live  width="#{MonitorWidth}" crossOrigin="anonymous" autoplay="autoplay" controls="controls"
+
+div.row
+    div#band
+      ul.tabs
+        - pt.band.each do |band|
+          li.tab.col.s2
+            a href="##{band}"
+              | #{pt.bandname[band]}
+
+    div
+        - pt.band.each do |band|
+           div.col.s8 id = band
+             == pt.data[band]
+
+
+
+div id="sample-dialog1" title="wait" style="display:none;"
+  p 準備中。 しばらくお待ち下さい。
+
+
+
+javascript:
+
+
+  $(".hls").click(function(event){
+    event.preventDefault();
+    //$("#sample-dialog1").show();
+    $("#sample-dialog1").dialog({
+       modal: true,
+       maxWidth: 1200,
+       width:    600,
+          buttons: { //ボタン
+               "閉じる": function() {
+                   $(this).dialog("close");
+               }
+             }
+     });
+
+    url = $(this).attr('href');
+    $.ajax({
+      url: url,
+      type:"GET",
+      async: true,
+      timeout: 30000
+    })
+    .done( function(results ){
+        console.log("URL : " + url);
+        console.log("results : " + results);
+        setTimeout(function(){
+           location.href='/monitor';
+        },3000);
+    }).fail(function (jqXHR, textStatus, errorThrown) {
+        // 通信失敗時の処理
+        console.log("ajax通信に失敗しました");
+        console.log("jqXHR      : " + jqXHR.status); // HTTPステータスが取得
+        console.log("textStatus : " + textStatus);    // タイムアウト、パースエラー
+        console.log("errorThrown: " + errorThrown.message); // 例外情報
+        console.log("URL        : " + url);
+        //alert("起動失敗");
+        $("#sample-dialog1").html("<p>起動に失敗しました。");
+    })
+    return false;
+  });
+
+
+
+  if (Hls.isSupported()) {
+      var video = document.getElementById('live');
+      var hls = new Hls();
+      hls.loadSource('/stream/playlist.m3u8');
+      hls.attachMedia(live);
+      hls.on(Hls.Events.MANIFEST_PARSED, function () {
+        video.play();
+      });
+    }
+    function jumptolatest() {
+      document.getElementById("live").currentTime = 99999999;
+    }
+    setTimeout("jumptolatest()", 2000);
+
+   $(document).ready(function(){
+      $('.tabs').tabs();
+    });
+
+
+
+
+
+

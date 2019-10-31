@@ -39,7 +39,7 @@ class FilterDisp
           count = 1
           total = data.size
           tmp = []
-          tdclas = [ "nowrap","item" ]
+          tdclas = [ "item" ]
           data3.each do |t|
             (day, time, w) = Commlib::stet_to_s( t[:start], t[:end] )
             cate = t[:categoryA][0][0]
@@ -57,8 +57,9 @@ class FilterDisp
                 res2 = "×"
               end
             end
-            data = [ count,t[:name],day,time,res2,t[:title],t[:detail] ]
-            tmp << Commlib::printTR2( data, rid: t[:pid], trcl: trcl, tdcl: tdclas, )
+            name = %Q(<a href="/ch_tbl/#{t[:chid]}"> #{t[:name]}</a>)
+            data = [ count,name, day,time,res2,t[:title],t[:detail] ]
+            tmp << Commlib::printTR2( data, rid: t[:pid], trcl: trcl, tdcl: tdclas, tdclf: 2)
             count += 1
           end
           r[:title] = sprintf("<h1 id=\"title\" fa_flag=\"#{@fa_flag}\">検索結果 %d 件</h1>", total )

@@ -25,6 +25,32 @@ File.open( HttpdPidFile, "w") do |fp|
   fp.puts( Process.pid  )
 end
 
+$childPid = {}
+
+#
+#  :CHLD のハンドラ
+#
+def childWait()
+  DBlog::sto("childWait()")
+  $childPid.keys.each do |k|
+    if $childPid[k] == true
+      begin
+        if Process.waitpid( k, Process::WNOHANG ) != nil
+          DBlog::sto("pid=#{k} Terminated") # 成仏
+          $childPid.delete(k)
+        end
+      rescue Errno::ECHILD
+        $childPid.delete(k)
+      end
+    end
+  end
+end
+
+Signal.trap( :CHLD ) {
+  childWait()  
+}
+    
+
 
 enable :sessions
 set :server, "webrick"
@@ -292,6 +318,41 @@ post  '/rsv/add' do
   url = makePrgtblUrl( session )
   redirect url,301
 end
+
+
+#
+#   モニター
+#
+get '/monitor' do
+  slim :monitor
+end
+
+get '/monitor/*/*' do |type,arg|
+  MonitorM.new.start( type,arg )
+end
+
+configure do
+  mime_type :m3u8, 'application/x-mpegURL'
+  mime_type :ts,   'video/MP2T'
+end
+
+get '/stream/*' do |fname|
+  if fname == PlayListFname
+    FileUtils.touch( DataDir + "/stream/m3u8.touch" )
+  end
+  path = DataDir + "/stream/" + fname
+  type = case fname
+         when /\.m3u8$/ then :m3u8
+         when /\.ts$/   then :ts
+         else nil
+         end
+  if test( ?f, path ) and type != nil
+    send_file path, :status => 201, :type => type
+  else
+    status 404
+  end
+end
+
 
 #
 #   log
