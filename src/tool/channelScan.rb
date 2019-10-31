@@ -44,7 +44,7 @@ unless test(?d, outdir )
   Dir.mkdir( outdir )
 end
 
-r = []
+chs = []
 GR_start.upto(GR_end) do |ch|
   outfname = outdir + "/#{ch}.json"
   now1 = Time.now
@@ -67,14 +67,17 @@ GR_start.upto(GR_end) do |ch|
   end
 
   if $opt[:d] == true 
-    printf("%02d : %03.1fdB  %s %s (%d)\n",ch, cn, id, name, now2 - now1  )
+    printf("# %02d : %03.1fdB  %s %s (%d)\n",ch, cn, id, name, now2 - now1  )
   else
-    printf("%02d : %03.1fdB  %s %s\n",ch, cn, id, name )
+    printf("# %02d : %03.1fdB  %s %s\n",ch, cn, id, name )
   end
   if name != ""
-    r << sprintf("%d \t# %s %s\n",ch, id, name)
+    chs << ch
   end
 
   sleep(0.1)
 end
+
+printf("\nGR_EPG_channel = %%w( %s )\n",chs.join(" "))
+
 

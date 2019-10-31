@@ -9,18 +9,22 @@
 class ReservationList
 
   def initialize( )
+    @autoRsv = {}               # 自動予約のIDリスト
   end
 
   def getData()
     reserve = DBreserve.new()
     programs = DBprograms.new
+    filter = DBfilter.new
+    
     now = Time.now.to_i
     DBaccess.new().open do |db|
+      if (row = filter.select( db, type: FilConst::AutoRsv )) != nil
+        row.each do |r|
+          @autoRsv[ r[:id].to_i ] = true
+        end
+      end
       r = reserve.selectSP( db, tend: now)
-      # r.each do |r2|
-      #   r3 = programs.select( db, chid: r2[:chid], evid: r2[:evid] )
-      #   r2[:programs] = r3.first
-      # end
       return r
     end
     nil
@@ -58,7 +62,16 @@ class ReservationList
       clas = %w( nowrap ) #item 
       data.each do |t|
         time = Commlib::stet_to_s( t[:start], t[:end] )
-        type = t[:type] == 0 ? "手動" : %Q(<a href="/search/fil/#{t[:keyid]}"> 自動 </a>)
+        if t[:type] == 0
+          type = "手動"
+        else
+          if @autoRsv[ t[:keyid] ] == true
+            type = %Q(<a href="/search/fil/#{t[:keyid]}"> 自動 </a>)
+          else
+            type = "自動(除)"
+          end
+        end
+
         bg = nil
         id = nil
         cate = t[:category]

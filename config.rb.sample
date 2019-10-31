@@ -100,3 +100,8 @@ EpgRsvTime = [ GR_EpgRsvTime, BS_EpgRsvTime, CS_EpgRsvTime ].max * 1.5
 
 Debug      = false              # log ファイルへ出力するように
 Debug_mem  = false              # メモリの消費量の表示
+
+MonitorFunc  = false                              # モニタ機能を有効に
+MonitorWidth = 720                                # モニタ画面の横幅
+HlsConvCmd   = SrcDir  + "/tool/ts2hls_sample.sh" # HLS変換コマンド
+StreamDir    = DataDir + "/stream"                # ストリーム出力先ディレクトリ

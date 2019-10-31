@@ -62,6 +62,21 @@ class DiskKeep
       end
     end
 
+    #
+    # 空のディレクトリを削除
+    #
+    Dir.entries( TSDir ).sort.each do |dir1|
+      if dir1 != '..' && dir1 != '.'
+        path = TSDir + "/" + dir1
+        if test( ?d, path )
+          if Dir.entries( path ).size == 2
+            buf << sprintf("rmdir %s",path )
+            Dir.rmdir( path )
+          end
+        end
+      end
+    end
+
     buf.each do |tmp|
       DBlog::debug( db,"DiskKeep: " + tmp )
     end

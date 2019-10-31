@@ -20,12 +20,16 @@ class ReservationListOld
     else
       @page = page.to_i
     end
-    @page_line = 100
+    @page_line = 100            
+    @autoRsv = {}               # 自動予約のIDリスト
+
   end
 
   def getData()
     reserve = DBreserve.new()
     programs = DBprograms.new
+    filter = DBfilter.new
+    
     now = Time.now.to_i
     if @serach != nil
       title2 = "%#{@serach}%"
@@ -33,6 +37,11 @@ class ReservationListOld
       title2 = nil
     end
     DBaccess.new().open do |db|
+      if (row = filter.select( db, type: FilConst::AutoRsv )) != nil
+        row.each do |r|
+          @autoRsv[ r[:id].to_i ] = true
+        end
+      end
       @total_size = reserve.count( db, tstart: now, titleL: title2)
       @pageNum = 1
       if @total_size > @page_line
@@ -104,7 +113,17 @@ class ReservationListOld
         next if t[:stat] == RsvConst::RecNow
         clasS = %w( nowrap )
         time = Commlib::stet_to_s( t[:start], t[:end] )
-        type = t[:type] == 0 ? "手動" : %Q(<a href="/search/fil/#{t[:keyid]}"> 自動 </a>)
+        if t[:type] == 0
+          type = "手動"
+        else
+          if @autoRsv[ t[:keyid] ] == true
+            type = %Q(<a href="/search/fil/#{t[:keyid]}"> 自動 </a>)
+          else
+            type = "自動(除)"
+          end
+        end
+
+
         title = %Q(<a class="dialog" rid="#{t[:id]}"> #{t[:title]} </a>)
         bg = nil
         id = nil

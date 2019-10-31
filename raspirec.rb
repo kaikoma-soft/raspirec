@@ -180,7 +180,7 @@ end
 # 初期化
 #
 
-[ DataDir, LogDir, JsonDir, DBDir, TSDir].each do |dir|
+[ DataDir, LogDir, JsonDir, DBDir, TSDir, StreamDir ].each do |dir|
   Dir.mkdir( dir ) unless test( ?d, dir )
   raise "can not make dir(#{dir})" unless test( ?d, dir )
 end

@@ -77,7 +77,7 @@ class Timer
       Thread.new do
         begin
           DBlog::sto( "DiskKeep start" )
-          lastTimeD = Time.now
+          lastTimeD = Time.now 
           while true
             if $recCount == 0
               if ( Time.now - lastTimeD ) > ( 6 * 3600 )
@@ -342,7 +342,10 @@ class Timer
     
     $mutex.synchronize do
       DBaccess.new().open do |db|
-        DBreserve.new.updateStat(db,data[:id],stat: RsvConst::RecNow,recpt1pid: pid )
+        DBreserve.new.updateStat(db,data[:id],
+                                 stat: RsvConst::RecNow,
+                                 recpt1pid: pid,
+                                 fname: File.basename(fname) )
       end
     end
     

@@ -33,7 +33,8 @@ css:
         td.nowrap  #{top[:reserveNum]}
       tr
         td.nowrap  チューナー不足数
-        td.nowrap  #{top[:ConflictNum]}
+        td.nowrap  
+          == top[:ConflictNum]
       tr
         td.nowrap  プログラム
         td.nowrap  #{Const::ProgName} #{Const::ProgVer} 

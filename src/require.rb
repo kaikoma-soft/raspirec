@@ -7,6 +7,23 @@ require 'fileutils'
 require 'json'
 require 'etc'
 
+
+#
+#  config
+#
+files = [ ]
+files << ENV["RASPIREC_CONF"] if ENV["RASPIREC_CONF"] != nil
+files << ENV["HOME"] + "/.config/raspirec/config.rb"
+files.each do |cfg|
+  if test( ?f, cfg )
+    require cfg
+    ConfigPath = cfg
+    break
+  end
+end
+raise "counfig not found" if Object.const_defined?(:BaseDir) != true
+
+
 require 'db/DB.rb'
 require 'db/base.rb'
 require 'db/Category.rb'
@@ -35,23 +52,9 @@ require 'model/FileCopy.rb'
 require 'model/DiskKeep.rb'
 require 'model/LogRote.rb'
 require 'model/ChannelM.rb'
+require 'model/Monitor.rb'
 
 require 'lib/httpd_sub.rb'
 require 'lib/commlib.rb'
 require 'lib/misc.rb'
 
-
-#
-#  config
-#
-files = [ ]
-files << ENV["RASPIREC_CONF"] if ENV["RASPIREC_CONF"] != nil
-files << ENV["HOME"] + "/.config/raspirec/config.rb"
-files.each do |cfg|
-  if test( ?f, cfg )
-    require cfg
-    ConfigPath = cfg
-    break
-  end
-end
-raise "counfig not found" if Object.const_defined?(:BaseDir) != true
