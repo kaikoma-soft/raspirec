@@ -337,7 +337,7 @@ configure do
 end
 
 get '/stream/*' do |fname|
-  if fname == PlayListFname
+  if fname == Const::PlayListFname
     FileUtils.touch( DataDir + "/stream/m3u8.touch" )
   end
   path = DataDir + "/stream/" + fname
