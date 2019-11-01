@@ -174,7 +174,7 @@ class MonitorM
             return
           end
         else
-          DBlog::sto( "found #{PlayListFname}" )
+          DBlog::sto( "found #{Const::PlayListFname}" )
           break
         end
         sleep(1)
