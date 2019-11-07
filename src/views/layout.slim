@@ -106,8 +106,9 @@ html
 
       li
         a href='/search'         番組検索
-      li
-        a href='/monitor'       モニター
+      - if MonitorFunc == true
+        li
+          a href='/monitor'       モニター
       li
         a href='/log_view'       ログ
       li
