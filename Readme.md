@@ -29,10 +29,7 @@ recpt1,epgdump を使って TV番組を録画する録画サーバーを構築�
 
 ## スクリーンショット
 
-{{site.baseurl}}
-https://kaikoma-soft.github.io/
-
-|[![](https://kaikoma-soft.github.io/img/top.png){: .ssimg}](https:/kaikoma-soft.github.io/img/top.png)|[![](https:/kaikoma-soft.github.io/img/prg_tbl.png){: .ssimg}](https:/kaikoma-soft.github.io/img/prg_tbl.png)|[![](https:/kaikoma-soft.github.io/img/rsv_tbl.png){: .ssimg}](https:/kaikoma-soft.github.io/img/rsv_tbl.png)|[![](https:/kaikoma-soft.github.io/img/search.png){: .ssimg}](https:/kaikoma-soft.github.io/img/search.png)|
+|![](https://kaikoma-soft.github.io/img/top.png)|![](https:/kaikoma-soft.github.io/img/prg_tbl.png)|![](https:/kaikoma-soft.github.io/img/rsv_tbl.png)|![](https:/kaikoma-soft.github.io/img/search.png)|
 |-|-|-|-|
 
 
