@@ -29,10 +29,8 @@ recpt1,epgdump を使って TV番組を録画する録画サーバーを構築�
 
 ## スクリーンショット
 
-* [![]({{site.baseurl}}/img/top.png){: .ssimg}]({{site.baseurl}}/img/top.png)
-* [![]({{site.baseurl}}/img/prg_tbl.png){: .ssimg}]({{site.baseurl}}/img/prg_tbl.png)
-* [![]({{site.baseurl}}/img/rsv_tbl.png){: .ssimg}]({{site.baseurl}}/img/rsv_tbl.png)
-* [![]({{site.baseurl}}/img/search.png){: .ssimg}]({{site.baseurl}}/img/search.png)
+|[![]({{site.baseurl}}/img/top.png){: .ssimg}]({{site.baseurl}}/img/top.png)|[![]({{site.baseurl}}/img/prg_tbl.png){: .ssimg}]({{site.baseurl}}/img/prg_tbl.png)|[![]({{site.baseurl}}/img/rsv_tbl.png){: .ssimg}]({{site.baseurl}}/img/rsv_tbl.png)|[![]({{site.baseurl}}/img/search.png){: .ssimg}]({{site.baseurl}}/img/search.png)|
+|-|-|-|-|
 
 
 ## ステータス
