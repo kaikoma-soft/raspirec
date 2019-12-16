@@ -1,7 +1,6 @@
 # coding: utf-8
 
 require 'sinatra'
-require 'sinatra/reloader'
 require 'slim'
 
 base = File.dirname( $0 )
