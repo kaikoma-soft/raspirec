@@ -63,6 +63,7 @@ class RsvTbl
       row = reserve.selectSP(db, tstart: st, tend: et)
       row.each do |r|
         next if r[:stat] == RsvConst::NotUse
+        next if r[:stat] == RsvConst::RecStop2
         band = r[:band] == Const::GR ? Const::GR : Const::BSCS
         tunerNum = r[:tunerNum] == nil ? 0 : r[:tunerNum]
         @maxnum[ band ] = tunerNum if @maxnum[ band ] < tunerNum
@@ -198,6 +199,7 @@ class RsvTbl
             else
               cls = [ "item" ]
             end
+              
             if tmp[:stat] != RsvConst::Normal and tmp[:stat] != RsvConst::RecNow
               cls << "alertBD"
             elsif tmp[:jitanExe] == RsvConst::JitanEOn
