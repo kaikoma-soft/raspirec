@@ -1,7 +1,17 @@
 
+ver 0.2.3         2019/12/18
+
+  ・出力するTSファイルのファイル名をカスタマイズ出来るように,
+    config.rb に TSnameFormat を追加。
+    ドキュメントも追加したので、詳細は doc/TS_file_name.md を参照。
+    
+  ・不具合修正
+    * 録画中止の後にそれと重なる予約をすると、予約状況表にズレが生じる
+      不具合の修正
+
 ver 0.2.2         2019/12/16
   ・不具合修正
-    デバック用の require 'sinatra/reloader' が残っていたのを削除
+    * デバック用の require 'sinatra/reloader' が残っていたのを削除
   ・Readme.md の詳細を github pages に移動
 
 ver 0.2.1         2019/11/07
