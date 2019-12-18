@@ -15,6 +15,9 @@ Epgdump    = "/usr/local/bin/epgdump"
 
 BaseDir    = ENV["HOME"] + "/raspirec"
 DataDir    = ENV["HOME"] + "/raspirec_data"
+TSDir      = DataDir + "/TS"
+DBDir      = DataDir + "/db"
+SrcDir     = BaseDir + "/src"
 
 
 #
@@ -61,6 +64,14 @@ TSFT_rate  = 15                 # 想定転送速度 ( Mbyte/秒 )
 
 
 #
+#   モニタ機能
+#
+MonitorFunc  = false                              # モニタ機能を有効に
+MonitorWidth = 720                                # モニタ画面の横幅
+HlsConvCmd   = SrcDir  + "/tool/ts2hls_sample.sh" # HLS変換コマンド
+StreamDir    = DataDir + "/stream"                # ストリーム出力先ディレクトリ
+
+#
 #   その他
 #
 LogSaveDay     = 7         # ログの保持期間(日)
@@ -68,14 +79,13 @@ RsvHisSaveDay  = 180       # 録画済み記録の保持期間(日)
 DiskKeepPercent = false    # 古いTSファイルを削除してDiskの容量確保(%)
 Local_jquery    = false    # jquery等をローカルに用意した場合に true
 StationPage     = 7        # 番組表で、1ページ当たりの放送局数 (個)
+TSnameFormat    = "%YEAR%-%MONTH%-%DAY%_%HOUR%:%MIN%_%DURATION%_%TITLE%_%CHNAME%" # TS ファイル名の書式
+
 
 #
 #   以下は必要がなければ変更不要
 #
 
-TSDir        = DataDir + "/TS"
-DBDir        = DataDir + "/db"
-SrcDir       = BaseDir + "/src"
 DbFname      = DBDir + "/epg.db"
 EPGLockFN    = DBDir + "/epg.lock"
 MainLockFN   = DBDir + "/main.lock"
@@ -101,7 +111,4 @@ EpgRsvTime = [ GR_EpgRsvTime, BS_EpgRsvTime, CS_EpgRsvTime ].max * 1.5
 Debug      = false              # log ファイルへ出力するように
 Debug_mem  = false              # メモリの消費量の表示
 
-MonitorFunc  = false                              # モニタ機能を有効に
-MonitorWidth = 720                                # モニタ画面の横幅
-HlsConvCmd   = SrcDir  + "/tool/ts2hls_sample.sh" # HLS変換コマンド
-StreamDir    = DataDir + "/stream"                # ストリーム出力先ディレクトリ
+

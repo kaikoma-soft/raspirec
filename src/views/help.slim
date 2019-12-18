@@ -60,4 +60,63 @@ div
           li  ffmpeg 又は HLS 変換が出来るソフトウェアがインストールされていること
         p
           | その上で、HLS変換コマンドを自分の環境に合わせて変更し設定する。
-      
+
+
+    li.title
+      a name="TSnameFormat" TS ファイル名の生成ルール
+
+    ul.collection.with-header
+      li.collection-header
+        |  出力する TS ファイル名の生成ルールは、config.rb 中の TSnameFormat
+           で指定する。
+           <br>
+           デフォルトは、
+           "%YEAR%-%MONTH%-%DAY%_%HOUR%:%MIN%_%DURATION%_%TITLE%_%CHNAME%"
+           で、<br>
+           "2019-12-17_15:00_1800_ショッピング情報_BS11イレブン.ts"
+           に展開される。
+           <p>
+           使用出来るキーワードは下記のもの。
+        p
+        table
+          tr 
+            td  %TITLE%
+            td  番組タイトル
+          tr
+            td %ST% 
+            td 開始日時（ YYYYMMDDHHMM )
+          tr 
+            td %ET%
+            td 終了日時（同上）
+          tr 
+            td %BAND%
+            td GR,BS,CS
+          tr 
+            td %CHNAME%
+            td 放送局名
+          tr 
+            td %YEAR%
+            td 開始年
+          tr 
+            td %MONTH%
+            td 開始月
+          tr 
+            td %DAY%
+            td 開始日
+          tr 
+            td %HOUR%
+            td 開始時
+          tr 
+            td %MIN%
+            td 開始分
+          tr 
+            td %SEC%
+            td 開始秒
+          tr 
+            td %WDAY%
+            td 曜日 0(日曜日)から6(土曜日)
+          tr 
+            td %DURATION%
+            td 録画時間（秒）
+    
+

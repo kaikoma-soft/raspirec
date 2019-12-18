@@ -245,6 +245,63 @@ class Timer
   end
 
   #
+  #  出力先の TSファイル名の生成(カスタマイズ版)
+  #  
+  #  %TITLE%    番組タイトル
+  #  %ST%       開始日時（ YYYYMMDDHHMM )
+  #  %ET%       終了日時（同上）
+  #  %BAND%     GR,BS,CS
+  #  %CHNAME%   放送局名
+  #  %YEAR%     開始年
+  #  %MONTH%    開始月
+  #  %DAY%      開始日
+  #  %HOUR%     開始時
+  #  %MIN%      開始分
+  #  %SEC%      開始秒
+  #  %WDAY%     曜日 0(日曜日)から6(土曜日)
+  #  %DURATION%	録画時間（秒）
+  #  
+  def makeTSfname2( data, duration, count = 0 )
+
+    dir = TSDir
+    if data[:subdir] != nil and data[:subdir] != ""
+      tmp = Commlib::normStr( data[:subdir] )
+      dir += "/" + tmp.sub(/^\//,'').sub(/\/$/,'').strip
+    end
+    unless test( ?d, dir )
+      Dir.mkdir( dir )
+    end
+    default = "%YEAR%-%MONTH%-%DAY%_%HOUR%:%MIN%_%DURATION%_%TITLE%_%CHNAME%"
+    fname = Object.const_defined?(:TSnameFormat) == false ? default : TSnameFormat.dup
+
+    st = Time.at( data[:start] )
+    et = Time.at( data[:end] )
+    list = { "%TITLE%"    => data[:title],
+             "%CHNAME%"   => data[:name],
+             "%ST%"       => st.strftime("%Y%m%d%H%M"),
+             "%ET%"       => et.strftime("%Y%m%d%H%M"),
+             "%BAND%"     => data[:band],
+             "%YEAR%"     => st.strftime("%Y"),
+             "%MONTH%"    => st.strftime("%m"),
+             "%DAY%"      => st.strftime("%d"),
+             "%HOUR%"     => st.strftime("%H"),
+             "%MIN%"      => st.strftime("%M"),
+             "%SEC%"      => st.strftime("%S"),
+             "%WDAY%"     => st.strftime("%w"),
+             "%DURATION%" => duration.to_s,
+           }
+    list.each_pair do |k,v|
+      fname.gsub!(/#{k}/,v)
+    end
+    path = dir + "/" + Commlib::normStr( fname )
+    path += "(#{count})" if count > 0
+    path += ".ts"
+    return path
+  end
+
+
+
+  #
   #  recpt1 のチャンネル指定
   #
   def makeCh( data )
@@ -302,7 +359,7 @@ class Timer
       duration = durationCalc( data )
       finish = Time.now + duration
       DBlog::sto("finish = #{finish}")
-      fname = makeTSfname( data, duration, retryC )
+      fname = makeTSfname2( data, duration, retryC )
       arg = [ ]
       arg += Recpt1_opt if Recpt1_opt != nil
       arg += ch + [ duration.to_s, fname ]

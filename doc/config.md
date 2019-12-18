@@ -86,3 +86,5 @@
 | StationPage        | 番組表で、1ページ当たりの放送局数 (個) |
 | Debug              | ture で Debug モード。ログファイルを出力するようになる。オプションで、 -d を指定するのと同じ。|
 | Debug_mem	         | ture で メモリの消費量をモニタするようになる。|
+| TSnameFormat       | 出力するTSファイル名の書式。 <br> 詳細は doc/TS_file_name.md を参照|
+
