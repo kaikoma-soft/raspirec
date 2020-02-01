@@ -190,6 +190,23 @@ module Commlib
   end
   module_function :include
 
+  #
+  #  条件付き include
+  #
+  def includeIf( sw, fn )
+    r = ""
+    return r if sw != true
+    if test(?f, fn )
+      File.open( fn, "r") do |fp|
+        r = fp.read()
+      end
+    else
+      DBlog::sto("file not found #{fn}")
+    end
+    r
+  end
+  module_function :includeIf
+  
 
   #
   #  番組表に現在時の線を引く

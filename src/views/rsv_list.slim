@@ -6,6 +6,8 @@ css:
   td,th {
     padding: 5px ;
   }
+  span { color: #000000} 
+
 
 - require_relative 'rsv_list.rb'
 - dp = ReservationList.new(  )
@@ -45,27 +47,31 @@ javascript:
                        url: '/rsv_list/Mod/' + rid,
                        type:"POST",
                        data:  $('form').serialize() + '&param=1',
+                       async: true,
+                       timeout: 30000
+                   }).done( function(results) {
+                       location.reload();
                    })
-                   $(this).dialog("close");
-                   location.reload();
                },
                "削除": function() {
                    $.ajax({
                        url: '/rsv_list/Del/' + rid,
                        type:"POST",
+                       async: true,
+                       timeout: 30000
+                   }).done( function(results) {
+                       location.reload();
                    })
-                   $(this).dialog("close");
-                   location.reload();
                },
                "録画中止": function() {
                    $.ajax({
                        url: '/rsv_list/Stop/' + rid,
                        type:"POST",
+                       async: true,
+                       timeout: 30000
+                   }).done( function(results) {
+                       location.reload();
                    })
-                   $(this).dialog("close");
-                   setTimeout(function(){
-                     location.reload();
-                   },1000);
                },
                "閉じる": function() {
                    $(this).dialog("close");

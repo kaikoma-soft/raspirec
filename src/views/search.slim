@@ -150,11 +150,10 @@ javascript:
     $.ajax({
       url: '/fil_testrun',
       type:"POST",
-      async: false,
-      data:  $("#form2").serialize() + '&param=1'
-    })
-    .then(
-      function(data) {
+      data:  $("#form2").serialize() + '&param=1',
+      async: true,
+      timeout: 30000
+    }).done( function(data) {
         $("#sample-dialog1").html(data);
         $("#sample-dialog1").show();
       }

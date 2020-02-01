@@ -63,7 +63,7 @@ EOS
     str = <<EOS
       <label>
         <input type="checkbox" class="filled-in" name="#{name}" #{checked}/>
-        <span id="cbcomm">#{comment}</span>
+        <span>#{comment}</span>
       </label>
 EOS
     str
@@ -119,14 +119,14 @@ EOS
        <br>
        <label>
          <input type="checkbox" class="filled-in" name="jitan" #{jitanchk}/>
-         <span id="cbcomm">チューナーが競合した場合に録画時間の短縮を許可する。</span>
+         <span>チューナーが競合した場合に録画時間の短縮を許可する。</span>
        </label>
 EOS
     str2 = <<EOS
        <br>
        <label>
          <input type="checkbox" class="filled-in" name="use" #{usechk}/>
-         <span id="cbcomm">この予約を無効とする。</span>
+         <span>この予約を無効とする。</span>
        </label>
 EOS
     if use_use != true

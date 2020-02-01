@@ -37,6 +37,7 @@ require 'db/Keyval.rb'
 require 'db/Log.rb'
 require 'db/UpdateChk.rb'
 require 'db/Phchid.rb'
+require 'db/PTOption.rb'
 
 require 'model/FilterM.rb'
 require 'model/Reservation.rb'

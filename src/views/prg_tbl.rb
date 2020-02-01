@@ -9,6 +9,8 @@
 class PrgTbl
 
   Base = "/prg_tbl"
+
+  attr_reader :tt
   
   def initialize( band , date,time )
 
@@ -27,9 +29,11 @@ class PrgTbl
       @time = Time.local( ta[5],ta[4],ta[3],ta[2]) 
     end
 
-    @tate = 6                   # 縦の長さ (H)
-    @page_limit = StationPage   # 1ページ当たりの放送局数 (個)
-    @hour_pixel = 180           # 1時間の長さ (px)
+    pto = PTOption.new
+    @page_limit = pto.sp        # 1ページ当たりの放送局数 (個)
+    @hour_pixel = pto.hp        # 1時間の長さ (px)
+    @tate       = pto.hn        # 縦の長さ (H)
+    @tt         = pto.tt        # tooltip の表示の on/off
     
     ( @chData, @prgData, @rsvData ) = getPrgData( @time )
 
@@ -316,9 +320,21 @@ class PrgTbl
     d[:jitanchk] = true
     d[:dirs]  = Commlib::datalist_dir()
     d
- end
+  end
 
+  def tooltip_sw()
+    buff = [ ]
+    val = @tt == false ? "true" : "false"
+    buff = <<EOS
+<script>   
+    $(document).ready(function() { 
+       $(".item").tooltip( "option", "disabled", #{val} );
+    });
+</script>
+EOS
+    buff
+  end
+  
   
 end
-
 

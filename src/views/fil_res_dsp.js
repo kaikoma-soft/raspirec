@@ -16,16 +16,15 @@
              buttons: { //ボタン
                "録画予約": function() {
                    $.ajax({
-                      url: '/rsv_conf',
-                      type:"POST",
-                      async: false,
-                    })
-                    .then(
-                      function(data) {
+                      url:    '/rsv_conf',
+                      type:   "POST",
+                      async:  true,
+                      timeout: 30000
+                    }).done( function(data) {
                         console.log( data );
                         $("#sample-dialog2").html(data);
-                   })
-                   confirmDialog( proid );
+                    })
+                    confirmDialog( proid );
                },
                "自動予約": function() {
                    $(this).dialog("close");
