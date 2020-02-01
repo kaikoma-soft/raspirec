@@ -83,7 +83,7 @@
 | RsvHisSaveDay      | 録画済み記録の保持期間(日) |
 | DiskKeepPercent    | 録画したTSファイルを古い順に削除して指定したDisk容量(%)を確保する。<br>(指定するのは空き容量)機能を無効にする場合は false を指定する。
 | Local_jquery       | オフライン環境で動作させる為に jquery, materialize のライブラリをローカルにコピーした場合に、true にする。<br> 詳細は doc/jquery_local.md を参照の事。通常は false |
-| StationPage        | 番組表で、1ページ当たりの放送局数 (個) |
+| StationPage        | 番組表で、1ページ当たりの放送局数 (個) の初期値|
 | Debug              | ture で Debug モード。ログファイルを出力するようになる。オプションで、 -d を指定するのと同じ。|
 | Debug_mem	         | ture で メモリの消費量をモニタするようになる。|
 | TSnameFormat       | 出力するTSファイル名の書式。 <br> 詳細は doc/TS_file_name.md を参照|

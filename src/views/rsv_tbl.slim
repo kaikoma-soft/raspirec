@@ -120,17 +120,21 @@ javascript:
                        url: '/rsv_list/Mod/' + rid,
                        type:"POST",
                        data:  $('form').serialize() + '&param=1',
+                       async: true,
+                       timeout: 30000
+                   }).done( function(results) {
+                       location.reload();
                    })
-                   $(this).dialog("close");
-                   location.reload();
                },
                "削除": function() {
                    $.ajax({
                        url: '/rsv_list/Del/' + rid,
                        type:"POST",
+                       async: true,
+                       timeout: 30000
+                   }).done( function(results) {
+                       location.reload();
                    })
-                   $(this).dialog("close");
-                   location.reload();
                },
                "閉じる": function() {
                    $(this).dialog("close");

@@ -137,6 +137,20 @@ get '/prg_dialog/*' do |pid|
   slim :prg_dialog , layout: false
 end
 
+#
+#  option のダイアログ
+#
+post '/opt_dialog/save' do
+  pto = PTOption.new()
+  pto.save( @params )
+end
+
+get '/opt_dialog' do
+  session[:from] = request.referrer
+  slim :opt_dialog , layout: false
+end
+
+
 
 get '/search/*/*' do |mode,id|             #
   case mode

@@ -15,6 +15,12 @@ css:
    width:  120px;
  }
 
+ #option {
+   margin-left:    200px;
+   margin-right:   10px;
+ }
+
+
 - require_relative 'prg_tbl.rb'
 - pt = PrgTbl.new( @band, @day, @time )
 - timeHref = pt.getTimeHref()
@@ -41,6 +47,9 @@ css:
   .col
     == pt.pageSel()
 
+  .col
+    a.btn.waves-effect.waves-light.btn-small.lime.darken-2#option オプション
+
 
 .row
   div style="display:table;border-collapse: separate;border-spacing: 3px 0;"
@@ -57,5 +66,51 @@ css:
 == pt.nowLine()
 
 == Commlib::include( SrcDir + "/views/prg_tbl.cssjs" )
-
+== Commlib::includeIf( pt.tt, SrcDir + "/views/tooltip.js" )
 == Commlib::include( SrcDir + "/views/move_top.html" )
+
+
+<div id="option-dialog" style="display:none;" title="オプション">
+   <p>
+      
+   </p>
+</div>
+
+javascript:
+
+    $("#option").click(function(event){
+        var proid = $(this).attr('pid');
+        event.preventDefault();
+        $("#option-dialog").load('/opt_dialog' );
+        $("#option-dialog").dialog({
+             modal: true,
+             maxWidth: 1200,
+             width:    1000,
+             buttons: { //ボタン
+               "保存": function() {
+                 url = '/opt_dialog/save';
+                 $.ajax({
+                   url: url,
+                   type:"POST",
+                   data:  $('form').serialize() + '&param=1',
+                   async: true,
+                   timeout: 30000
+                 }).done( function(results) {
+                   location.reload();
+                 }).fail(function (jqXHR, textStatus, errorThrown) {
+                   console.log("ajax通信に失敗しました");
+                   console.log("URL : " + url);
+                   $("#sample-dialog1").html("<p>ajax通信に失敗しました");
+                 })
+               },
+               "キャンセル": function() {
+                   $(this).dialog("close");
+               }
+             },
+             open: function() {
+               $( this ).siblings('.ui-dialog-buttonpane').find('button:eq(1)').focus();
+             }
+           });
+        return false;
+    });
+

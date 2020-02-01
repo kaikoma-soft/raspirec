@@ -2,13 +2,13 @@
 
 <div id="sample-dialog" style="display:none;" title="詳細">
    <p>
-      領域確保
+
    </p>
 </div>
 
 <div id="sample-dialog2" style="display:none;" title="確認">
    <p>
-      領域確保
+
    </p>
 </div>
 
@@ -114,16 +114,16 @@
              buttons: { //ボタン
                "録画予約": function() {
                    $.ajax({
-                      url: '/rsv_conf',
-                      type:"POST",
-                      async: false,
-                    })
-                    .then(
+                      url:   '/rsv_conf',
+                      type:  "POST",
+                      async: true,
+                      timeout: 30000
+                   }).done( 
                       function(data) {
                         //console.log( data );
                         $("#sample-dialog2").html(data);
                    })
-                  confirmDialog( proid );
+                   confirmDialog( proid );
                },
                "自動予約": function() {
                    $(this).dialog("close");
@@ -141,15 +141,6 @@
         return false;
     });
 
-    $(".item").hover(function() {
-        $(this).css('border','solid #a23456 1px');
-    }, function() {
-        $(this).css('border','');
-    });
-
-    $(document).ready(function(){
-       $('.item').tooltip();
-    });
 
     function confirmDialog( proid ) {
       $("#sample-dialog2").dialog({

@@ -58,9 +58,11 @@ javascript:
                    $.ajax({
                        url: '/rsv_list/Del/' + rid,
                        type:"POST",
+                       async: true,
+                       timeout: 30000
+                   }).done( function(results) {
+                       location.reload();
                    })
-                   $(this).dialog("close");
-                   location.reload();
                },
                "キャンセル": function() {
                    $(this).dialog("close");
