@@ -41,6 +41,14 @@ class FilterM
     d[:subdir] = params["dir"]
     d[:freeonly] = params["freeonly"] == "on" ? RsvConst::FO : RsvConst::Off
     d[:dedupe] = params["dedupe"] == "on" ? RsvConst::Dedupe : RsvConst::Off
+
+    # 時短に放送時間のデータを重畳
+    jikanV = params["range1"].to_i
+    jikanF = params["jikan"].to_i
+    tmp = ( ( jikanV << 4 ) | (jikanF << 2 ) )
+    #printf("%x, %b ",tmp,tmp )
+    d[:jitan] |= tmp
+
     d
   end
   
@@ -105,32 +113,6 @@ class FilterM
   #
   #  検索の実行
   #  
-  def search( db, id: nil, fd2: nil  )
-
-    filter = DBfilter.new
-    filterR = DBfilterResult.new
-    prog = DBprograms.new
-    pd = prog.selectSP( db, tstart: Time.new.to_i )
-    # filterR.delete( db, id )
-    if fd2 == nil 
-      fd = filter.select( db, id: id )
-      fd.each do |fd2|
-        filterR.delete( db, fd2[:id] )
-        r = search2( pd, fd2 )
-        r.each do |rid|
-          filterR.insert(db, fd2[:id], rid )
-        end
-        filter.update_res(db, fd2[:id],r.size )
-      end
-    else
-      r = search2( pd, fd2 )
-    end
-    r
-  end
-
-  #
-  #  検索の実行
-  #  
   def search_new( id  )
 
     filter  = DBfilter.new
@@ -182,136 +164,6 @@ class FilterM
 
   end
   
-  #
-  #  検索の実行 その２
-  #  
-  def search2( pd, fd )
-
-    startT = Time.now
-    r = []
-    key  = nil
-    excl = nil
-    fd[:key].strip! if fd[:key] != nil
-    fd[:exclude].strip! if fd[:exclude] != nil
-    if fd[:regex] == 0      # 単純文字列検索
-      if fd[:key] != nil and fd[:key] != ""
-        key = "^"
-        fd[:key].split.each do |str|
-          key += sprintf("(?=.*%s)",Regexp.escape(str) )
-        end
-      end
-      if fd[:exclude] != nil and fd[:exclude] != ""
-        excl = sprintf("(%s)",fd[:exclude].split.map{|v| Regexp.escape(v)}.join("|"))
-      end
-    else
-      key = fd[:key] if fd[:key] != nil and fd[:key] != ""
-      excl = fd[:exclude] if fd[:exclude] != nil and fd[:exclude] != ""
-    end
-
-    #reg = "^(?=.*ニュース)(?=.*天気)"
-    key2 = Regexp.new(key) if key != nil
-    excl2 = Regexp.new(excl) if excl != nil
-
-    band = {}
-    band["GR"] = true if fd[:band][0] != 0
-    band["BS"] = true if fd[:band][1] != 0
-    band["CS"] = true if fd[:band][2] != 0
-    wday = {}
-    0.upto(6) do |n|
-      wday[n] = true if fd[:wday][n] != 0
-    end
-
-    chanel = {}
-    if fd[:chanel] != nil
-      fd[:chanel].split.each do |ch|
-        if ch == "0"
-          chanel = nil
-          break
-        end
-        chanel[ ch ] = true
-      end
-    end
-
-    cate = []
-    if fd[:category] == nil or fd[:category] == "0" 
-      cate = nil
-    else
-      fd[:category].split.each_with_index do |tmp,n|
-        if tmp == "0"
-          cate = nil
-          break
-        elsif tmp =~ /(\d+)-(\d+)/
-          cate[n] = {}
-          cate[n][ :l ] = $1.to_i
-          cate[n][ :m ] = $2.to_i
-        end
-      end
-    end
-
-    count = 0
-    pd.each do |pd2|
-      next if band[ pd2[:band] ] != true
-      next if wday[ pd2[:wday] ] != true
-      next if chanel != nil and chanel[ pd2[:chid] ] != true
-      next if fd[:freeonly] == RsvConst::FO and pd2[:freeCA] == 1
-      break if count >= FilConst::SeachMax
-
-      if cate != nil
-        tmp = pd2[:categoryA]
-        foundF = false
-        cate.each do |c|
-          if c[ :m ] == 0
-            tmp.each do |tmp2|
-              if tmp2[0] == c[:l] 
-                foundF = true
-                next
-              end
-            end
-            next if foundF == true
-          else
-            tmp.each do |tmp2|
-              if tmp2[0] == c[:l] and tmp2[1] == c[:m] 
-                foundF = true
-                next
-              end
-            end
-            next if foundF == true
-          end
-        end
-        next if foundF == false
-      end
-        
-      st = pd2[:title]
-      if fd[:target ] > 0
-        if pd2[:textall] == nil
-          pd2[:textall] = pd2[:title]
-          pd2[:textall] += pd2[:detail] if pd2[:detail] != nil
-          pd2[:textall] += pd2[:extdetail] if pd2[:extdetail] != nil
-          pd2[:textall].gsub!(/\n/,'')
-        end
-        st = pd2[:textall]
-      end
-      
-      if key != nil
-        if st =~ key2
-          if excl == nil or !(st =~ excl2 )
-            r << pd2[:pid]
-            count += 1
-          end
-        end
-      else
-        if excl == nil or !(st =~ excl2 )
-          r << pd2[:pid]
-          count += 1
-        end
-      end
-    end
-    if $debug == true
-      tmp = sprintf("search2() result = %3d time=%.2f",r.size,Time.now - startT)
-      DBlog::sto( tmp )
-    end
-    r
-  end
 
   #
   #   自動予約による予約の投入
@@ -444,6 +296,15 @@ class FilterM
       where << "( freeCA = 0 )"
     end
     where << "( c.skip = 0 )"
+
+    # 放送時間制限
+    ( jitan, timeLimitF, timeLimitV ) = Commlib::jitanSep( fd[:jitan] )
+    if timeLimitF == 1
+      where << "( p.duration >= ? )"
+    elsif timeLimitF == 2
+      where << "( p.duration <= ? )"
+    end
+    args << timeLimitV * 60 if timeLimitF > 0
     
     if where.size > 0
       sql += " where " + where.join(" and ")
@@ -453,6 +314,8 @@ class FilterM
     end
     args << Time.new.to_i
 
+    #pp sql
+    #pp args
     row = db.execute( sql, *args )
     row2 = DBprograms.new.row2hash( list, row )
 

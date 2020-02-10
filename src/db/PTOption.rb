@@ -38,10 +38,10 @@ class PTOption
 
     keyval = DBkeyval.new 
     DBaccess.new().open do |db|
-      @sp = keyval.upsert( db, SP, sp )
-      @hp = keyval.upsert( db, HP, hp )
-      @hn = keyval.upsert( db, HN, hn )
-      @tt = keyval.upsert( db, TT, tt )
+      @sp = keyval.upsert( db, SP, sp ) if sp != nil
+      @hp = keyval.upsert( db, HP, hp ) if hp != nil
+      @hn = keyval.upsert( db, HN, hn ) if hn != nil
+      @tt = keyval.upsert( db, TT, tt ) if tt != nil
     end
   end
   

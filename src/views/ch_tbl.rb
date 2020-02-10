@@ -10,7 +10,7 @@ class ChTbl
 
   Base = "/ch_tbl"
 
-  attr_reader :name, :skip, :phch, :svid
+  attr_reader :name, :skip, :phch, :svid, :tt
   
   def initialize( chid )
 
@@ -22,6 +22,10 @@ class ChTbl
     @stByDay = {}
     @rsv = {}
     @chData = getPrgData( @chid )
+
+    pto = PTOption.new
+    @hour_pixel = pto.hp        # 1時間の長さ (px)
+    @tt         = pto.tt        # tooltip の表示の on/off
     
   end
 

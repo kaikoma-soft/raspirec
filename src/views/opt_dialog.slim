@@ -1,7 +1,7 @@
 
 
 - require_relative 'opt_dialog.rb'
-- dp = Dialog_opt.new(  )
+- dp = Dialog_opt.new( session )
 
 doctype html
 
@@ -18,23 +18,24 @@ form( id="form" method="post" action="" )
     .col.s1
     .col.s4  縦軸の長さ（1時間当たりのピクセル数)
     .col.s6
-      input(type="range" id="range1" min="100" max="500" value="#{dp.hp}" step="10" name="range1")
+      input(type="range" id="range1" min="50" max="500" value="#{dp.hp}" step="10" name="range1")
     .col.s1
       span#value1 #{dp.hp}
-  .row
-    .col.s1
-    .col.s4  縦軸の長さ（時間数)
-    .col.s6
-      input(type="range" id="range2" min="3" max="24" value="#{dp.hn}" step="1" name="range2")
-    .col.s1
-      span#value2 #{dp.hn}
-  .row
-    .col.s1
-    .col.s4  1ページ当たりの放送局数 (個)
-    .col.s6  
-      input(type="range" id="range3" min="1" max="60" value="#{dp.sp}" name="range3")
-    .col.s1
-      span#value3  #{dp.sp}
+  - if dp.chflag == false
+    .row
+      .col.s1
+      .col.s4  縦軸の長さ（時間数)
+      .col.s6
+        input(type="range" id="range2" min="3" max="24" value="#{dp.hn}" step="1" name="range2")
+      .col.s1
+        span#value2 #{dp.hn}
+    .row
+      .col.s1
+      .col.s4  1ページ当たりの放送局数 (個)
+      .col.s6  
+        input(type="range" id="range3" min="1" max="60" value="#{dp.sp}" name="range3")
+      .col.s1
+        span#value3  #{dp.sp}
   .row
     .col.s1
     .col.s4  ツールチップ
