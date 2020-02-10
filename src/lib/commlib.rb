@@ -9,6 +9,17 @@
 module Commlib
 
   #
+  #  時短に重畳した時間制限を分離
+  #
+  def jitanSep( jitan )
+    jitan2 = jitan  & 0b0011
+    timeLimitF = ( jitan & 0b1100 ) >> 2
+    timeLimitV = ( jitan & 0xfff0 ) >> 4
+    return [ jitan2, timeLimitF, timeLimitV ]
+  end
+  module_function :jitanSep
+  
+  #
   #  Unix秒 -> XXXX年/YY月/ZZ日
   #
   def int2date( time )

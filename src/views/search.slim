@@ -47,7 +47,7 @@ css:
   .col
     a.btn.waves-effect.waves-light href="javascript:history.back()" 戻る
 .row
-  form id="form2" method="POST" action="/search2"
+  form id="form2" method="POST" action="/search"
     == sp.p_hidden( @filid )
     table.striped
       tr
@@ -109,6 +109,26 @@ css:
         th 放送局
         td 
            == sp.p_ch_sel(dp)
+      tr
+        th 放送時間
+        td 
+          .col
+            label
+              input.filled-in type="radio" value="0" name="jikan" checked=(dp[:jikan][:none]) 
+              span#cb  全て
+          .col.s3
+              input(type="range" id="range1" min="0" max="240" value="#{dp[:jikan][:val]}" step="1" name="range1")
+          .col
+              span#value1 #{dp[:jikan][:val]}
+              span 分
+          .col
+            label
+              input.filled-in type="radio" value="1" name="jikan" checked=(dp[:jikan][:up]) 
+              span#cb 以上のみ
+            label
+              input.filled-in type="radio" value="2" name="jikan" checked=(dp[:jikan][:down]) 
+              span#cb 以下のみ
+            
 
       tr
         th オプション<br>(自動予約時)
@@ -167,6 +187,16 @@ javascript:
     $('#form2').submit();
   });
 
+javascript:
+  var elem = document.getElementById('range1');
+  var target = document.getElementById('value1');
+
+  var rangeValue = function (elem, target) {
+    return function(evt){
+      target.innerHTML = elem.value;
+    }
+  }
+  elem.addEventListener('input', rangeValue(elem, target));
 
 
 == Commlib::include( SrcDir + "/views/move_top.html" )

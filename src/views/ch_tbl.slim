@@ -44,6 +44,8 @@ ul.list-inline
     label
       input.cb type="checkbox" name="skip" id="cb"  checked=(pt.skip) 
       span 番組表、検索の対象から外す。
+  li
+    a.btn.waves-effect.waves-light.btn-small.lime.darken-2#option オプション
 
 .row
 div style="display:table;border-collapse: separate;border-spacing: 3px 0;"
@@ -58,9 +60,13 @@ div style="display:table;border-collapse: separate;border-spacing: 3px 0;"
 
 
 == Commlib::include( SrcDir + "/views/move_top.html" )
-
 == Commlib::include( SrcDir + "/views/prg_tbl.cssjs" )
-== Commlib::include( SrcDir + "/views/tooltip.js" )
+== Commlib::includeIf( pt.tt, SrcDir + "/views/tooltip.js" )
+
+div#option-dialog( style="display:none;" title="オプション" )
+   p
+
+== Commlib::include( SrcDir + "/views/opt_dialog.js" )
 
 javascript:
 

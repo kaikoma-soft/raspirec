@@ -6,9 +6,12 @@
 #
 class Dialog_opt
 
-  attr_reader  :sp, :hp, :tt, :hn
+  attr_reader  :sp, :hp, :tt, :hn, :chflag
 
-  def initialize(  )
+  def initialize( session )
+
+    @chflag =  session["from"] =~ /ch_tbl/ ? true : false
+      
     pto = PTOption.new
     @sp = pto.sp
     @hp = pto.hp

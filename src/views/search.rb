@@ -8,6 +8,7 @@
 class Search
 
   def initialize( )
+
   end
 
   def dirList()
@@ -34,6 +35,7 @@ class Search
              jitan:    D_jitan,
              freeOnly: D_FreeOnly,
              dedupe:   D_dedupe,
+             jikan:   { none: true, up: false, down: false, val: 0 },
            }
     # 0.upto( 6 ) do |n|
     #   data[ "wday#{n}".to_sym ] = true
@@ -75,6 +77,9 @@ class Search
           band[ b ] = false
           band[ b ] = true if d[:band][ n ] == 1
         end
+
+        ( jitan, timeLimitF, timeLimitV ) = Commlib::jitanSep( d[:jitan] )
+                
         data = { title1:  d[:title],
                  key:     d[:key],
                  exclude: d[:exclude],
@@ -83,14 +88,19 @@ class Search
                  band:    band,
                  cate:    d[:category],
                  chanel:  d[:chanel],
-                 jitan:   d[:jitan] == RsvConst::JitanOn ? true : false,
+                 jitan:   jitan == RsvConst::JitanOn ? true : false,
                  subdir:  d[:subdir] != nil ? d[:subdir].strip : "",
                  freeOnly: d[:freeOnly] == RsvConst::FO ? true : false,
                  dedupe:   d[:dedupe] == RsvConst::Dedupe ? true : false,
+                 jikan:   { none: false, up: false, down: false, val: 0 },
                }
-        #0.upto( 6 ) do |n|
-        #  data[ "wday#{n}".to_sym ] = true if d[:wday][n] == 1
-        #end
+        case timeLimitF
+        when 0 then data[:jikan][:none] = true
+        when 1 then data[:jikan][:up] = true
+        when 2 then data[:jikan][:down] = true
+        end
+        data[:jikan][:val] = timeLimitV
+        
       end
     else                        # 新規作成時のデフォルト値
       data = defaltData()
@@ -222,33 +232,6 @@ class Search
     a.join("\n")
   end
 
-
-  #
-  #  試行ボタン
-  #
-  def testrun_notuse(params)
-    r = []
-    fp = FilterM.new()
-    d = fp.formAna( params )
-    programs = DBprograms.new
-    DBaccess.new().open do |db|
-      db.transaction do
-        r2 = fp.search( db, fd2: d )
-        data = programs.selectSP( db, proid: r2 )
-        size = sprintf("%d 件",data.size )
-        size += "以上" if data.size == FilConst::SeachMax
-        r << sprintf("<h1 id=\"title\">検索結果 %s </h1>", size)
-        clas=[ "nowrap" ]
-        data.each_with_index do |t, n |
-          (day, time, w) = Commlib::stet_to_s( t[:start], t[:end] )
-          cate = t[:categoryA][0][0]
-          clas += %W(color#{cate})
-          r << Commlib::printTR( t[:pid],clas, n+1,t[:name],day,time,t[:title],t[:detail] )
-        end
-      end
-    end
-    r.join("\n")
-  end
 
   
 end

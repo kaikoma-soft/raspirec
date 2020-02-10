@@ -163,7 +163,9 @@ create table filter (
                                    --     32:金曜日  2 ** 6
                                    --     64:土曜日  2 ** 7
     result            integer,     -- 検索結果の件数
-    jitan             integer,     -- 0: 許可 1: 不許可
+    jitan             integer,     -- 1-2bit: 時短     0: 許可 1: 不許可
+                                   -- 3-4bit: 放送時間 0:全て 1: 以上 2: 未満
+                                   -- 5-16bit: 時間
     subdir            text,        -- 格納 subDir
     dedupe            bool,        -- 重複排除  0:しない  1:する
     freeonly          bool         -- 無料放送のみに制限  0:しない  1:する
