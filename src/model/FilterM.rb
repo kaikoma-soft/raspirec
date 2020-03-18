@@ -183,6 +183,7 @@ class FilterM
       row2.each do |r|
         row3 = reserve.select(db, chid: r[:chid], evid: r[:evid] )
         if row3.size == 0
+          ( jitan, timeLimitF, timeLimitV ) = Commlib::jitanSep( t[:jitan] )
           data = {
             :id        => nil,
             :chid      => r[:chid],
@@ -194,7 +195,7 @@ class FilterM
             :duration  => r[:duration],
             :type      => 1,
             :keyid     => id2,
-            :jitan     => t[:jitan],
+            :jitan     => jitan,
             :jitanExec => RsvConst::JitanOff,
             :subdir    => t[:subdir],
             #:use       => 0,
