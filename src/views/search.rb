@@ -43,7 +43,20 @@ class Search
 
     data
   end
-    
+
+  #
+  #  不必要な文字を削除
+  #
+  def delNeedless( regex, str )
+    str2 = str.dup
+    regex.each do |pat|
+      str2.gsub!(pat,'')
+    end
+    str2.sub!(/　$/,'')
+    str2.sub!(/^　/,'')
+    return str2.strip
+  end
+  
   #
   #  form の設定値を決定
   #
@@ -54,8 +67,8 @@ class Search
         programs = DBprograms.new
         row = programs.select( db, id: proid )
         if row != nil
-          t1 = Commlib::deleteOptStr(row[0][:title]).strip
-          t2 = Commlib::deleteNum( t1.dup ).strip
+          t1 = delNeedless( ::TitleRegex, row[0][:title])
+          t2 = delNeedless( ::SearchStringRegex, row[0][:title])
           data[:title1] = t1
           data[:key]    = t2
           data[:chanel] = row[0][:chid]

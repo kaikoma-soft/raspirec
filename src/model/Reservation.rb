@@ -74,7 +74,7 @@ class Reservation
     #
     dupchk.each do |r|
       # title = Commlib::deleteOptStr( r[:title] )
-      title = r[:title].sub(/【再】/,'')
+      title = r[:title].sub(/【再】/,'').sub(/^\[[無新]\]/,'')
       row1 = reserve.selectSP( db, stat: RsvConst::NormalEnd, title: title )
       if row1.size > 0
         come1 = "重複の為無効化:"
