@@ -318,7 +318,7 @@ div
         | HLS変換コマンド
 
     tr
-      th rowspan="9" 
+      th rowspan="11" 
         | その他
     tr
       td 
@@ -388,4 +388,25 @@ div
         = Debug_mem
       td
         | ture で メモリの消費量をモニタするようになる。
+
+    tr
+      td 
+        | TitleRegex
+      td
+        = TitleRegex
+      td
+        | 「自動予約」ボタンを押して番組検索に遷移した時に、
+        | 番組タイトルから「題名」を生成する為の、余計な文字を削除する
+        | 正規表現の配列
+
+    tr
+      td 
+        | SearchStringRegex
+      td
+        = SearchStringRegex
+      td
+        | 「自動予約」ボタンを押して番組検索に遷移した時に、
+        | 番組タイトルから「検索文字列」を生成する為の、余計な文字を削除する
+        | 正規表現の配列
+
 

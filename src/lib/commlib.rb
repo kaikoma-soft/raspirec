@@ -149,45 +149,6 @@ module Commlib
   module_function :normStr
   
   
-  def deleteOptStr( str )
-    str2 = str.dup
-    [
-      /【N】/,
-      /【SS】/,
-      /【デ】/,
-      /【再】/,
-      /【双】/,
-      /【多】/,
-      /【天】/,
-      /【字】/,
-      /【新】/,
-      /【無】/,
-      /【解】/,
-      /【終】/,
-      /【初】/,
-    ].each do |pat|
-      str2.gsub!(pat,'')
-    end
-    str2
-  end
-  module_function :deleteOptStr
-
-  def deleteNum( str )
-    str2 = str.dup
-    [
-      /第d+話/,
-      /\#\d+\s?[・-]\s?\#\d+/,
-      /\#\d+/,
-      /[\#♯＃][１２３４５６７８９０]+/,
-      /第[一二三四五六七八九十１２３４５６７８９０\d]+話/,
-      /　$/,
-    ].each do |pat|
-      str2.gsub!(pat,'')
-    end
-    str2
-  end
-  module_function :deleteNum
-  
   def include( fn )
     r = ""
     if test(?f, fn )

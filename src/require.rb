@@ -21,7 +21,36 @@ files.each do |cfg|
     break
   end
 end
-raise "counfig not found" if Object.const_defined?(:BaseDir) != true
+raise "config not found" if Object.const_defined?(:BaseDir) != true
+
+if Object.const_defined?(:TitleRegex) != true
+  tmp = [        # 題名の削除フィルターが未定義の場合のデフォルト
+    /【N】/,
+    /【SS】/,
+    /【デ】/,
+    /【再】/,
+    /【双】/,
+    /【多】/,
+    /【天】/,
+    /【字】/,
+    /【新】/,
+    /【無】/,
+    /【解】/,
+    /【終】/,
+    /【初】/,
+  ]
+  Object.const_set("TitleRegex",tmp )
+end
+
+if Object.const_defined?(:SearchStringRegex) != true
+  tmp = [        # 検索文字列の削除フィルターが未定義の場合のデフォルト
+    /\#\d+\s?[・-]\s?\#\d+/,
+    /[\#♯＃][１２３４５６７８９０\d]+/,
+    /第[一二三四五六七八九十１２３４５６７８９０\d]+話/,
+    /「.*」/,
+  ] + TitleRegex
+  Object.const_set("SearchStringRegex",tmp )
+end
 
 
 require 'db/DB.rb'
