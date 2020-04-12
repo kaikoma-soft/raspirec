@@ -28,6 +28,7 @@ class FilterDisp
     filresR = DBfilterResult.new
     reserve = DBreserve.new
     filter = DBfilter.new
+    now = Time.now.to_i
     DBaccess.new().open do |db|
       db.transaction do
         data = filter.select( db, id: id )
@@ -41,6 +42,7 @@ class FilterDisp
           tmp = []
           tdclas = [ "item" ]
           data3.each do |t|
+            next if t[:end] < now
             (day, time, w) = Commlib::stet_to_s( t[:start], t[:end] )
             cate = t[:categoryA][0][0]
             trcl = %W(color#{cate})
