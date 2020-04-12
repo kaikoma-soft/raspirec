@@ -273,9 +273,10 @@ class Timer
     end
     default = "%YEAR%-%MONTH%-%DAY%_%HOUR%:%MIN%_%DURATION%_%TITLE%_%CHNAME%"
     fname = Object.const_defined?(:TSnameFormat) == false ? default : TSnameFormat.dup
-
+    
     st = Time.at( data[:start] )
     et = Time.at( data[:end] )
+    
     list = { "%TITLE%"    => data[:title],
              "%CHNAME%"   => data[:name],
              "%ST%"       => st.strftime("%Y%m%d%H%M"),
@@ -360,6 +361,12 @@ class Timer
       finish = Time.now + duration
       DBlog::sto("finish = #{finish}")
       fname = makeTSfname2( data, duration, retryC )
+      bs = File.basename( fname ).bytesize
+      if bs > 255
+        DBaccess.new().open do |db|
+          DBlog::warn(db, "ファイル名長(#{bs}) > 255")
+        end
+      end
       arg = [ ]
       arg += Recpt1_opt if Recpt1_opt != nil
       arg += ch + [ duration.to_s, fname ]
@@ -371,7 +378,7 @@ class Timer
       pid = Recpt1.new.recTS( arg, fname, waitT )
       $mutex.synchronize do
         #DBlog::sto( "pid=#{pid}")
-        DBlog::info( nil,"録画開始: #{data[:title]}")
+        DBlog::info( nil,"録画開始: #{data[:title]} (#{bs})")
       end
     rescue ExecError
       retryC += 1
