@@ -53,7 +53,7 @@ class FilterDisp
                  total -= 1
                  next
                end
-              if res[0][:stat] == RsvConst::Normal
+              if res[0][:stat] == RsvConst::Normal or res[0][:stat] == RsvConst::RecNow
                 res2 = "○"
               else
                 res2 = "×"
