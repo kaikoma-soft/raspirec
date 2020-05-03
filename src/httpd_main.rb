@@ -7,6 +7,7 @@ base = File.dirname( $0 )
 [ ".", "..","src", base ].each do |dir|
   if test( ?f, dir + "/require.rb")
     $: << dir
+    $baseDir = dir
   end
 end
 
@@ -115,6 +116,14 @@ end
 
 get '/ch_tbl_list' do
   slim :ch_tbl_list
+end
+
+post '/ch_info/del/*' do |chid|
+  @chid = chid
+  ChannelM.new.delete( @chid )
+end
+get '/ch_info' do
+  slim :ch_info
 end
 
 

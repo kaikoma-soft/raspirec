@@ -45,6 +45,22 @@ class DBchannel
   end
 
   #
+  #  削除
+  #
+  def delete( db, chid )
+    sql = "delete from #{@tbl_name} where chid = ? "
+    db.execute( sql, chid )
+  end
+
+  #
+  #  更新
+  #
+  def update( db, chid, key, val )
+    sql = "update #{@tbl_name} set #{key.to_s} = ? where chid = ? "
+    db.execute( sql, val, chid )
+  end
+  
+  #
   #  skip の更新
   #
   def updateSkip( db, skip, chid )
@@ -52,27 +68,6 @@ class DBchannel
     db.execute( sql, skip, chid )
   end
 
-  #
-  #  更新時間の更新
-  #
-  def updateTime( db, time, id: nil, upt: nil )
-    sql = "update #{@tbl_name} set updatetime = ? "
-    where = []
-    args = [ time ]
-    if id != nil
-      where << " id = ? "
-      args << id
-    end
-    if upt != nil
-      where << "updatetime > ?"
-      args << upt
-    end
-    if where.size > 0
-      sql += " where " + where.join(" and " )
-    end
-    
-    db.execute( sql, *args )
-  end
 
   #
   #  更新時間の取得
@@ -106,9 +101,24 @@ class DBchannel
   end
 
   #
+  #  data に差異があるか
+  #
+  def dataDiff( old, new )
+    ret = []
+    keys = [ :tsid, :onid, :svid, :name, :stinfo_tp, :stinfo_slot ]
+    keys.each do |key|
+      old2 = key == :name ? old[ key ].sub(/\(\d+\)$/,'') : old[ key ]
+      if old2 != new[ key ]
+        ret << key
+      end
+    end
+    return ret
+  end
+  
+  #
   #  JSON のデータから DB 向けに変換
   #
-  def dataConv( json, phch )
+  def dataConv( json, phch, patch = nil )
     band = ""
     bsort = 0
     case json["id"]
@@ -141,15 +151,29 @@ class DBchannel
 
     if band == Const::GR
       h[:stinfo_tp]   = phch
-      h[:stinfo_slot] = 0
+      h[:stinfo_slot] = "0"
     else
       if json["satelliteinfo"] != nil and json["satelliteinfo"]["TP"] != nil
         h[:stinfo_tp] =  json["satelliteinfo"]["TP"]
       end
       if json["satelliteinfo"] != nil and json["satelliteinfo"]["SLOT"] != nil
-        h[:stinfo_slot] =  json["satelliteinfo"]["SLOT"]
+        h[:stinfo_slot] =  json["satelliteinfo"]["SLOT"].to_s
       end
     end
+
+    # パッチ当て
+    if patch != nil
+      chid = h[:chid]
+      if patch[ chid ] != nil
+        patch[ chid ].each_pair do |k,v|
+          if h[ k ] != nil
+            #pp "#{h[ k ]} -> #{v}"
+            h[ k ] = v
+          end
+        end
+      end
+    end
+    
     h
   end
 

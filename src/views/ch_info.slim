@@ -1,0 +1,107 @@
+/
+/  チャンネル情報の表示
+/
+
+css:
+  td,th {
+    padding: 5px ;
+  }
+  span { color: #000000} 
+
+
+- require_relative 'ch_info.rb'
+- dp = ChaneruInfo.new(  )
+
+
+.row
+  .col.s6
+    .card.tbl
+      .card-content
+        table
+          tr
+            td chid
+            td チャンネルID
+          tr
+            td name 
+            td 放送局名
+          tr
+            td tsid
+            td トランスポートストリームID ( transport_stream_id )
+          tr
+            td onid
+            td オリジナルネットワークID ( original_network_id )
+          tr
+            td svid
+            td サービスID  ( service_id )
+          tr
+            td stinfo_tp
+            td 衛星の場合はトランスポート番号、地デジの場合は物理チャンネル番号
+          tr
+            td stinfo_slot
+            td 衛星の場合はスロット番号
+          tr
+            td skip
+            td 放送局一覧で、「番組表、検索の対象から外す。」が設定されているか
+          tr
+            td 予約数
+            td 予約テーブル上にある全ての予約数。0 でないものは削除出来ない。
+          tr
+            td 更新日時
+            td EPGの更新日時で、１ヶ月以上更新が無い場合は背景色が変わる。
+
+
+      
+div
+  table.striped
+    tr
+      th No
+      th バンド
+      th chid
+      th name
+      th tsid
+      th onid
+      th svid
+      th stinfo_tp
+      th stinfo_slot
+      th skip
+      th 更新日時
+      th 予約数
+      th 削除
+    == dp.printTable()
+
+p style="padding-top:3em"
+
+.row
+  .col.s6
+    .card.tbl
+      .card-content
+        span#title.card-title EPG パッチ
+        table
+          tr
+            th chid
+            th 変更対象
+            th 変更内容
+          == dp.epgPatchTable()
+
+
+
+
+javascript:
+    $(".btn").click(function(event){
+        var chid = $(this).attr('chid');
+        event.preventDefault();
+        console.log( chid );
+        $.ajax({
+            url:  '/ch_info/del/' + chid,
+            type: "POST",
+            data: '&chid=1',
+            async: true,
+            timeout: 30000
+        }).done( function(results) {
+            location.reload();
+        })
+    });
+
+
+
+== Commlib::include( SrcDir + "/views/move_top.html" )

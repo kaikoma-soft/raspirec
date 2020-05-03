@@ -10,6 +10,7 @@ class Timer
   def initialize( )
     @sleepT = 5
     @loopT  = 1800
+
   end
 
   
@@ -378,7 +379,7 @@ class Timer
       pid = Recpt1.new.recTS( arg, fname, waitT )
       $mutex.synchronize do
         #DBlog::sto( "pid=#{pid}")
-        DBlog::info( nil,"録画開始: #{data[:title]} (#{bs})")
+        DBlog::info( nil,"録画開始: #{data[:title]}")
       end
     rescue ExecError
       retryC += 1
