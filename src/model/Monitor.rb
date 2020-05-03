@@ -86,7 +86,7 @@ class MonitorM
   #
   def recnow( args, seek: true )
 
-    pp "recnow( #{args} )"
+    #pp "recnow( #{args} )"
     path = nil
     reserve = DBreserve.new
     DBaccess.new().open do |db|

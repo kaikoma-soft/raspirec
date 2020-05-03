@@ -26,6 +26,19 @@ class ChannelM
     end
   end
   
+  #
+  #  削除
+  #
+  def delete( chid )
+
+    DBaccess.new().open do |db|
+      db.transaction do
+        channel = DBchannel.new
+        channel.delete( db, chid )
+      end
+    end
+  end
+  
 
 end
 

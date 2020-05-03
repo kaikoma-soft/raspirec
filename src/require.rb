@@ -83,6 +83,7 @@ require 'model/DiskKeep.rb'
 require 'model/LogRote.rb'
 require 'model/ChannelM.rb'
 require 'model/Monitor.rb'
+require 'model/EpgPatch.rb'
 
 require 'lib/httpd_sub.rb'
 require 'lib/commlib.rb'

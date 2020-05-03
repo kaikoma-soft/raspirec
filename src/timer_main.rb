@@ -7,6 +7,7 @@ base = File.dirname( $0 )
 [ ".", "..","src", base ].each do |dir|
   if test( ?f, dir + "/require.rb")
     $: << dir
+    $baseDir = dir
   end
 end
 require 'require.rb'

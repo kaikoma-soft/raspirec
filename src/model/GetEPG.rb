@@ -9,6 +9,9 @@ require 'timeout'
 class GetEPG
 
   def initialize(  )
+    if $epgPatch == nil
+      $epgPatch = EpgPatch.new.getData()
+    end
   end
 
   #
@@ -39,13 +42,24 @@ class GetEPG
         db.transaction do
           data.each do |d|
             ch2 = channel.select( db, chid: d["id"] )
+            data2 = channel.dataConv( d, ch, $epgPatch )
             if ch2.size == 0
-              data2 = channel.dataConv( d, ch )
               channel.insert( db, data2 )
-              DBlog::debug(db,"add ch #{d["name"]}" )
+              DBlog::debug(db,"channel情報追加 #{d["name"]}" )
               ch2 = channel.select( db, chid: d["id"] )
+            else
+              # データに変更が無いか
+              diffkey = channel.dataDiff( ch2[0], data2 )
+              diffkey.each do |key|
+                old = ch2[0][key]
+                new = data2[key]
+                DBlog::warn(db,"channel情報変更 #{data2[:name]} #{key.to_s} #{old} -> #{new}" )
+                channel.update( db, d["id"], key, new )
+              end
             end
-            phchid.add(db, ch, d["id"], Time.now.to_i ) 
+            now = Time.now.to_i
+            channel.update( db, d["id"], :updatetime, now )
+            phchid.add(db, ch, d["id"], now ) 
             
             datas = []
             d["programs"].each do |pro|
@@ -120,6 +134,7 @@ class GetEPG
 
     fileUseF = false
     if $debug == true            # 空の場合は、有るものを読む
+      #fileUseF = true 
       DBaccess.new().open do |db|
         db.transaction do
           size = channel.select( db ).size
