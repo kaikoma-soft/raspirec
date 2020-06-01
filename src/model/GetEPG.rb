@@ -124,8 +124,18 @@ class GetEPG
   #  EPG 取得開始
   #
   def start( timeLimit = 400 )
-    DBlog::sto( "GetEPG::start(#{timeLimit})")
     start = Time.now
+
+    if EpgBanTime != nil and EpgBanTime.class == Array
+      EpgBanTime.each do |h|
+        if h == start.hour
+          #DBlog::sto( "EPG 禁止時間帯の為、中止します。")
+          return false
+        end
+      end
+    end
+
+    DBlog::sto( "GetEPG::start(#{timeLimit})")
     channel = DBchannel.new
     programs = DBprograms.new
     phchid   = DBphchid.new

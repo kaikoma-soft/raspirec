@@ -43,7 +43,7 @@ class Recpt1
         $rec_pid[ wait2.pid ] = true
         
         begin
-          Timeout.timeout(time) do
+          Timeout.timeout(time + 10 ) do
             while loop do
               if ( r = IO.select( [stdout1,stderr1], nil, nil, 1)) != nil
                 begin
@@ -76,10 +76,10 @@ class Recpt1
             end
           end
         rescue Errno::EPIPE
-          #puts( "Broken pipe;  kill #{wait1.pid}\n" )
+          DBlog::sto( "Broken pipe;  kill #{wait1.pid}" )
           Process.kill(:KILL, wait1.pid)
         rescue Timeout::Error
-          #puts( "timer timeout ; kill #{wait1.pid}\n" )
+          DBlog::sto( "timer timeout ; kill #{wait1.pid}" )
           Process.kill(:KILL, wait1.pid)
         end
         stdin2.close

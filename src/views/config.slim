@@ -154,7 +154,7 @@ div
 
 
     tr
-      th rowspan="8" 
+      th rowspan="9" 
         | EPG関係
     tr
       td 
@@ -211,6 +211,16 @@ div
         = EPGperiod
       td
         | EPG 取得周期 (H)
+
+    tr
+      td 
+        | EpgBanTime
+      td
+        = EpgBanTime
+      td
+        | EPG の取得禁止時間帯の指定。(24H制 時間単位)<br>
+          1時から5時までを禁止したい場合は、[ 1,2,3,4,5 ] と指定する。
+
 
 
     tr
