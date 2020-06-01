@@ -23,6 +23,11 @@ files.each do |cfg|
 end
 raise "config not found" if Object.const_defined?(:BaseDir) != true
 
+if Object.const_defined?(:EpgBanTime) != true
+  Object.const_set("EpgBanTime", nil )
+end
+
+
 if Object.const_defined?(:TitleRegex) != true
   tmp = [        # 題名の削除フィルターが未定義の場合のデフォルト
     /【N】/,

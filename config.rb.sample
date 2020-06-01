@@ -44,6 +44,7 @@ GR_EpgRsvTime  = 60                               # EPG受信時間 (秒)
 BS_EpgRsvTime  = 300                              # EPG受信時間 (秒)
 CS_EpgRsvTime  = 300                              # EPG受信時間 (秒)
 EPGperiod      = 8                                # EPG 取得周期 (H)
+#EpgBanTime     = [ 2, 3, 4, 5 ]                   # EPG禁止時間帯(24H制)
 
 #
 #   ダイアログのオプション初期値 ( true でチェック付き )
