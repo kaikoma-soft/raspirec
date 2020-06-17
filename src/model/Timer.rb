@@ -22,7 +22,7 @@ class Timer
     channel = DBchannel.new
     keyval = DBkeyval.new
     now = Time.now.to_i
-    readyTime = now + 10
+    readyTime = now + 20
     nextRecTime = now + 3600 * 24
     queue = []
     recC = 0 
@@ -61,6 +61,7 @@ class Timer
           end
         end
         #epgLastTime = keyval.select( db, Const::LastEpgTime  )
+
       end
     end
     return [ queue, recC, nextRecTime ]
@@ -114,6 +115,11 @@ class Timer
             puts $@
           end
         end
+      end
+
+      # mpv モニタの停止
+      if queue.size > 0
+        Control.new.sendSignal( HttpdPidFile, :USR1 )
       end
 
       waitT = nextRecTime - now
@@ -344,6 +350,7 @@ class Timer
   #  録画実行
   #
   def recStart( data )
+
     ch = makeCh( data )
     startT = data[:start] - Start_margin
 
@@ -360,7 +367,7 @@ class Timer
     begin
       duration = durationCalc( data )
       finish = Time.now + duration
-      DBlog::sto("finish = #{finish}")
+      DBlog::sto("終了予定 = #{finish}")
       fname = makeTSfname2( data, duration, retryC )
       bs = File.basename( fname ).bytesize
       if bs > 255

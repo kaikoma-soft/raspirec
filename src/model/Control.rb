@@ -82,16 +82,23 @@ class Control
     FilterM.new.update()
   end
   
-  def restart( )
-    [ TimerPidFile, HttpdPidFile ].each do |fname|
-      if test( ?f, fname )
-        File.open( fname,"r" ) do |fp|
-          pid = fp.gets().to_i
-          if pid > 0
-            Process.kill( :HUP, pid )
+  def sendSignal( fname, signal = :HUP )
+    if test( ?f, fname )
+      File.open( fname,"r" ) do |fp|
+        pid = fp.gets().to_i
+        if pid > 0
+          begin
+            Process.kill( signal, pid )
+          rescue Errno::ESRCH
           end
         end
       end
+    end
+  end
+
+  def restart( )
+    [ TimerPidFile, HttpdPidFile ].each do |fname|
+      sendSignal( fname, :HUP )
     end
   end
   
@@ -100,7 +107,10 @@ class Control
       File.open( PidFile,"r" ) do |fp|
         pid = fp.gets().to_i
         if pid > 0
-          Process.kill( :TERM, pid )
+          begin
+            Process.kill( :TERM, pid )
+          rescue Errno::ESRCH
+          end
         end
       end
     end

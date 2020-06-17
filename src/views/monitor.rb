@@ -2,18 +2,25 @@
 # -*- coding: utf-8 -*-
 
 #
-#  モニター
+#  HLS モニター
 #
 
 
 class Monitor
 
-  Base = "/monitor"
-
+  
   attr_reader :band, :list, :data, :bandname
   
-  def initialize( )
+  def initialize(  )
 
+    @base_url = "/monitor"
+
+  end
+
+  #
+  #  表示データ生成
+  #
+  def createData(recFlag = true)
     @list = getChData( )
     @band = @list.keys
     @bandname = { "rec" => "録画中",
@@ -25,20 +32,18 @@ class Monitor
     end
     @data = make_table( @list )
 
-    if ( rec = getRecData()) != nil
-      title = "rec"
-      @band.unshift( title )
-      @data[ title ] = rec
+    if recFlag == true
+      if ( rec = getRecData()) != nil
+        title = "rec"
+        @band.unshift( title )
+        @data[ title ] = rec
+      end
     end
+  end    
 
-    # if ( files = getFileData()) != nil
-    #   title = "file"
-    #   @band.push( title )
-    #   @data[ title ] = files
-    # end
-    
-  end
-
+  #
+  #   録画済みTSファイル一覧(不使用)
+  #
   def getFileData()
     paths = {}
     Find.find( TSDir ) do |path|
@@ -56,7 +61,7 @@ class Monitor
       ret << %q(<ol>)
       paths.keys.sort.each do |path|
         id = paths[ path ]
-        ret << %Q(<li> <a class="hls" href="#{Base}/file/#{id}"> #{path} </a> )
+        ret << %Q(<li> <a class="hls" href="#{@base_url}/file/#{id}"> #{path} </a> )
       end
       ret << %q(</ol>)
       return ret.join("\n")
@@ -64,7 +69,10 @@ class Monitor
       return nil
     end
   end
-  
+
+  #
+  #  録画中の番組を取得
+  #
   def getRecData()
     paths = {}
     reserve = DBreserve.new
@@ -90,7 +98,7 @@ class Monitor
       ret << %q(<ol>)
       paths.keys.each do |path|
         id = paths[ path ]
-        ret << %Q(<li> <a class="hls" href="#{Base}/rec/#{id}"> #{path} </a> )
+        ret << %Q(<li> <a class="hls" href="#{@base_url}/rec/#{id}"> #{path} </a> )
       end
       ret << %q(</ol>)
       return ret.join("\n")
@@ -98,7 +106,10 @@ class Monitor
       return nil
     end
   end
-  
+
+  #
+  #  放送局一覧
+  #
   def make_table( list )
 
     ret = {}
@@ -109,7 +120,7 @@ class Monitor
 
       n = 0
       list[ band ].each_pair do |k,v|
-        tmp << %Q(<td class="nowrap"> <a class="hls" href="#{Base}/ch/#{v}"> #{k} </a> </td>)
+        tmp << %Q(<td class="nowrap"> <a class="hls" href="#{@base_url}/ch/#{v}"> #{k} </a> </td>)
         n += 1
         if n > 4
           tmp << %q(</tr>)

@@ -1,0 +1,95 @@
+/
+/  mpv モニタ
+/
+
+css:
+  td,th {
+    padding: 10px ;
+  }
+  th {
+    width: 15em;
+  }
+  span { color: #000000} 
+  .busy {
+    color: #f00000;
+   }
+  .radio {
+    margin-right:  2em;
+  }
+
+
+- require_relative 'mpv_mon.rb'
+- dp = MpvMon.new( @devfn, @cmd )
+- dp.createData( )
+
+
+.row
+  form id="form2" method="POST" action="/mpv_mon"
+    table.striped
+      tr
+        th デバイス
+        td
+          == dp.deviceSelect()
+      tr
+        th.nowrap
+          | 状態 
+        td
+          == dp.statS
+      tr
+        th.nowrap 
+          | 選択中のチャンネル
+        td
+          == dp.selCh()
+      tr
+        th.nowrap 
+          | 番組名
+        td
+          | #{dp.prog_name}
+      tr
+        th.nowrap 
+          | 番組概要
+        td
+          | #{dp.prog_detail}
+      tr
+        th.nowrap 
+          | アクション
+        td
+          a.btn.waves-effect.waves-light.btn-small href="#{dp.base_url}/stop" class="#{dp.dis_stop()}" 停止
+
+.row
+  div#band
+    ul.tabs
+      - dp.bands().each do |band|
+        li.tab.col.s2
+          a href="##{band}"  class="#{dp.activeBand?( band )}"
+            | #{dp.bandname[band]}
+
+    div
+      - dp.bands().each do |band|
+        div.col.s8 id = band
+          == dp.data[band]
+
+
+
+
+
+
+javascript:
+   $(function(){
+     $( 'input[name="devfn"]:radio' ).change( function() {
+       var radioval = $(this).val();
+       window.location.href = "/mpv_mon/" + radioval + "/disp/";
+     });
+   });
+
+   $(document).ready(function(){
+      $('.tabs').tabs();
+    });
+
+    $(document).ready(function(){
+       $('select').formSelect();
+    });
+
+
+
+== Commlib::include( SrcDir + "/views/move_top.html" )

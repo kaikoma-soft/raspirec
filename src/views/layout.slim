@@ -69,18 +69,22 @@ html
         a href='/search'         番組検索
       li
         a href='/log_view'       ログ
+
       - if MonitorFunc == true
         li
-          a href='/monitor'       モニター
+          a href='/monitor'       hls モニター
+
+      - if MPMonitor == true
+        li
+          a href='/mpv_mon'       mpv モニター
       li
         a href='/control'        コントロールパネル
-      li
-        a href='/config'          config
-      li
-        a href='/help'            help
+
       - if Debug == true
         li
-          a href='/kill'            kill
+          a href='/kill'         restart httpd
+        li
+          a href='/kill2'        restart http,timer
 
     ul.sidenav#mobile-demo
       li
@@ -94,7 +98,6 @@ html
         a href='/fil_list'    フィルター
       li
         a href='/ch_tbl_list'   放送局一覧
-
       li
         a href='/rsv_list'     予約一覧
       li
@@ -103,20 +106,20 @@ html
         a href='/rsv_list_old' 録画済み一覧
       li
         a href='/aut_rsv_list' 自動予約
-
       li
         a href='/search'         番組検索
+
       - if MonitorFunc == true
         li
-          a href='/monitor'       モニター
+          a href='/monitor'       hls モニター
+
+      - if MPMonitor == true
+        li
+          a href='/mpv_mon'       mpv モニター
       li
         a href='/log_view'       ログ
       li
         a href='/control'        コントロールパネル
-      li
-        a href='/config'          config
-      li
-        a href='/help'            help
     p
 
     == yield

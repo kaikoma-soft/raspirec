@@ -247,6 +247,15 @@ class PrgTbl
 
     st = @time.to_i             # start time
     et = st + @tate * 3600      # end time
+    now = Time.now.to_i
+    moni = false
+    if MPMonitor == true        # チュナー数に余裕があるか
+      if $mpvMon != nil
+        if $mpvMon.autoSel( @band ) != nil
+          moni = true
+        end
+      end
+    end
 
     return "" if @chData[ @band ] == nil or @chData[ @band ][ @page ] == nil
     @chData[ @band ][ @page ].each do |ch|
@@ -285,12 +294,18 @@ class PrgTbl
         px = (( l.to_f / 3600 ) *  @hour_pixel ).to_i
         style = sprintf(%Q{style="height:%dpx;" },px)
         pid   = sprintf(%Q{pid="%d" }, tmp[:pid])
-        #id    = sprintf(%Q{id="%s"},ids.join(" "))
         stime = Time.at( tmp[:start] ).strftime("%H:%M")
         etime = Time.at( tmp[:end] ).strftime("%H:%M")
+        moni2 = "off"
+        if moni == true
+          if tmp[:start] < now and now < tmp[:end]
+            moni2 = "/mpv_mon/auto/ch/#{tmp[:chid]}"
+          end
+        end
+        moni3 = sprintf(%Q{moni="%s"}, moni2)
         tip   = sprintf(%Q{data-tooltip="%s<br>%s 〜 %s"},tmp[:title],stime,etime)
-        r << sprintf(%Q{  <div class='%s' %s %s %s> %s </div>},
-                     cls.join(" "), style,pid, tip, tmp[:title])
+        r << sprintf(%Q{  <div class='%s' %s %s %s %s> %s </div>},
+                     cls.join(" "), style,pid, moni3, tip, tmp[:title])
 
         ct = tmp[:end]
       end

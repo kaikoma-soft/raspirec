@@ -23,7 +23,7 @@ SrcDir     = BaseDir + "/src"
 #
 # 録画タイミング関係
 #
-Start_margin  = 7               # 録画開始前マージン(秒)
+Start_margin  = 10              # 録画開始前マージン(秒)
 After_margin  = 3               # 録画終了後マージン(秒)
 Gap_time      = 5               # 録画終了-次番組開始間隔(秒)
 
@@ -65,12 +65,28 @@ TSFT_rate  = 15                 # 想定転送速度 ( Mbyte/秒 )
 
 
 #
-#   モニタ機能
+#   HLS モニタ機能
 #
-MonitorFunc  = false                              # モニタ機能を有効に
+MonitorFunc  = false                              # hls モニタ機能を有効に
 MonitorWidth = 720                                # モニタ画面の横幅
 HlsConvCmd   = SrcDir  + "/tool/ts2hls_sample.sh" # HLS変換コマンド
 StreamDir    = DataDir + "/stream"                # ストリーム出力先ディレクトリ
+
+#
+#   media player モニタ機能
+#
+MPMonitor       = true                              # mpv モニタ機能を有効に
+DeviceList_GR   = %w( /dev/px4video2 /dev/px4video3 /dev/px4video6 /dev/px4video7 )
+DeviceList_BSCS = %w( /dev/px4video0 /dev/px4video1 /dev/px4video4 /dev/px4video5 )
+MPlayer_cmd     = %w( mpv --deinterlace=yes --autofit=720x405 --quiet )
+#MPlayer_cmd     = %w( mpv --deinterlace=yes --autofit=640x360 --quiet )
+RemoteMonitor   = true          # チューナーと表示が別マシンの場合に ture
+UDPbasePort     = 12345         # UDP port 
+XServerName     = "desktop"     # mpv を実行するマシン名
+RecHostName     = "raspi"       # raspirec,recpt1 を実行するマシン名
+Lsof_cmd        = "/usr/bin/lsof"
+
+
 
 #
 #   その他
