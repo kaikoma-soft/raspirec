@@ -105,6 +105,7 @@
 
     $(".item").click(function(event){
         var proid = $(this).attr('pid');
+        var moni = $(this).attr('moni');
         //event.preventDefault();
         $("#sample-dialog").load('/prg_dialog/' + proid );
         $("#sample-dialog").dialog({
@@ -112,6 +113,9 @@
              maxWidth: 1200,
              width:    1000,
              buttons: { //ボタン
+               "視聴": function() {
+                   window.location.href = moni ;
+               },
                "録画予約": function() {
                    $.ajax({
                       url:   '/rsv_conf',
@@ -136,6 +140,10 @@
              },
              open: function() {
                $( this ).siblings('.ui-dialog-buttonpane').find('button:eq(2)').focus();
+               if ( moni == "off" ) {
+                   var button = $('.ui-dialog-buttonpane').find('button:contains("視聴")');
+                   button.hide();
+                }
              }
            });
         return false;

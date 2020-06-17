@@ -1,4 +1,11 @@
 
+
+ver 0.5.0         2020/06/17
+  ・機能追加
+    * mpv を使ったモニタ機能の追加
+      設定方法は、https://kaikoma-soft.github.io/raspirec-option.html を参照
+    * プルダウンの config と help をコントロールパネル中に移動 and 名称変更
+  
 ver 0.4.1         2020/06/01
 
   ・機能追加

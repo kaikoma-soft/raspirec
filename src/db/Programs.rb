@@ -307,6 +307,9 @@ class DBprograms
     elsif chid != nil and evid != nil 
       where << " p.chid = ? and p.evid = ? "
       args = [ chid, evid ]
+    elsif chid != nil and tstart != nil and tend != nil 
+      where <<  " p.chid = ? and p.end > ? and p.start < ? "
+      args = [ chid, tstart, tend ]
     elsif tstart != nil and tend != nil 
       where <<  " p.end > ? and p.start < ? "
       args = [ tstart, tend ]

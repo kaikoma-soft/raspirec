@@ -20,7 +20,7 @@ require 'require.rb'
 class ExecError < StandardError; end
 
 class Recpt1
-  
+
   #
   #   epg データを取得
   #
@@ -41,9 +41,10 @@ class Recpt1
 
         $rec_pid[ wait1.pid ] = true
         $rec_pid[ wait2.pid ] = true
-        
+
         begin
-          Timeout.timeout(time + 10 ) do
+          time2 = ( time + 3 ).to_i
+          Timeout.timeout( time2 ) do
             while loop do
               if ( r = IO.select( [stdout1,stderr1], nil, nil, 1)) != nil
                 begin
@@ -79,7 +80,7 @@ class Recpt1
           DBlog::sto( "Broken pipe;  kill #{wait1.pid}" )
           Process.kill(:KILL, wait1.pid)
         rescue Timeout::Error
-          DBlog::sto( "timer timeout ; kill #{wait1.pid}" )
+          DBlog::sto("timer timeout ; kill #{wait1.pid}" )
           Process.kill(:KILL, wait1.pid)
         end
         stdin2.close
@@ -114,7 +115,7 @@ class Recpt1
 
 
   #
-  #   
+  #
   #
   def recTS( args, outfname, waitT )
 
@@ -124,13 +125,13 @@ class Recpt1
       exec( Recpt1_cmd, *args )
     end
     $rec_pid[ pid ] = true
-    
-    waitT.times do |n|
+
+    (waitT * 5 ).times do |n|
       if test(?f, outfname )
         size = File.size( outfname )
         break if size > 1024
       end
-      sleep(1)
+      sleep(0.2)
     end
 
     if ! test(?f, outfname ) or File.size( outfname ) < 1024
@@ -144,5 +145,3 @@ class Recpt1
     return pid
   end
 end
-
-

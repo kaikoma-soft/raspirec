@@ -46,11 +46,48 @@ def childWait()
   end
 end
 
-Signal.trap( :CHLD ) {
-  childWait()  
-}
-    
+#
+#  モニタの停止
+#
+def moni_stop( txt )
+  n = 0
+  if $mpvMon != nil
+    $mpvMon.data.each_pair do |k,v|
+      n += 1 if v.stop() == true
+    end
+  end
+  n +=1 if MonitorM.new.osoji() == true
+  
+  DBlog::info(nil, txt ) if n > 0
+end
 
+#
+#  httpd 終了処理
+#
+def endParoc()
+  DBlog::sto( "httpd endParoc() #{$httpd_pid}" )
+  moni_stop( "終了処理で、モニタを停止しました。")
+  Sinatra::Application.quit!
+end
+
+#
+#  録画開始(timer からのsignal)に伴うモニタ終了処理
+#
+def sigUsr1()
+  DBlog::sto( "sigUsr1()" )
+  moni_stop( "録画開始の為、モニタを停止しました。" )
+end
+
+#
+#   初期化
+#
+Signal.trap( :CHLD ) { childWait() }
+Signal.trap( :HUP )  { DBlog::sto("httpd :HUP") ; endParoc() }
+Signal.trap( :INT )  { DBlog::sto("httpd :INT") ; endParoc() }
+Signal.trap( :TERM ) { DBlog::sto("httpd :TERM") ; endParoc() }
+Signal.trap( :USR1 ) { DBlog::sto("httpd :USR1") ; sigUsr1() }
+
+$mpvMon = MpvMonMain.new
 
 enable :sessions
 set :server, "webrick"
@@ -343,7 +380,7 @@ end
 
 
 #
-#   モニター
+#   HLS モニター
 #
 get '/monitor' do
   slim :monitor
@@ -377,23 +414,50 @@ end
 
 
 #
+#  mpv モニター
+#
+def mpv_mon_func( devfn ,cmd, chid )
+  @devfn, @cmd, @chid = devfn, cmd, chid
+
+  rdflag = false
+  if $mpvMon != nil and devfn != nil
+    devfn = $mpvMon.autoSel(chid)  if devfn == "auto"
+    if devfn != nil
+      case cmd
+      when "ch"  then     $mpvMon.data[ devfn ].play( chid ) ; rdFlag = true
+      when "stop" then    $mpvMon.data[ devfn ].stop()       ; rdFlag = true
+      end
+    else
+      @devfn = nil
+      @cmd   = "disp"
+    end
+  end
+
+  if rdFlag == true
+    sleep(0.5)
+    url = "/mpv_mon/#{devfn}/disp"
+    redirect to(url)
+  else
+    slim :mpv_mon
+  end
+end
+
+get  '/mpv_mon/*/*/*' do |devfn,cmd,chid| mpv_mon_func( devfn,cmd,chid ) end
+get  '/mpv_mon/*/*'   do |devfn,cmd|      mpv_mon_func( devfn,cmd, nil ) end
+get  '/mpv_mon'       do                  mpv_mon_func( nil, "disp",nil) end
+
+
+#
 #   log
 #
-get '/log_view/*/*' do |level,page|
-  @level = level
-  @page = page
+def log_view_func(level,page)
+  @level, @page = level, page
   slim :log_view
 end
-get '/log_view/*' do |level|
-  @level = level
-  @page = 1
-  slim :log_view
-end
-get '/log_view' do
-  @level = nil
-  @page = 1
-  slim :log_view
-end
+get '/log_view/*/*' do |level,page|  log_view_func(level,page) end
+get '/log_view/*'   do |level|       log_view_func(level,1 )   end
+get '/log_view'     do               log_view_func( nil,1 )    end
+
 
 get '/config' do
   slim :config
@@ -408,13 +472,26 @@ get '/test' do
 end
 
 #
-#  sinatora reset
+#  sinatora restart
 #
 get '/kill' do
   @title = 'kill'
   Thread.new do
     sleep( 0.1 )
     Process.kill( :HUP, $$ )
+  end
+  slim :kill
+end
+
+#
+#  httpd,timer restart
+#
+get '/kill2' do
+  @title = 'kill'
+  control = Control.new
+  Thread.new do
+    sleep( 0.1 )
+    control.restart()
   end
   slim :kill
 end

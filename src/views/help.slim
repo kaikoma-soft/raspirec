@@ -1,11 +1,24 @@
 
 css:
   .title {
-    margin: 0.5em 0.5em 0.5em 0.5em ;
+    margin: 1.5em 0.5em 0.5em 0.5em ;
     font-size: 1.5em ;
   }
 
-h1.title Help
+  .title2 {
+    margin: 0.5em 0.5em 0.5em 0.5em ;
+  }
+
+
+h2.title
+  | 目次
+  ol
+    li.title2
+      a href="#search" 検索文字列
+    li.title2
+      a href="#TSnameFormat" TS ファイル名の生成ルール
+
+hr
 
 div
   ol
@@ -46,20 +59,6 @@ div
               
 
 
-    li.title
-      a name="monitor" モニター
-
-    ul.collection.with-header
-      li.collection-header
-        |  モニター機能は、録画中又は放送中の内容をブラウザで閲覧
-          する機能で、その機能を有効にするには下記の条件を満たす必要がある。
-        p
-        ol
-          li  PC に録画と H264等のエンコードを同時に行う処理能力があること。
-          li  recpt1 が --b25 オプションが可能なようにビルドされていること。
-          li  ffmpeg 又は HLS 変換が出来るソフトウェアがインストールされていること
-        p
-          | その上で、HLS変換コマンドを自分の環境に合わせて変更し設定する。
 
 
     li.title

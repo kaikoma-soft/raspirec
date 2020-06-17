@@ -23,11 +23,13 @@ class MonitorM
   #
   def osoji()
 
+    ret = false
     [ Recpt1PidFname, FfmpegPidFname].each do |fname|
       if test(?f, fname )
         begin
           kill_pidfile( fname )
           File.unlink( fname )
+          ret = true
           sleep(1)
         rescue Errno::ESRCH
           ;
@@ -47,7 +49,8 @@ class MonitorM
     @threads.each do |th|
       th.kill
     end
-    
+
+    return ret
   end
   
 

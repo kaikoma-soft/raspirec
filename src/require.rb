@@ -57,6 +57,12 @@ if Object.const_defined?(:SearchStringRegex) != true
   Object.const_set("SearchStringRegex",tmp )
 end
 
+# media player モニタ機能が有効か
+if Object.const_defined?(:MPMonitor) != true
+  Object.const_set("MPMonitor",false )
+end
+
+
 
 require 'db/DB.rb'
 require 'db/base.rb'
@@ -89,6 +95,7 @@ require 'model/LogRote.rb'
 require 'model/ChannelM.rb'
 require 'model/Monitor.rb'
 require 'model/EpgPatch.rb'
+require 'model/MpvMonM.rb'
 
 require 'lib/httpd_sub.rb'
 require 'lib/commlib.rb'

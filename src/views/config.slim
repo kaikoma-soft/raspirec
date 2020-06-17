@@ -1,11 +1,11 @@
 
 css:
   .title {
-    margin: 0.5em 0.5em 0.5em 0.5em ;
-    font-size: 1.5em ;
+    margin: 1.5em 0.5em 1.0em 0.5em ;
+    font-size: 1.2em ;
   }
   td,th {
-    font-size: 1em ;
+    font-size: 0.9em ;
   }
   .pad {
      padding-left:2em ;
@@ -16,407 +16,59 @@ css:
   ul.browser-default li {
     list-style-type: inherit;
   }
+  .title2 {
+    margin: 0.5em 0.5em 0.5em 0.5em ;
+  }
 
-p.pad
-  ul.browser-default
-    li
-      | config ファイルは、次の優先度で読み込まれます。
-      ol
-        li
-          | 環境変数 RASPIREC_CONF で指定したファイル(拡張子は .rb)
-        li
-          | $HOME/.config/raspirec/config.rb
-    li
-      | 現在読み込んでいるのは、#{ConfigPath} です。
-    li
-      | 配列の定義で、%w( 1 2 3 ) は [ "1", "2", "3" ] と等価です。
+- require_relative 'config.rb'
+- dp = Config.new()
+
+
+h2.title
+  | 目次
+  ol
+    li.title2
+      a href="#init" はじめに
+    li.title2
+      a href="#httpd" httpd
+    li.title2
+      a href="#dirFile" ディレクトリ、ファイル関係
+    li.title2
+      a href="#recTime" 録画タイミング関係
+    li.title2
+      a href="#tuner" チューナー関係
+    li.title2
+      a href="#epg"  EPG関係
+    li.title2
+      a href="#dlgOpt"  ダイアログのオプション初期値
+    li.title2
+      a href="#tsft"  TSファイル転送
+    li.title2
+      a href="#hlsMon"  HLS モニタ機能
+    li.title2
+      a href="#mpvMon"  mpv モニタ機能
+    li.title2
+      a href="#other"  その他
+
+hr
+
 
 div
-  table
-    tr
-      th
-        | 分類
-      th
-        | 定数名
-      th
-        | 現在値
-      th
-        | 説明
-    tr
-      th rowspan="1" 
-        | httpd
-      td 
-        | Http_port
-      td
-        = Http_port
-      td
-        | httpd のポート番号を指定する。<br>
-          WEBインターフェースには http://XXX.YYY.ZZZ:#{Http_port}/ でアクセスする。
-    tr
-      th rowspan="6" 
-        | ディレクトリ、<br>ファイル関係
-    tr
-      td 
-        | Recpt1_cmd
-      td
-        = Recpt1_cmd
-      td
-        | recpt1 コマンドの path を指定する。
-    tr
-      td 
-        | Recpt1_opt
-      td
-        = Recpt1_opt
-      td
-        | recpt1 コマンドのオプションを指定する。
-          b25 デコードをする場合は --b25 を指定する。
-    tr
-      td 
-        | Epgdump
-      td
-        = Epgdump
-      td
-        | epgdump コマンドの path を指定する。
+  ol
+    li.title
+      a name="init" はじめに
 
-    tr
-      td 
-        | BaseDir
-      td
-        = BaseDir
-      td
-        | raspirec がインストールされているディレクトリを設定する。
-          ( raspirec.rb があるディレクトリ )
-    tr
-      td 
-        | DataDir
-      td
-        = DataDir
-      td
-        | データベースや録画したファイルの置き場所を指定する。
+    ul.browser-default
+      li
+        | config ファイルは、次の優先度で読み込まれます。
+      ol
+          li
+            | 環境変数 RASPIREC_CONF で指定したファイル(拡張子は .rb)
+          li
+            | $HOME/.config/raspirec/config.rb
+      li
+            | 現在読み込んでいるのは、#{ConfigPath} です。
+      li
+         | 配列の定義で、%w( 1 2 3 ) は [ "1", "2", "3" ] と等価です。
 
-
-    tr
-      th rowspan="4" 
-        | 録画タイミング関係
-    tr
-      td 
-        | Start_margin
-      td
-        = Start_margin
-      td
-        | 番組開始前の録画マージンを指定(秒)。
-        | 録画は PC の時計を基準に、開始します。
-    tr
-      td 
-          | After_margin
-      td
-        = After_margin
-      td
-        | 番組終了後の録画マージンを指定(秒)
-        | 録画は PC の時計を基準に、終了します。
-    tr
-      td 
-        | Gap_time 
-      td
-        = Gap_time 
-      td
-        | 録画が連続し、前番組が時短になった場合の、
-        | 前番組録画終了から次番組開始間隔を指定(秒)。<br>
-        | 前番組は  Start_margin +  Gap_time の秒数だけ
-        | 録画時間が削られます。<br>
-        | TVチューナー依存ですが、あまり短いと動作が不安定になります。
-
-    tr
-      th rowspan="4" 
-        | チューナー関係
-    tr
-      td 
-        | GR_tuner_num
-      td
-        = GR_tuner_num
-      td
-        | 地デジチュナー数
-    tr
-      td 
-        | BSCS_tuner_num
-      td
-        = BSCS_tuner_num
-      td
-        | BSCSチュナー数
-    tr
-      td 
-        | Total_tuner_limit
-      td
-        = Total_tuner_limit
-      td
-        | トータルチュナー数制限を掛ける場合に指定する。
-          通常は GR_tuner_num +  BSCS_tuner_num = Total_tuner_limit
-
-
-    tr
-      th rowspan="9" 
-        | EPG関係
-    tr
-      td 
-        | GR_EPG_channel
-      td
-        = GR_EPG_channel
-      td
-        | 地デジ EPG 受信局を設定する。<br>
-        | 東京スカイツリーならば 
-        | %w( 27 26 25 24 22 23 21 16 ) になります。
-        a href="https://www.maspro.co.jp/contact/channel.pdf#page=4" 参考
-        
-    tr
-      td 
-        | BS_EPG_channel
-      td
-        = BS_EPG_channel
-      td
-        | BS EPG 受信局を設定する。BSを受信しない場合は空にする。<br>
-        | 通常の番組情報は、どれか 1局だけ受信すれば十分だが、
-        | 詳細情報を取得するには、その情報を取りたい局を指定する必要がある。
-    tr
-      td 
-        | CS_EPG_channel
-      td
-        = CS_EPG_channel
-      td
-        |  CS EPG 受信局を設定する。CSを受信しない場合は空にする。
-    tr
-      td 
-        | GR_EpgRsvTime
-      td
-        = GR_EpgRsvTime
-      td
-        | 地デジ EPG受信時間 (秒)
-    tr
-      td 
-        | BS_EpgRsvTime
-      td
-        = BS_EpgRsvTime
-      td
-        | BS EPG受信時間 (秒)
-    tr
-      td 
-        | CS_EpgRsvTime
-      td
-        = CS_EpgRsvTime
-      td
-        | CS EPG受信時間 (秒)
-    tr
-      td 
-        | EPGperiod
-      td
-        = EPGperiod
-      td
-        | EPG 取得周期 (H)
-
-    tr
-      td 
-        | EpgBanTime
-      td
-        = EpgBanTime
-      td
-        | EPG の取得禁止時間帯の指定。(24H制 時間単位)<br>
-          1時から5時までを禁止したい場合は、[ 1,2,3,4,5 ] と指定する。
-
-
-
-    tr
-      th rowspan="4" 
-        | ダイアログの<br>オプション初期値
-    tr
-      td 
-        | D_FreeOnly 
-      td
-        = D_FreeOnly 
-      td
-        | 無料放送のみ
-    tr
-      td 
-        | D_dedupe
-      td
-        = D_dedupe
-      td
-        | 重複予約は無効化する
-    tr
-      td 
-        | D_jitan
-      td
-        = D_jitan
-      td
-        | チューナー不足の場合に時短を許可
-
-
-    tr
-      th rowspan="6" 
-        | TSファイル転送
-    tr
-      td 
-        | TSFT
-      td
-        = TSFT
-      td
-        | true=転送機能有効 true以外=無効<br>
-        | この機能を使うには、送り先のホストに対して,パスワードなしで ssh,scp
-        | アクセス可能なように設定されていることが必要です。
-    tr
-      td 
-        | TSFT_host
-      td
-        = TSFT_host
-      td
-        | 送り先 ホスト名
-    tr
-      td 
-        | TSFT_user
-      td
-        = TSFT_user
-      td
-        | 送り先 login名
-    tr
-      td 
-        | TSFT_toDir
-      td
-        = TSFT_toDir
-      td
-        | 送り先Dir
-    tr
-      td 
-        | TSFT_rate
-      td
-        = TSFT_rate
-      td
-        | 想定転送速度 ( Mbyte/秒 )<br>
-        | この数字を使って、空き時間に転送する／しないを判断します。
-
-
-    tr
-      th rowspan="5" 
-        | モニタ機能
-        br
-        a href="/help#monitor" (?)
-
-    tr
-      td 
-        | MonitorFunc
-      td
-        = MonitorFunc
-      td
-        | true=モニタ機能を有効
-    tr
-      td 
-        | StreamDir
-      td
-        = StreamDir
-      td
-        | ストリーム出力先ディレクトリ
-    tr
-      td 
-        | MonitorWidth
-      td
-        = MonitorWidth
-      td
-        | モニタ画面の横幅
-    tr
-      td 
-        | HlsConvCmd
-      td
-        = HlsConvCmd
-      td
-        | HLS変換コマンド
-
-    tr
-      th rowspan="11" 
-        | その他
-    tr
-      td 
-        | TSnameFormat
-      td
-        = TSnameFormat
-      td
-        | TSファイル名の生成ルール。詳細は
-        a href="/help#TSnameFormat" Help 
-        | を参照して下さい。
-        
-    tr
-      td 
-        | LogSaveDay
-      td
-        = LogSaveDay
-      td
-        | ログの保持期間(日)
-    tr
-      td 
-        | RsvHisSaveDay
-      td
-        = RsvHisSaveDay
-      td
-        | 録画済み記録の保持期間(日)
-    tr
-      td 
-        | DiskKeepPercent
-      td
-        = DiskKeepPercent
-      td
-        | 録画したTSファイルを古い順に削除して指定したDisk容量(%)を確保する。
-        | <br> (指定するのは空き容量)
-        | 機能を無効にする場合は false を指定する。
-
-    tr
-      td 
-        | Local_jquery
-      td 
-        = Local_jquery
-      td 
-        | オフライン環境で動作させる為に jquery, materialize のライブラリを
-        | ローカルにコピーした場合に、true にする。<br>
-        | 詳細は doc/jquery_local.md を参照の事。
-        | 通常は false 
-
-    tr
-      td 
-        | StationPage
-      td
-        = StationPage
-      td
-        | 番組表で、1ページ当たりの放送局数 (個) の初期値
-
-    tr
-      td 
-        | Debug
-      td
-        = Debug
-      td
-        | ture で Debug モード。ログファイルを出力するようになる。
-        | オプションで、 -d を指定するのと同じ。
-    tr
-      td 
-        | Debug_mem
-      td
-        = Debug_mem
-      td
-        | ture で メモリの消費量をモニタするようになる。
-
-    tr
-      td 
-        | TitleRegex
-      td
-        = TitleRegex
-      td
-        | 「自動予約」ボタンを押して番組検索に遷移した時に、
-        | 番組タイトルから「題名」を生成する為の、余計な文字を削除する
-        | 正規表現の配列
-
-    tr
-      td 
-        | SearchStringRegex
-      td
-        = SearchStringRegex
-      td
-        | 「自動予約」ボタンを押して番組検索に遷移した時に、
-        | 番組タイトルから「検索文字列」を生成する為の、余計な文字を削除する
-        | 正規表現の配列
-
-
+    == dp.printHTML()
