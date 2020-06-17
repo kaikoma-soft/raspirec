@@ -72,7 +72,7 @@
 
 | 定数名             | 説明 |
 |--------------------|------|
-|MonitorFunc|true=モニタ機能を有効, false=無効。 無効の場合は、下記のパラメータは無視される。設定方法は <a href="https://kaikoma-soft.github.io/raspirec-opt.html"> こちら </a> を参照して下さい。|
+|MonitorFunc|true=モニタ機能を有効, false=無効。 無効の場合は、下記のパラメータは無視される。設定方法は <a href="https://kaikoma-soft.github.io/raspirec-option.html"> こちら </a> を参照して下さい。|
 |StreamDir|ストリーム出力先ディレクトリ|
 |MonitorWidth|モニタ画面の横幅|
 |HlsConvCmd|HLS変換コマンド|
@@ -81,7 +81,7 @@
 
 | 定数名             | 説明 |
 |--------------------|------|
-|MPMonitor|true = mpv モニタ機能を有効、false = 無効 <br>無効の場合は、下記のパラメータは無視される。設定方法は <a href="https://kaikoma-soft.github.io/raspirec-opt.html"> こちら </a> を参照して下さい。|
+|MPMonitor|true = mpv モニタ機能を有効、false = 無効 <br>無効の場合は、下記のパラメータは無視される。設定方法は <a href="https://kaikoma-soft.github.io/raspirec-option.html"> こちら </a> を参照して下さい。|
 |DeviceList_GR|地デジのデバイスファイルを指定する。|
 |DeviceList_BSCS|BS,CS のデバイスファイルを指定する。|
 |MPlayer_cmd|mpv のコマンド及び引数を指定する。|
