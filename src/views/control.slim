@@ -83,7 +83,7 @@ javascript:
   $('#tsft').change(function() {
     $('#tsft').each(function() {
       var r = $(this).prop('checked');
-      console.log(r);
+      //console.log(r);
       $.ajax({
          url: '/control/tsft/' + r,
          type:"get",

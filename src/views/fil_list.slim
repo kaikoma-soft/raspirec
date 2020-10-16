@@ -6,9 +6,6 @@ css:
   #item {
     width:8em;
   }
-  #title {
-     margin-bottom: 2em;
-  }
   a.btn {
      margin: 1em 2em 2em 2em;
   }
@@ -18,9 +15,19 @@ css:
   #cbcomm {
     color: #000000;
   }
+  label { color: #000000} 
   #title {
-     margin: 0.5em 0.5em 0.5em 0.5em;
+     margin: 0.5em 10em 0.5em 0.5em;
      font-size: 1.5em
+  }
+  #sort {
+     margin: 0.5em 0.5em 0.5em 0.5em;
+     padding-right: 2em ;
+     background-color: #e1e2e3;
+  }
+  #rb {
+     padding: 0em 2em 0em 1.6em;
+     font-size: 1.3em
   }
   td,th {
      padding-top: 7px;
@@ -28,19 +35,52 @@ css:
   }
 
 - require_relative 'fil_list.rb'
-- dp = FilterList.new( @parms, session )
+- dp = FilterList.new( @params, session )
 
 
-div
-  h1#title ==dp.printTitle()
-  br
-  // a.btn.waves-effect.waves-light#button-a href="/fil_ins" 新規登録
+.row
+  .col
+    // h1#title ==dp.printTitle()
+    - if dp.type == FilConst::AutoRsv
+      h1#title 自動予約一覧
+      input type="hidden" id="url" value="/aut_rsv_list"
+    - else
+      h1#title フィルター一覧
+      input type="hidden" id="url" value="/fil_list"
 
+  .col#sort
+    label
+      span#rb  表示順
+    label
+      input name="stype" type="radio" value="title" checked=(dp.radioST[ARSort::Title])
+        span#rb  タイトル
+    label
+      input name="stype" type="radio" value="reg" checked=(dp.radioST[ARSort::Reg])
+        span#rb  登録順
+    label
+      input name="stype" type="radio" value="cate" checked=(dp.radioST[ARSort::Cate])
+        span#rb  ジャンル
+    label
+      input name="stype" type="radio" value="num" checked=(dp.radioST[ARSort::Num])
+        - if dp.type == FilConst::Filter
+          span#rb 一致件数順
+        - else
+          span#rb 予約件数順
+
+    label
+      input.cb#cb type="checkbox" name="reverse" checked=(dp.radioST[ARSort::Reverse])
+        span 逆順
+
+.row
   table.striped
     tr
       th No
       th タイトル or 検索文字列
-      th 件数
+      th ジャンル(大項目)
+      - if dp.type == FilConst::AutoRsv
+        th 予約件数
+      - else 
+        th 一致件数
       th アクション
     == dp.printTable()
 
@@ -81,3 +121,26 @@ javascript:
     });
 
 == Commlib::include( SrcDir + "/views/move_top.html" )
+
+javascript:
+  $(function(){
+    $( 'input[name="stype"]:radio' ).change( function() {
+      var radioval = $(this).val();
+      var url = document.getElementById( "url" ).value ;
+      var url2 = url + "?sort_type=" + radioval
+      console.log(url2)
+      window.location.href = url2
+    });
+  });
+
+  $(function(){
+    $('.cb').on('change', function () {
+       var url = document.getElementById( "url" ).value ;
+       if ($(this).prop('checked')) {
+         url = url + "?reverse=on";
+      } else {
+         url = url + "?reverse=off";
+      }
+      window.location.href = url ;
+    });
+  });

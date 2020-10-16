@@ -6,7 +6,7 @@
         if ( fa_flag == 1) return false
 
         var proid = $(this).attr('rid');
-        console.log( proid );
+        //console.log( proid );
         //event.preventDefault();
         $("#sample-dialog").load('/prg_dialog/' + proid );
         $("#sample-dialog").dialog({
@@ -21,7 +21,7 @@
                       async:  true,
                       timeout: 30000
                     }).done( function(data) {
-                        console.log( data );
+                        //console.log( data );
                         $("#sample-dialog2").html(data);
                     })
                     confirmDialog( proid );

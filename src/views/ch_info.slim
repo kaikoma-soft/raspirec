@@ -90,7 +90,7 @@ javascript:
     $(".btn").click(function(event){
         var chid = $(this).attr('chid');
         event.preventDefault();
-        console.log( chid );
+        //console.log( chid );
         $.ajax({
             url:  '/ch_info/del/' + chid,
             type: "POST",
