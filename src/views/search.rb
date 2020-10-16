@@ -56,7 +56,19 @@ class Search
     str2.sub!(/^　/,'')
     return str2.strip
   end
-  
+
+  #
+  #  番組情報のカテゴリから小項目を削る。(全てにする)
+  #
+  def cateSubZero( cate )
+    ret = {}
+    cate.each do |tmp|
+      tmp2 = tmp.sub(/(\d+)-(\d+)/,'\1-0')
+      ret[ tmp2 ] = 1
+    end
+    return ret.keys.sort
+  end
+    
   #
   #  form の設定値を決定
   #
@@ -76,7 +88,7 @@ class Search
           [ :categoryT1, :categoryT2, :categoryT3 ].each do |sym|
             tmp << row[0][sym] if row[0][sym] != nil
           end
-          data[:cate] = tmp.join(" ")
+          data[:cate] = cateSubZero( tmp ).join(" ")
         end
       end
     elsif filid != nil          # 変更

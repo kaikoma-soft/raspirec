@@ -115,34 +115,24 @@ end
 #
 #  番組表
 #
-get '/prg_tbl/*/*/*' do |band,day,time|
+def prg_tbl( band = nil ,day = nil, time = nil )
   @title = "番組表"
   session[:band] = @band = band
   session[:day]  = @day  = day
   session[:time] = @time = time
-  session[:from] = "/prg_tbl/#{band}/#{day}/#{time}"
-  slim :prg_tbl
-end
-
-get '/prg_tbl/*' do |band|
-  @title = "番組表"
-  session[:band] = @band = band
-  session[:day]  = @day  = nil
-  session[:time] = @time = nil
-  session[:from] = "/prg_tbl/#{band}"
   session[:fa_type] = :none
-
   slim :prg_tbl
 end
 
-get '/prg_tbl' do
-  session[:band] = nil
-  session[:day]  = nil
-  session[:time] = nil
-  session[:from] = nil
-  slim :prg_tbl
-end
+get '/prg_tbl/*/*/*' do |band,day,time| prg_tbl( band,day,time ) end
+get '/prg_tbl/*'     do |band|          prg_tbl( band ) end
+get '/prg_tbl'       do                prg_tbl( ) end
 
+
+
+#
+#  番組表(局ごと)
+#
 get '/ch_tbl/*' do |ch|
   @ch = ch
   if @params["skip"] != nil
@@ -161,15 +151,6 @@ post '/ch_info/del/*' do |chid|
 end
 get '/ch_info' do
   slim :ch_info
-end
-
-
-def fil_dispatch()
-  if session[:fa_type] == :filter
-    redirect "/fil_list",301
-  else
-    redirect "/aut_rsv_list",301
-  end
 end
 
 
@@ -198,18 +179,20 @@ end
 
 
 
-get '/search/*/*' do |mode,id|             #
+get '/search/*/*' do |mode,id|  # 番組検索(既存)
   case mode
   when "pro" then @proid = id ; @filid = nil
   when "fil" then @filid = id ; @proid = nil
   end
   slim :search
 end
-get '/search' do              #
+get '/search' do                # 番組検索(新規)
   @proid = nil
   slim :search
 end
-post '/sea_add/*' do |type|             #
+
+# フィルター or 自動予約の追加
+post '/sea_add/*' do |type|             
   fp = FilterM.new(@params)
   type2 = type == "fil" ? :filter : :autoRsv
   id = fp.add( @params, type2 )
@@ -240,7 +223,12 @@ post '/fil_del/*' do |id|       # フィルター削除
   @id = id
   fp = FilterM.new(@params)
   fp.del(id)
-  redirect "/fil_list",301
+
+  case session[:fa_type]        # 元のページに戻る
+  when :autoRsv  then  redirect "/aut_rsv_list",301
+  when :filter   then  redirect "/fil_list",301
+  when :rsv_list then  redirect "/rsv_list",301
+  end
 end
 
 post '/fil_testrun' do          # フィルター テスト実行
@@ -258,9 +246,9 @@ end
 
 
 #
-#   自動予約
+#   自動予約一覧
 #
-get '/aut_rsv_list' do          # 自動予約一覧;
+get '/aut_rsv_list'   do
   session[:fa_type] = :autoRsv
   slim :fil_list
 end
@@ -269,37 +257,24 @@ end
 #
 #  コントロールパネル
 #
-get '/control/*/*' do |act,arg|
+def control( act ,arg = nil )
   cp = Control.new()
   case act
-  when "logdel" then cp.logdel( arg )
-  when "tsft"   then cp.tsft( arg )
-  end
-  redirect "/",301
-  #slim :control
-end
-get '/control/*' do |act|
-  cp = Control.new()
-  case act
+  when "logdel"  then cp.logdel( arg )
+  when "tsft"    then cp.tsft( arg )
   when "epg"     then cp.epg()
   when "filupd"  then cp.filupd()
   when "restart" then cp.restart()
   when "stop"    then cp.stop()
-  else DBlog::sto("not found #{act}")
-  end
-  redirect "/",301
-  #slim :control
-end
-
-post '/control/*' do |act|
-  cp = Control.new()
-  case act
   when "fcopy"   then cp.fcopy( @params )
+  else DBlog::sto("control() not found #{act}")
   end
   redirect "/",301
 end
-
-get '/control' do
+get  '/control/*/*' do |act,arg| control( act ,arg )  end
+get  '/control/*'   do |act|     control( act )  end
+post '/control/*'   do |act|     control( act )  end
+get  '/control'     do
   slim :control
 end
 

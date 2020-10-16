@@ -8,7 +8,7 @@
 module Const
 
   ProgName = "raspirec β"
-  ProgVer  = "Ver 0.5.0"
+  ProgVer  = "Ver 0.6.0"
     
   GR   = "GR"
   GRJ  = "地デジ"
@@ -107,3 +107,19 @@ module StatConst
   EPGget   = 2
   RecNow   = 4
 end
+
+#
+#  自動予約一覧の sort type
+#
+module ARSort
+  Title  = 0
+  Reg    = 1
+  Cate   = 2
+  Num    = 3
+  Reverse= 4
+  Off    = 0                    # off
+  On     = 1                    # on
+  KeyNameT = "ARSortType"
+  KeyNameR = "ARSortReverse"
+end
+

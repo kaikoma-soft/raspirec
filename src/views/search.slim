@@ -45,21 +45,28 @@ css:
   .col
     a.btn.waves-effect.waves-light.submit#auto_reg data-act="/sea_add/auto" 自動予約登録
   .col
+    - flag = @filid == nil ? "disabled" : ""
+    a.btn.waves-effect.waves-light.submit#del class="#{flag}" data-act="/fil_del/#{@filid}" 削除
+  .col
     a.btn.waves-effect.waves-light href="javascript:history.back()" 戻る
 .row
   form id="form2" method="POST" action="/search"
     == sp.p_hidden( @filid )
     table.striped
       tr
-        th 題名
+        th 題名 ☆
         td
-          input.validate#in name="title1"  type="text" value="#{dp[:title1]}"
+          input.validate#title1 name="title1"  type="text" value="#{dp[:title1]}"
       tr
         th.nowrap 
           | 検索文字列 &nbsp;
           a href="/help#search" ？
         td
-          input.validate#in name="key" type="text" value="#{dp[:key]}"
+          .row
+            .col.s8
+              input.validate#key name="key" type="text" value="#{dp[:key]}"
+            .col.s4
+              a.btn.waves-effect.waves-light#copy  ☆に値をコピー
       tr
         th 除外文字列
         td
@@ -147,7 +154,7 @@ css:
                   | 過去に録画したタイトルと一致した場合は無効にする。
           .col.m8
             div.input-field.inline 
-              span 保存サブディレクトリ
+              span 保存サブディレクトリ ☆
               input id="email_inline" type="text" list="dlist" name="dir" size="60" class="validate" value="#{dp[:subdir]}" autocomplete="off"
               datalist id="dlist"
                   == sp.dirList
@@ -185,6 +192,13 @@ javascript:
     event.preventDefault();
     $('#form2').attr('action', $(this).data('act'));
     $('#form2').submit();
+  });
+
+  $('#copy').click(function(event) {
+    event.preventDefault();
+    var a = document.getElementById( "key" ).value ;
+    document.getElementById( "title1" ).value = a ;
+    document.getElementById( "email_inline" ).value = a;
   });
 
 javascript:

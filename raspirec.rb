@@ -19,9 +19,10 @@ $opt = {
   :f => false,                  # forground
   :lc => false,                 # log clear
   :dc => false,                 # db clear
+  :conf => nil,                 # config file 指定
 }
 $debug = Debug
-
+LoopMax = 99
 
 OptionParser.new do |opt|
   opt.on('-d') {|v| $debug = true } 
@@ -29,6 +30,7 @@ OptionParser.new do |opt|
   opt.on('--kill') { Control.new.stop(); exit } # kill process
   opt.on('--lc') {|v| $opt[:lc] = true }        # log clear
   opt.on('--dc') {|v| $opt[:dc] = true }        # db clear
+  opt.on('--config FILE') {|v| $opt[:conf] = v } # config 
   opt.parse!(ARGV)
 end
 
@@ -82,6 +84,8 @@ def daemonStart( )
   end
 end
 
+$timer_main = "#{SrcDir}/timer_main.rb"
+$httpd_main = "#{SrcDir}/httpd_main.rb"
 
 #
 #  main loop
@@ -93,13 +97,16 @@ def mainLoop()
     fp.puts( Process.pid  )
   end
 
-  pids = []
-
+  if $opt[:conf] != nil
+    ENV["RASPIREC_CONF_OPT"] = $opt[:conf]
+  end
   
+  pids = []
   pids << Thread.new do
+    tcount = 0
     while true
       $timer_pid = fork do
-        args = [ "#{SrcDir}/timer_main.rb"]
+        args = [ $timer_main ]
         args << "--debug" if $debug == true
         exec("ruby", *args )
       end
@@ -108,13 +115,16 @@ def mainLoop()
       DBlog::sto("timer_main end")
       sleep 1
       break if $endParoc == true
+      break if tcount > LoopMax
+      tcount += 1
     end
   end
   
   pids << Thread.new do
+    hcount = 0
     while true
       $httpd_pid = fork do
-        args = [ "#{SrcDir}/httpd_main.rb", "-o", "0.0.0.0"]
+        args = [ $httpd_main, "-o", "0.0.0.0"]
         if Http_port != nil and Http_port > 0
           args += [ "-p", Http_port.to_s ]
         end
@@ -126,6 +136,8 @@ def mainLoop()
       DBlog::sto("httpd_main end")
       sleep 1
       break if $endParoc == true
+      break if hcount > LoopMax
+      hcount += 1
     end
   end
 
@@ -200,7 +212,14 @@ File.open( MainLockFN, File::RDWR|File::CREAT, 0644) do |fl|
   $endParoc = false
 
   setTrap()
-  
+
+  [ $timer_main , $httpd_main].each do |fname|
+    unless test( ?f, fname )
+      puts("Error: #{fname} not found")
+      exit
+    end
+  end
+
   if $opt[:f] == false
     daemonStart{ mainLoop() }
   else

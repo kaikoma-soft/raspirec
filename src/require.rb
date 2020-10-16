@@ -12,6 +12,7 @@ require 'etc'
 #  config
 #
 files = [ ]
+files << ENV["RASPIREC_CONF_OPT"] if ENV["RASPIREC_CONF_OPT"] != nil
 files << ENV["RASPIREC_CONF"] if ENV["RASPIREC_CONF"] != nil
 files << ENV["HOME"] + "/.config/raspirec/config.rb"
 files.each do |cfg|

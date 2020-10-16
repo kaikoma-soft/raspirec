@@ -87,7 +87,7 @@ class Top
     else
       if test( ?f, EPGLockFN )
         r[:stat] = stat2 == StatConst::FileCopy ? "ファイル転送中" : "EPG取得中"
-      elsif reserveNum == 0
+      elsif reserveNum == 0 or nextRecTime == nil
         r[:stat] = "予約待ち"
       elsif nextRecTime > 0
         t = sec2str( nextRecTime - now )

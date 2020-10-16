@@ -41,6 +41,29 @@ class DBcategory
     [ rl, rm ]
   end
 
+  #
+  #  カテゴリの id 列(6-55 6-57 9-68) から文字列に変換 (大項目のみ)
+  #
+  def ids2str(db, ids )
+    cate = {}
+    ids.split(/\s/).each do |tmp|
+      l = m = 0
+      if tmp =~ /(\d+)-(\d+)/
+        l,m = $1.to_i,$2.to_i
+      elsif tmp =~ /(\d+)/
+        l,m = $1.to_i,nil
+      end
+      if l == 0
+        cate = { "全て" => 1 }
+        break
+      else
+        ls, m = conv2str(db, l,  nil )
+        cate[ ls ] = 1
+      end
+    end
+    return cate.keys.sort.join(", ")
+  end
+  
 
   #
   #  json文字列から id に変換

@@ -119,8 +119,9 @@ class ChTbl
     cls2 = cls != nil ? %Q{class='#{cls.join(" ")}'} : ""
     tip2 = tip != nil ? %Q{data-tooltip="#{tip}"} : ""
     pid2 = pid != nil ? %Q{pid="#{pid}"} : ""
+    moni = %Q(moni="off")
 
-    sprintf(%Q{  <div %s %s %s %s> %s </div>},cls2, pid2,tip2,style, text )
+    sprintf(%Q{  <div %s %s %s %s %s> %s </div>},cls2, pid2,tip2,style,  moni,text )
   end
   
   #

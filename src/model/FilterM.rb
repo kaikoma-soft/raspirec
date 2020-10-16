@@ -49,8 +49,20 @@ class FilterM
     #printf("%x, %b ",tmp,tmp )
     d[:jitan] |= tmp
 
+    d[:category] = cateNormalization( d[:category]  )
+    
     d
   end
+
+  #
+  #  カテゴリに全てがある場合は、それ以外は削除する。
+  #
+  def cateNormalization( category  )
+    tmp = category.split
+    return "0" if tmp.include?("0")
+    return category
+  end
+
   
   #
   #  新規登録/変更
