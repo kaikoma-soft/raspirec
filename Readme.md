@@ -28,7 +28,7 @@ recpt1/recdvb,epgdump を使って TV番組を録画する録画サーバーを�
 
 ## 詳細
 インストール方法等の詳細は、
-[GitHub Pages](https://kaikoma-soft.github.io/raspirec.html)
+[GitHub Pages](https://kaikoma-soft.github.io/src/raspirec.html)
 を参照して下さい。
 
 
