@@ -8,7 +8,7 @@
 module Const
 
   ProgName = "raspirec β"
-  ProgVer  = "Ver 0.6.0"
+  ProgVer  = "Ver 0.6.1"
     
   GR   = "GR"
   GRJ  = "地デジ"
@@ -123,3 +123,10 @@ module ARSort
   KeyNameR = "ARSortReverse"
 end
 
+#
+#  フィルター一覧の sort type
+#
+module FilSort
+  KeyNameT = "FilSortType"
+  KeyNameR = "FilSortReverse"
+end

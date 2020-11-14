@@ -33,16 +33,23 @@ class FilterList
                     when "on"  then ARSort::On
                     end
     DBaccess.new().open do |db|
+      if @type == FilConst::AutoRsv
+        type_name = ARSort::KeyNameT
+        reverse_name = ARSort::KeyNameR
+      else
+        type_name = FilSort::KeyNameT
+        reverse_name = FilSort::KeyNameR
+      end
       keyval = DBkeyval.new
       if @sort_type == nil
-        @sort_type = keyval.select( db, ARSort::KeyNameT )
+        @sort_type = keyval.select( db, type_name )
       else
-        keyval.upsert( db, ARSort::KeyNameT, @sort_type )
+        keyval.upsert( db, type_name, @sort_type )
       end
       if @sort_reverse == nil
-        @sort_reverse = keyval.select( db, ARSort::KeyNameR )
+        @sort_reverse = keyval.select( db, reverse_name )
       else
-        keyval.upsert( db, ARSort::KeyNameR, @sort_reverse )
+        keyval.upsert( db, reverse_name, @sort_reverse )
       end
     end
 
