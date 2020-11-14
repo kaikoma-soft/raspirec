@@ -13,8 +13,8 @@ Http_port    httpd のポート番号を指定する。<BR>WEBインターフェ
 +            http://XXX.YYY.ZZZ:${Http_port}/ でアクセスする。
 EOS
     "dirFile" => <<-EOS,
-Recpt1_cmd   recpt1 コマンドの path を指定する。
-Recpt1_opt   recpt1 コマンドのオプションを指定する。
+Recpt1_cmd   recpt1/recdvb コマンドの path を指定する。
+Recpt1_opt   recpt1/recdvb コマンドのオプションを指定する。
 +            b25 デコードをする場合は --b25 を指定する。
 Epgdump      epgdump コマンドの path を指定する。
 BaseDir      raspirec がインストールされているディレクトリを設定する。
