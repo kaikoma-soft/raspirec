@@ -11,10 +11,36 @@ require 'digest/md5'
 
 class FileCopy
 
+  LockFile = TSDir + "/scp.lock"
+
   def initialize(  )
   end
 
+  #  
+  #  排他制御
+  #
+  def lock( lockf = LockFile )
+
+    File.open( lockf, File::RDWR|File::CREAT, 0644) do |fl|
+      if fl.flock(File::LOCK_EX|File::LOCK_NB) == false
+        DBlog::debug( nil,"scp locked")
+        return false
+      else
+        yield
+      end
+    end
+    if test(?f, lockf )
+      #puts( "lock file delete")
+      File.unlink( lockf )
+    end
+    true
+  end
+
   def start( time_limit )
+    lock() { start2( time_limit ) }
+  end
+  
+  def start2( time_limit )
     
     reserve  = DBreserve.new
     list = nil

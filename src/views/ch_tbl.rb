@@ -185,10 +185,12 @@ class ChTbl
           chname= tmp[:name]
           rid   = tmp[:id]
           pid   = tmp[:pid]
+          title = tmp[:title].gsub(/\"/,"&quot;")
+          
           stime = Time.at( tmp[:start] ).strftime("%H:%M")
           etime = Time.at( tmp[:end] ).strftime("%H:%M")
-          tip   = %Q{#{chname}<br>#{tmp[:title]}<br>#{stime} 〜 #{etime}}
-          r << printItem( l, tmp[:title], pid: pid, tip: tip, cls: cls )
+          tip   = %Q{#{chname}<br>#{title}<br>#{stime} 〜 #{etime}}
+          r << printItem( l, title, pid: pid, tip: tip, cls: cls )
           
           ct = tmp[:end]
           if tmp[:end] > et
