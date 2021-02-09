@@ -10,7 +10,7 @@
 #   STREAM_DIR    出力先ディレクトリ
 #   PLAYLIST      PLAYLIST 出力ファイル名
 
-PATH=/usr/bin:/usr/local/bin:/bin:$PATH
+#PATH=/usr/bin:/usr/local/bin:/bin:$PATH
 
 #set -x
 

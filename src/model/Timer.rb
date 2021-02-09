@@ -314,14 +314,8 @@ class Timer
   #
   def makeCh( data )
     r = []
-    case data[:band]
-    when Const::GR
-      r << data[:stinfo_tp].to_s
-    when Const::BS
-      r << sprintf("%s_%s",data[:stinfo_tp], data[:stinfo_slot] )
-    when Const::CS
-      r << data[:stinfo_tp].to_s
-    end
+    phch = Commlib::makePhCh( data )
+    r << phch
     r += [ "--sid", data[:svid].to_s + ",epg" ]
     r
   end

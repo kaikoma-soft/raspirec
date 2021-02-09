@@ -9,7 +9,7 @@
 class ChaneruInfo
 
   attr_reader :name, :skip, :phch, :svid, :tt
-  
+
   def initialize( )
     ( @data,  @chid_prog ) = getChData( )
     @older = 3600 * 24 * 31     # 1ヶ月
@@ -27,7 +27,7 @@ class ChaneruInfo
 
       # 過去から全ての予約数
       reserve = DBreserve.new
-      prog = reserve.select( db ) 
+      prog = reserve.select( db )
       prog.each do |tmp|
         chid_prog[ tmp[:chid] ] ||= 0
         chid_prog[ tmp[:chid] ] += 1
@@ -35,7 +35,7 @@ class ChaneruInfo
     end
     [ ret, chid_prog ]
   end
-  
+
   #
   #  表
   #
@@ -47,16 +47,18 @@ class ChaneruInfo
     now = Time.now.to_i
     @data.each do |d|
       t = d[:updatetime].to_i
+      next if t == -1
       color = now - t > @older ? "color9" : ""
       date = t == 0 ? "-" : Time.at( t ).strftime("%Y-%m-%d %H:%M:%S")
       skip = d[:skip] == 1 ? "On" : "-"
       count = @chid_prog[ d[:chid] ] == nil ? 0 : @chid_prog[ d[:chid] ]
-      del = sprintf( b, count == 0 ? "" : "disabled" , d[:chid], )
-      
+      #del = sprintf( b, count == 0 ? "" : "disabled" , d[:chid], )
+      del = sprintf( b, "", d[:chid], )
+
       arg = [ n, d[:band], d[:chid], d[:name],d[:tsid],d[:onid],
-              d[:svid],d[:stinfo_tp],d[:stinfo_slot],skip, date, count, del]
+              d[:svid],d[:stinfo_tp],d[:stinfo_slot], skip, date, count, del]
       ret << Commlib::printTR2( arg, trcl: [color] )
-      n += 1 
+      n += 1
     end
     ret.join()
   end
@@ -78,9 +80,9 @@ class ChaneruInfo
       end
     end
     ret.join()
-    
-  end
-  
 
-  
+  end
+
+
+
 end

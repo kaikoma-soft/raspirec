@@ -308,7 +308,7 @@ class FilterM
     if fd[:freeonly] == RsvConst::FO
       where << "( freeCA = 0 )"
     end
-    where << "( c.skip = 0 )"
+    where << "( c.skip = 0 and c.updatetime > 0 )"
 
     # 放送時間制限
     ( jitan, timeLimitF, timeLimitV ) = Commlib::jitanSep( fd[:jitan] )

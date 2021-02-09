@@ -68,6 +68,13 @@ class DBchannel
     db.execute( sql, skip, chid )
   end
 
+  #
+  #  更新時間に -1 をセットして無効に
+  #
+  def invalid( db, chid )
+    sql = "update #{@tbl_name} set updatetime = -1 where chid = ? "
+    db.execute( sql, chid )
+  end
 
   #
   #  更新時間の取得
