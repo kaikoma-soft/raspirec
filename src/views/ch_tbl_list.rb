@@ -18,6 +18,7 @@ class ChTblList
       db.transaction do
         row = channel.select(db, order: "order by svid")
         row.each do |r|
+          next if r[:updatetime] == -1
           cl = r[:skip] == 0 ? "disp" : "skip"
           tmp = sprintf(%Q{ <a class="%s" href=#{Base}/%s > %s </a> },cl,r[:chid],r[:name])
           @ret[ r[:band] ] ||= []

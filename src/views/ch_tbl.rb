@@ -11,7 +11,7 @@ class ChTbl
   Base = "/ch_tbl"
 
   attr_reader :name, :skip, :phch, :svid, :tt
-  
+
   def initialize( chid )
 
     @chid = chid                # 対象チャンネル
@@ -26,7 +26,7 @@ class ChTbl
     pto = PTOption.new
     @hour_pixel = pto.hp        # 1時間の長さ (px)
     @tt         = pto.tt        # tooltip の表示の on/off
-    
+
   end
 
   #
@@ -39,17 +39,12 @@ class ChTbl
     if row.size > 0
       r = row.first
       @name = r[:name]
-      @skip = r[:skip] == 1 ? true : false 
+      @skip = r[:skip] == 1 ? true : false
       @svid = r[:svid]
-      @phch = case r[:band]
-              when Const::GR, Const::CS
-                r[:stinfo_tp].to_s
-              when Const::BS
-                sprintf("%s_%s",r[:stinfo_tp], r[:stinfo_slot] )
-              end
+      @phch = Commlib::makePhCh( r )
     end
   end
-  
+
   #
   #  番組データの取得
   #
@@ -72,19 +67,19 @@ class ChTbl
           rsvData[ day ] << r
         end
 
-        row = reserve.selectSP( db ) # stat: RsvConst::ActStat 
+        row = reserve.selectSP( db ) # stat: RsvConst::ActStat
         row.each do |tmp|
           @rsv[ tmp[:chid] ] ||= {}
           @rsv[ tmp[:chid] ][ tmp[:evid] ] = tmp[:stat]
         end
-        
+
       end
     end
 
     rsvData
   end
 
-  
+
   #
   #  縦軸(時間)の生成
   #
@@ -123,7 +118,7 @@ class ChTbl
 
     sprintf(%Q{  <div %s %s %s %s %s> %s </div>},cls2, pid2,tip2,style,  moni,text )
   end
-  
+
   #
   #  表
   #
@@ -140,7 +135,7 @@ class ChTbl
       end
       et = ct + @tate * 3600
       r << sprintf(%Q{<div class='dtc'>})
-      if @chData[day] == nil 
+      if @chData[day] == nil
         cls = [ "colorGray" ]
         r << printItem( ( et - ct), "&nbsp;", cls: cls  )
       else
@@ -186,12 +181,12 @@ class ChTbl
           rid   = tmp[:id]
           pid   = tmp[:pid]
           title = tmp[:title].gsub(/\"/,"&quot;")
-          
+
           stime = Time.at( tmp[:start] ).strftime("%H:%M")
           etime = Time.at( tmp[:end] ).strftime("%H:%M")
           tip   = %Q{#{chname}<br>#{title}<br>#{stime} 〜 #{etime}}
           r << printItem( l, title, pid: pid, tip: tip, cls: cls )
-          
+
           ct = tmp[:end]
           if tmp[:end] > et
             overlap = tmp
@@ -209,5 +204,5 @@ class ChTbl
     r.join("\n")
   end
 
-  
+
 end

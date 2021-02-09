@@ -157,6 +157,7 @@ class Search
           a[:name] <=> b[:name]
         end
       end.each do |ch|
+        next if ch[:updatetime] == -1
         if ch[:band ] != band
           band2 = ch[:band] == "GR" ? Const::GRJ : ch[:band]
           a << %Q(    <optgroup label="#{band2}">)

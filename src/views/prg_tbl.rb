@@ -82,6 +82,7 @@ class PrgTbl
 
       if row != nil
         row.each do |tmp|
+          next if tmp[:updatetime] == -1
           band  = tmp[:band]
           cname = tmp[:name]
           chid = tmp[ :chid ]

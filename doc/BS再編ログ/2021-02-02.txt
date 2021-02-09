@@ -1,0 +1,47 @@
+
+・実施内容
+  トランスポンダの移動
+  https://www.apab.or.jp/topics/2020/2101070001.html
+
+  BS 19ch→21ch   グリーンチャンネル
+  BS 21ch→19ch   J SPORTS 4
+
+  2021年2月2日(火)の早朝（午前０時～午前７時）
+  リーンチャンネルは（午前０時～午前６時５９分）
+
+・2021/02/02 以前の slot 構成
+
+  BS19_0    グリーンチャンネル
+  BS19_1    J SPORTS 1
+  BS19_2    J SPORTS 2
+
+  BS21_0    ＷＯＷＯＷプラス
+  BS21_1    J SPORTS 3
+  BS21_2    J SPORTS 4
+
+・2021/02/02 以後の slot 構成(予想)
+
+  BS19_0    J SPORTS 4
+  BS19_1    J SPORTS 1
+  BS19_2    J SPORTS 2
+
+  BS21_0    ＷＯＷＯＷプラス
+  BS21_1    J SPORTS 3
+  BS21_2    グリーンチャンネル
+
+・raspirec への影響
+
+  EPGデータが変更になったら、それを元に自動でDBを書き換えるので対応は
+  不要の筈。
+  
+・結果
+
+  予定通り EPG 取得後に channel情報変更がされ問題なし。
+
+  07:08:05: channel情報変更 グリーンチャンネル tsid 18224 -> 18258
+  07:08:05: channel情報変更 グリーンチャンネル stinfo_tp BS19 -> BS21
+  07:08:05: channel情報変更 グリーンチャンネル stinfo_slot 0 -> 2
+  07:08:05: channel情報変更 Ｊ ＳＰＯＲＴＳ ４ tsid 18258 -> 18224
+  07:08:05: channel情報変更 Ｊ ＳＰＯＲＴＳ ４ stinfo_tp BS21 -> BS19
+  07:08:05: channel情報変更 Ｊ ＳＰＯＲＴＳ ４ stinfo_slot 2 -> 0
+

@@ -8,14 +8,14 @@
 class MpvMonMain
 
   attr_reader   :data, :devs2
-  
+
   def initialize(  )
     @data = {}
     @band    = %w( GR BSCS 3W )
     @prefix = "DeviceList"
     @devs = DeviceList_GR + DeviceList_BSCS
     @devs2 = []
-      
+
     count = 0
     @band.each do |suffix|
       name = @prefix + "_" + suffix
@@ -40,7 +40,7 @@ class MpvMonMain
         @data[dev2].stat = :NotFond
       end
     end
-    
+
   end
 
   #
@@ -67,7 +67,7 @@ class MpvMonMain
     end
   end
 
-  
+
   #
   #  空いている適当な device名を返す
   #
@@ -90,14 +90,14 @@ class MpvMonMain
     nil
   end
 
-   
+
 end
 
-class MpvMonM 
+class MpvMonM
 
   attr_reader   :devfn, :devfnF, :band, :rec_pid, :mpv_pid, :phch, :chName, :prog_name, :prog_detail, :fifo, :selBand, :count
   attr_accessor :stat, :statS
-  
+
   def initialize( dev )
     @devfn  = File.basename(dev)  # デバイスファイル名
     @devfnF = dev                 # デバイスファイル名(full)
@@ -113,7 +113,7 @@ class MpvMonM
     @fifo        = nil            # recpt1 -> mpv FIFO
     @selBand     = nil            # 選択中のバンド
     @count       = 0              # シリアル番号(udp port のオフセット)
-    
+
     #attr_reader_All()
   end
 
@@ -137,11 +137,11 @@ class MpvMonM
   def addBand( band )
     @band[ Const::GR ] = true  if band == "GR"
     if band == "BSCS"
-      @band[ Const::BS ] = true  
+      @band[ Const::BS ] = true
       @band[ Const::CS ] = true
     end
     if band == "3W"
-      @band[ Const::GR ] = true  
+      @band[ Const::GR ] = true
       @band[ Const::BS ] = true
       @band[ Const::CS ] = true
     end
@@ -157,7 +157,7 @@ class MpvMonM
              when :OK      then "使用可"
              when :Busy    then @rec_pid != nil ? "使用中" : "使用不可(busy)"
              end
-    return @statS 
+    return @statS
   end
 
   def cmdStart( cmd )
@@ -168,11 +168,12 @@ class MpvMonM
       Open3.popen2e( *cmd ) do |sin, out, wait|
         pid = wait.pid
         begin
-          while out.eof? == false 
+          while out.eof? == false
             IO.select([out]).flatten.compact.each do |io|
               io.read_nonblock( bsize, outbuf )
-              STDOUT.puts outbuf
-              STDOUT.flush
+              #STDOUT.puts outbuf
+              #STDOUT.flush
+              DBlog::sto( outbuf.chomp )
             end
           end
         rescue EOFError,Errno::EPIPE
@@ -207,16 +208,12 @@ class MpvMonM
     nil
   end
 
-  
+
   #
   #  recpt1 の物理選局
   #
   def makePhch( data )
-    phch = case data[:band]
-           when Const::GR then data[:stinfo_tp].to_s
-           when Const::BS then sprintf("%s_%s",data[:stinfo_tp], data[:stinfo_slot] )
-           when Const::CS then data[:stinfo_tp].to_s
-           end
+    phch = Commlib::makePhCh( data )
     svid = data[:svid].to_s
 
     return [ phch, svid, data[:band] ]
@@ -224,7 +221,7 @@ class MpvMonM
 
   def procKill( pid )
     if pid != nil
-      Thread.new do 
+      Thread.new do
         begin
           Process.kill( :HUP, pid )
           sleep(1)
@@ -235,8 +232,8 @@ class MpvMonM
     end
     nil
   end
-  
-  
+
+
   #
   #  再生
   #
@@ -277,7 +274,7 @@ class MpvMonM
     cmd2.push( %Q(--title="#{@chName}" )) if MPlayer_cmd[0] =~ /mpv/
     @rec_pid = cmdStart( cmd1 )
     @mpv_pid = cmdStart( cmd2 )
-    
+
   end
 
   #
@@ -294,12 +291,9 @@ class MpvMonM
     end
     @phch   =  @svid =  @selBand = nil
     @chName = @prog_name = @prog_detail = "-"
-    @stat   = :OK 
+    @stat   = :OK
 
     return ret
   end
-  
+
 end
-
-
-

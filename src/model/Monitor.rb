@@ -66,14 +66,9 @@ class MonitorM
       if row.size > 0
         args += Recpt1_opt
         data = row.first
-        case data[:band]
-        when Const::GR
-          args << data[:stinfo_tp].to_s
-        when Const::BS
-          args << sprintf("%s_%s",data[:stinfo_tp], data[:stinfo_slot] )
-        when Const::CS
-          args << data[:stinfo_tp].to_s
-        end
+        phch = Commlib::makePhCh( data )
+        args << phch
+
         args += [ "--sid", data[:svid].to_s, "3600" ]
         return [ args.join(" "), "-" ]
       else

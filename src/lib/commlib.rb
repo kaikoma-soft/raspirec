@@ -2,11 +2,24 @@
 # -*- coding: utf-8 -*-
 
 #
-#  
+#
 #
 
 
 module Commlib
+
+  #
+  #  選局に必要な物理チャンネル名を生成
+  #
+  def makePhCh( data )
+    phch = case data[:band]
+           when Const::GR then data[:stinfo_tp].to_s
+           when Const::CS then data[:stinfo_tp].to_s
+           when Const::BS then sprintf("%s_%s",data[:stinfo_tp], data[:stinfo_slot] )
+           end
+    return phch
+  end
+  module_function :makePhCh
 
   #
   #  時短に重畳した時間制限を分離
@@ -18,7 +31,7 @@ module Commlib
     return [ jitan2, timeLimitF, timeLimitV ]
   end
   module_function :jitanSep
-  
+
   #
   #  Unix秒 -> XXXX年/YY月/ZZ日
   #
@@ -26,7 +39,7 @@ module Commlib
     Time.at( time ).strftime("%Y/%m/%d")
   end
   module_function :int2date
-  
+
   #
   #  Unix秒 -> 10:10
   #
@@ -83,13 +96,13 @@ module Commlib
   def printTR2( data, rid: nil, trcl: nil, tdcl: nil, id: nil, tdclf: nil )
     trcls  = trcl  != nil ? "class=\"" + trcl.join(" ") + "\"" : ""
     tdcls  = tdcl  != nil ? "class=\"" + tdcl.join(" ") + "\"" : ""
-    rids = rid != nil ? "rid=\"#{rid}\""  :  "" 
-    ids  = id  != nil ? "id=\"#{id}\"" : "" 
-    
+    rids = rid != nil ? "rid=\"#{rid}\""  :  ""
+    ids  = id  != nil ? "id=\"#{id}\"" : ""
+
     a = [ %Q{ <tr #{ids} #{trcls}> } ]
     n = 1
     data.each do |tmp|
-      if tdclf == nil or n > tdclf 
+      if tdclf == nil or n > tdclf
         a << %Q{ <td #{tdcls} #{rids}> #{tmp} </td>}
       else
         a << %Q{ <td #{rids}> #{tmp} </td>}
@@ -101,7 +114,7 @@ module Commlib
   end
   module_function :printTR2
 
-  
+
   def print_hidden( id: nil, name: nil, val: nil )
     id2 = id != nil ? %Q( id="#{id}" ) : ""
     r = %Q(<input type="hidden" #{id2} name="#{name}" value="#{val}">)
@@ -131,8 +144,8 @@ module Commlib
     path += fname
   end
   module_function :makeTSfname
-  
-  
+
+
   def normStr( str )
     fn = str.dup
     fn.gsub!(/\//,'／')
@@ -147,8 +160,8 @@ module Commlib
     return fn
   end
   module_function :normStr
-  
-  
+
+
   def include( fn )
     r = ""
     if test(?f, fn )
@@ -178,18 +191,18 @@ module Commlib
     r
   end
   module_function :includeIf
-  
+
 
   #
   #  番組表に現在時の線を引く
   #
   def nowLine( st, tate, hour_pixel, stationN, stationW, offset = 0 )
-    
+
     now = Time.now
     unless now.between?( st, st + tate * 3600 )
       return ""
     end
-    
+
     y = tate * hour_pixel
     t =  ( now - st ) / 3600 * hour_pixel + offset
     top = -1 * ( y - t ).to_i
@@ -216,10 +229,10 @@ module Commlib
 EOS
     str1
   end
-  
+
   module_function :nowLine
 
-  
+
   def statAna( t, clasS, bg )
     stat = nil
     recf = 0
@@ -252,6 +265,5 @@ EOS
   end
 
   module_function :statAna
-  
-end
 
+end

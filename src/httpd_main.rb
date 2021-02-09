@@ -147,7 +147,8 @@ end
 
 post '/ch_info/del/*' do |chid|
   @chid = chid
-  ChannelM.new.delete( @chid )
+  #ChannelM.new.delete( @chid )
+  ChannelM.new.invalid( @chid )
 end
 get '/ch_info' do
   slim :ch_info

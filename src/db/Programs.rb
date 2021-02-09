@@ -279,6 +279,7 @@ class DBprograms
       band:          "c.band",
       name:          "c.name",
       skip:          "c.skip",
+      updatetime:    "c.updatetime",
       pid:           "p.id",
       evid:          "p.evid",
       title:         "p.title",

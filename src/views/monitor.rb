@@ -147,6 +147,7 @@ class Monitor
     DBaccess.new().open do |db|
       row = channel.select( db, order: "order by band_sort,svid" )
       row.each do |r|
+        next if r[:updatetime] == -1
         next if r[:skip] == 1
         list[ r[:band] ] ||= {}
         list[ r[:band] ][ r[:name] ] = r[:chid ]

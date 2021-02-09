@@ -24,7 +24,7 @@ create table channel (
     name                text,
     stinfo_tp           text,     -- GRは、物理、衛星は satelliteinfo_tp
     stinfo_slot         text,     -- 衛星のみ  satelliteinfo_slot
-    updatetime          integer,  -- prg更新日時
+    updatetime          integer,  -- prg更新日時。-1 の場合はデータ無効
     skip                integer   -- 1: skip(対象外にする。)
 );
 create index ch1 on channel (chid) ;

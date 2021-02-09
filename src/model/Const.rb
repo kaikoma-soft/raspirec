@@ -8,8 +8,8 @@
 module Const
 
   ProgName = "raspirec β"
-  ProgVer  = "Ver 0.6.2"
-    
+  ProgVer  = "Ver 0.6.3"
+
   GR   = "GR"
   GRJ  = "地デジ"
   BS   = "BS"
@@ -93,7 +93,7 @@ module FilConst
   TargetT  = 0                   # 検索対象 = タイトル
   TargetTS = 1                   # 検索対象 = タイトル＋概要
   SeachMax = 512                 # 検索最大値
-  
+
 end
 
 

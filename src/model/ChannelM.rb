@@ -40,5 +40,19 @@ class ChannelM
   end
   
 
+  #
+  #  無効化
+  #
+  def invalid( chid )
+
+    DBaccess.new().open do |db|
+      db.transaction do
+        channel = DBchannel.new
+        channel.invalid( db, chid )
+      end
+    end
+  end
+  
+
 end
 
