@@ -31,12 +31,12 @@ $childPid = {}
 #  :CHLD のハンドラ
 #
 def childWait()
-  DBlog::sto("childWait()")
+  #DBlog::sto("childWait()")
   $childPid.keys.each do |k|
     if $childPid[k] == true
       begin
         if Process.waitpid( k, Process::WNOHANG ) != nil
-          DBlog::sto("pid=#{k} Terminated") # 成仏
+          DBlog::sto("httpd:childWait() pid=#{k} Terminated") # 成仏
           $childPid.delete(k)
         end
       rescue Errno::ECHILD

@@ -361,7 +361,7 @@ class Timer
     begin
       duration = durationCalc( data )
       finish = Time.now + duration
-      DBlog::sto("終了予定 = #{finish}")
+      DBlog::sto("終了予定 = #{finish} : #{data[:title]}")
       fname = makeTSfname2( data, duration, retryC )
       bs = File.basename( fname ).bytesize
       if bs > 255
@@ -380,7 +380,7 @@ class Timer
       pid = Recpt1.new.recTS( arg, fname, waitT )
       $mutex.synchronize do
         #DBlog::sto( "pid=#{pid}")
-        DBlog::info( nil,"録画開始: #{data[:title]}")
+        DBlog::info( nil,"録画開始: #{data[:title]} : pid=#{pid}")
       end
     rescue ExecError
       retryC += 1
@@ -416,8 +416,10 @@ class Timer
     end
     
     $rec_pid[ pid ] = true
+    #DBlog::sto( "waitpid start #{pid}")
     Process.waitpid( pid )
     $rec_pid.delete( pid )
+    #DBlog::sto( "waitpid end #{pid}")
     
     $mutex.synchronize do
       DBaccess.new().open do |db|
