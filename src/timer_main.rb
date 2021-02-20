@@ -49,15 +49,18 @@ $mutex = Mutex.new
 #
 def childWait()
   #DBlog::sto("childWait()")
-  $rec_pid.keys.each do |k|
-    if $rec_pid[k] == true
-      begin
-        if Process.waitpid( k, Process::WNOHANG ) != nil
-          DBlog::sto("pid=#{k} Terminated") # 成仏
+  Thread.new do
+    sleep(10)                   # 時間差をつける
+    $rec_pid.keys.each do |k|
+      if $rec_pid[k] == true
+        begin
+          if Process.waitpid( k, Process::WNOHANG ) != nil
+            DBlog::sto("timer:childWait() pid=#{k} Terminated") # 成仏
+            $rec_pid.delete(k)
+          end
+        rescue Errno::ECHILD
           $rec_pid.delete(k)
         end
-      rescue Errno::ECHILD
-        $rec_pid.delete(k)
       end
     end
   end
