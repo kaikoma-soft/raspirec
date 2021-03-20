@@ -36,6 +36,8 @@ div
       th 状態
       - if TSFT == true
         th 転送
+      - if PacketChkRun == true
+        th.center 検査
       th 種別
       th タイトル
     == dp.printTable()
@@ -43,6 +45,9 @@ div
 
 div id="sample-dialog" title="詳細" style="display:none;"
   p データを削除しますか？
+
+div id="packetchk" title="packet chk result" style="display:none;"
+  p 
 
 == Commlib::include( SrcDir + "/views/move_top.html" )
 
@@ -74,3 +79,24 @@ javascript:
            });
         return false;
     });
+
+    $(".packchk").click(function(event){
+        var rid = $(this).attr('rid');
+        //event.preventDefault();
+        $("#packetchk").load('/pack_chk_view/' + rid );
+        $("#packetchk").dialog({
+             modal: true,
+             maxWidth: 1200,
+             width:    1000,
+             buttons: { //ボタン
+               "閉じる": function() {
+                   $(this).dialog("close");
+               }
+             },
+             open: function() {
+               $( this ).siblings('.ui-dialog-buttonpane').find('button:eq(2)').focus();
+             }
+           });
+        return false;
+    });
+

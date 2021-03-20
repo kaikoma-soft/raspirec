@@ -86,7 +86,11 @@ class Top
       r[:stat2] = nowRecTitle.join("<br>")
     else
       if test( ?f, EPGLockFN )
-        r[:stat] = stat2 == StatConst::FileCopy ? "ファイル転送中" : "EPG取得中"
+        r[:stat] = case stat2
+                   when StatConst::FileCopy  then  "ファイル転送中"
+                   when StatConst::PacketChk then  "ファイルチェック中"
+                   else "EPG取得中"
+                   end
       elsif reserveNum == 0 or nextRecTime == nil
         r[:stat] = "予約待ち"
       elsif nextRecTime > 0

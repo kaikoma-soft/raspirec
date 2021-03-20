@@ -23,10 +23,10 @@ class ReservationListOld
     @page_line = 100            
     @autoRsv = {}               # 自動予約のIDリスト
 
+    @reserve = DBreserve.new()
   end
 
   def getData()
-    reserve = DBreserve.new()
     programs = DBprograms.new
     filter = DBfilter.new
     
@@ -42,7 +42,7 @@ class ReservationListOld
           @autoRsv[ r[:id].to_i ] = true
         end
       end
-      @total_size = reserve.count( db, tstart: now, titleL: title2)
+      @total_size = @reserve.count( db, tstart: now, titleL: title2)
       @pageNum = 1
       if @total_size > @page_line
         @pageNum = @total_size / @page_line
@@ -55,7 +55,7 @@ class ReservationListOld
         limit = "LIMIT #{@page_line} OFFSET #{@page_line * (@page - 1 )}"
       end
       order = " order by r.start desc"
-      r = reserve.selectSP( db, tstart: now, titleL: title2, limit: limit, order: order )
+      r = @reserve.selectSP( db, tstart: now, titleL: title2, limit: limit, order: order )
       return r
     end
     nil
@@ -145,6 +145,28 @@ class ReservationListOld
         else
           ftp_stat = ""
         end
+
+        # packectchk
+        pc = "未"
+        if PacketChkRun == true
+          clasP = %w( nowrap center )
+          if t[:stat] == RsvConst::NotUse
+            pc = "-"
+          elsif t[:dropNum ] != nil 
+            ( drer, pcr, execerror ) = @reserve.parseDropNum( t[:dropNum ] )
+            if execerror > 0
+              pc = "失敗"
+            else
+              pc = drer
+              clasP << "packchk"
+              if drer > PacketChk_threshold
+                clasP << "alertR"
+              elsif pcr > 0
+                clasP << "alertY"
+              end
+            end
+          end
+        end
         
         td = []
         td << printTD( count, clas: clas )
@@ -154,6 +176,13 @@ class ReservationListOld
         td << printTD( stat,clas: clasS, id: id )
         if TSFT == true
           td << printTD( ftp_stat,clas: clas )
+        end
+        if PacketChkRun == true
+          if execerror == 0
+            td << printTD( pc, clas: clasP, rid: t[:id] )
+          else
+            td << printTD( pc, clas: clasP )
+          end
         end
         td << printTD( type,clas: clas )
         td << printTD( title,clas: clas )

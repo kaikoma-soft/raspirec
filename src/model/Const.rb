@@ -7,8 +7,8 @@
 
 module Const
 
-  ProgName = "raspirec β"
-  ProgVer  = "Ver 0.6.4"
+  ProgName = "raspirec"
+  ProgVer  = "Ver 1.0.0"
 
   GR   = "GR"
   GRJ  = "地デジ"
@@ -106,6 +106,7 @@ module StatConst
   FileCopy = 1
   EPGget   = 2
   RecNow   = 4
+  PacketChk = 5
 end
 
 #

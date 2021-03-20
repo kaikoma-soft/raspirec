@@ -53,6 +53,9 @@ class DiskKeep
             t += fs
             buf << sprintf("ファイル削除 %s (%5.1f GB)", File.basename(path),fs / @gb )
             File.unlink( path )
+            path += ".chk"      # packect chk result
+            File.unlink( path ) if test( ?f, path )
+              
             if t > delsize
               buf << sprintf("削除合計 = %6.1f GB", t/ @gb )
               throw :break_loop
