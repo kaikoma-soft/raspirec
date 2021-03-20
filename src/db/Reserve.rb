@@ -29,6 +29,7 @@ class DBreserve
       dedupe:    "dedupe",
       fname:     "fname",
       ftp_stat:  "ftp_stat",
+      dropNum:   "dropNum",
     }
     @para = []
     @list.each_pair { |k,v| @para << v }
@@ -148,6 +149,21 @@ class DBreserve
   end
 
   #
+  #   packetChkが未のもの
+  #
+  def getPacketChk( db )
+    sql = "select id, subdir, fname from reserve where stat = ? and dropNum is NULL ;"
+    args = [ RsvConst::NormalEnd]
+    row = db.execute( sql, *args )
+    list = {
+      id:       "id",
+      subdir:   "subdir",
+      fname:    "fname",
+    }
+    row2hash( list, row )
+  end
+  
+  #
   #   登録
   #
   def insert( db, data )
@@ -242,12 +258,13 @@ class DBreserve
                   jitanExe: nil,
                   recpt1pid: nil,
                   ftp_stat: nil,
-                  fname:    nil
+                  fname:    nil,
+                  dropNum:  nil
                 )
     args = []
     sql = "update reserve set "
     tmp = []
-    item = %w( stat comment tunerNum jitanExe recpt1pid ftp_stat fname )
+    item = %w( stat comment tunerNum jitanExe recpt1pid ftp_stat fname dropNum )
     item.each do |name|
       tmp2 = eval("#{name}")
       if tmp2 != nil
@@ -301,5 +318,25 @@ class DBreserve
     sql = "delete from reserve where start < ? ;"
     db.execute( sql, time )
   end
-  
+
+  #
+  #  dropNum の格納値の合成    xxxxx 00 y z     null = 未
+  #
+  def makeDropNum( drer,        # drop + error (xxxxx)
+                   pcr,         # PCR          ( y )
+                   execerror    # 実行失敗     ( z )
+                 )
+    return (( drer << 4 ) + ( (pcr & 0x01 ) << 1 ) + (execerror & 0x01) )
+  end
+
+  #
+  #  dropNum の格納値の分解
+  #
+  def parseDropNum( val )
+    drer      = val >> 4
+    pcr       = ( val >> 1 ) & 0x01
+    execerror = val & 0x01
+    return [ drer, pcr, execerror ]
+  end
+
 end

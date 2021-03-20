@@ -335,6 +335,12 @@ post '/rsv_list_old' do
   slim :rsv_list_old
 end
 
+get '/pack_chk_view/*' do |rid|
+  @rid = rid
+  slim :pack_chk_view, layout: false
+end
+
+
 
 #
 #  録画予約確認

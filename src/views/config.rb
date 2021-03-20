@@ -98,6 +98,14 @@ RecHostName      RemoteMonitor が true の場合に、
 Lsof_cmd         lsof コマンドへのパス。Ubuntu では /usr/bin/lsof 
 EOS
 
+    "PacketChk" => <<-EOS,
+PacketChk_enable    パケットチェックを有効にするか。true で有効
+PacketChk_cmd       tspacketchk のコマンドパスを指定する
+PacketChk_opt       tspacketchk のオプションを指定する
+PacketChk_threshold エラーと判定する閾値(画面上で赤枠をつける)
+PacketChk_rate      空き時間内に終わるか計算する為の想定速度 ( Mbyte/秒 )
+EOS
+
     "other" => <<-EOS,
 TSnameFormat      TSファイル名の生成ルール。詳細は
 +                 <a href="/help#TSnameFormat"> 補足説明 </a> を参照して下さい。

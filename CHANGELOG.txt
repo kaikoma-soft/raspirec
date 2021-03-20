@@ -1,4 +1,12 @@
 
+ver 1.0.0         2021/03/20
+  ・機能追加
+    * tspacketchk によるパケットの健全性チェックの組み込み
+      設定方法は、
+      https://kaikoma-soft.github.io/src/raspirec-packetchk.html を参照
+
+  ・機能追加が一段落したのでβ版からリリース版に昇格
+
 ver 0.6.4         2021/02/20
   ・稀に Ubuntu 20 で waitpid()の競合が起き「終了処理未了」になる件の対策
 

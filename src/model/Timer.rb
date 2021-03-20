@@ -155,6 +155,12 @@ class Timer
                 if TSFT == true
                   FileCopy.new.start( time_limit )
                 end
+                #
+                #  パケットチェック
+                #
+                if PacketChkRun == true
+                  PacketChk.new.start( time_limit )
+                end
                 EpgLock::unlock()
               end
             rescue

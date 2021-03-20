@@ -97,6 +97,9 @@ tr.colorGray, div.colorGray {
 td.alertR, div.alertR {
   border: solid 3px red !important; }
 
+td.alertY, div.alertY {
+  border: solid 3px yellow !important; }
+
 td.alertB, div.alertB {
   border: solid 3px black !important; }
 

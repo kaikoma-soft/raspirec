@@ -65,6 +65,7 @@ end
 
 
 
+
 require 'db/DB.rb'
 require 'db/base.rb'
 require 'db/Category.rb'
@@ -97,9 +98,29 @@ require 'model/ChannelM.rb'
 require 'model/Monitor.rb'
 require 'model/EpgPatch.rb'
 require 'model/MpvMonM.rb'
+require 'model/PacketChk.rb'
 
 
 require 'lib/httpd_sub.rb'
 require 'lib/commlib.rb'
 require 'lib/misc.rb'
+
+
+#
+# パケットチェック機能を有効にするか？
+#
+if ( Object.const_defined?(:PacketChk_enable) == true ) &&
+   PacketChk_enable == true 
+  if Object.const_defined?(:PacketChk_cmd) == true &&
+     test( ?f, PacketChk_cmd )
+    Object.const_set("PacketChkRun", true )
+  else
+    tmp = sprintf("PacketChk_cmd not found %s : PacketChk_enable -> false\n",PacketChk_cmd)
+    DBlog::warn( nil,tmp)
+    Object.const_set("PacketChkRun", false )
+  end
+else
+  Object.const_set("PacketChkRun", false )
+end
+
 
