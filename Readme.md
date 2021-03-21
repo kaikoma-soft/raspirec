@@ -32,6 +32,11 @@ recpt1/recdvb,epgdump を使って TV番組を録画する録画サーバーを�
 を参照して下さい。
 
 
+## docker
+[dockerによる動作テスト環境](https://github.com/kaikoma-soft/docker-raspirec)
+を用意したので、簡単に動作テストを行う事が出来ます。
+
+
 
 ## ライセンス
 このソフトウェアは、Apache License Version 2.0 ライセンスのも
