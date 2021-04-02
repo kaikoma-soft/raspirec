@@ -57,6 +57,8 @@ class Top
     epg = 0                     # EPG取得中か
     remainingTime = 0           # 録画残り時間
     stat2 = 0
+    errNum = 0                  # 録画エラー数
+
     DBaccess.new().open do |db|
       row = reserve.select( db, tend: now, order: "order by start" )
       reserveNum = row.size
@@ -76,6 +78,18 @@ class Top
           conflictNum += 1
         end
       end
+
+      point = now - ( 3 * 24 * 3600 )
+      row = reserve.select( db, tend: point, order: "order by start" )
+      reserveNum = row.size
+      row.each do |r|
+        errNum += 1 if r[:stat] ==  RsvConst::AbNormalEnd
+        if r[:dropNum ] != nil 
+          ( drer, pcr, execerror ) = reserve.parseDropNum( r[:dropNum ] )
+          errNum += 1 if drer > PacketChk_threshold
+        end
+      end
+      
       stat2 = DBkeyval.new.select(db,StatConst::KeyName )
     end
 
@@ -109,6 +123,13 @@ class Top
       
     r[:reserveNum] = reserveNum
 
+    # 過去のエラー数
+    if errNum > 0
+      r[:ErrorNum] = %Q( <font color="red"> #{errNum} </font> )
+    else
+      r[:ErrorNum] = errNum
+    end
+    
     r
   end
 
