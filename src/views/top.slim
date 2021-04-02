@@ -36,6 +36,10 @@ css:
         td.nowrap  
           == top[:ConflictNum]
       tr
+        td.nowrap  過去3日間の録画エラー数
+        td.nowrap  
+          == top[:ErrorNum]
+      tr
         td.nowrap  プログラム
         td.nowrap  #{Const::ProgName} #{Const::ProgVer} 
 

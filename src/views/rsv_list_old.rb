@@ -147,10 +147,14 @@ class ReservationListOld
         end
 
         # packectchk
+
         pc = "未"
         if PacketChkRun == true
           clasP = %w( nowrap center )
-          if t[:stat] == RsvConst::NotUse
+          if t[:stat] == RsvConst::AbNormalEnd or
+            t[:stat] == RsvConst::RecStop or
+            t[:stat] == RsvConst::RecStop2 or
+            t[:stat] == RsvConst::NotUse 
             pc = "-"
           elsif t[:dropNum ] != nil 
             ( drer, pcr, execerror ) = @reserve.parseDropNum( t[:dropNum ] )
