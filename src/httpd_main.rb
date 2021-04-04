@@ -229,6 +229,7 @@ post '/fil_del/*' do |id|       # フィルター削除
   when :autoRsv  then  redirect "/aut_rsv_list",301
   when :filter   then  redirect "/fil_list",301
   when :rsv_list then  redirect "/rsv_list",301
+  when :rsv_list_old then  redirect "/rsv_list_old",301
   end
 end
 
@@ -324,16 +325,17 @@ get '/rsv_tbl/*/*' do |day,time|
   slim :rsv_tbl
 end
 
-get '/rsv_list_old/*' do |page|
+
+def rsv_list_old(page)
+  session[:fa_type] = :rsv_list_old
   @page = page
   slim :rsv_list_old
 end
-get '/rsv_list_old' do
-  slim :rsv_list_old
-end
-post '/rsv_list_old' do
-  slim :rsv_list_old
-end
+get  '/rsv_list_old/*' do |page| rsv_list_old(page) end
+get  '/rsv_list_old'   do        rsv_list_old(nil)  end
+post '/rsv_list_old'   do        rsv_list_old(nil)  end
+
+
 
 get '/pack_chk_view/*' do |rid|
   @rid = rid
