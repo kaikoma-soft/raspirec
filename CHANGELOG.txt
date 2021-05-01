@@ -1,5 +1,18 @@
 
 
+ver 1.0.4         2021/05/01
+  ・ 環境により EpgPatch機能が不要になる事が判明したので、 EpgPatch
+     機能を無効にするパラメータ EpgPatchEnable を config.rb に追加した。
+     (デフォルトは有効)
+
+     具体的な設定は、放送大学ex (BS11_2, 231ch) が 
+     BS11_1 で受信できる場合は   EpgPatchEnable = true
+     BS11_2 で受信できる場合は   EpgPatchEnable = false
+     又は
+     px4_drv + recpt1 の場合は   EpgPatchEnable = true
+     pt1_drv + recpt1 の場合は   EpgPatchEnable = true
+     earth_pt1 + recdvb の場合は EpgPatchEnable = false
+
 ver 1.0.3         2021/04/13
   ・4/13 のトランスポンダの移動で、ＢＳ釣りビジョンに EPG とのズレが生
     じたので、EpgPatch/2021-04-13.dat を追加。

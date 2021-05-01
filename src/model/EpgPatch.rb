@@ -8,16 +8,23 @@
 class EpgPatch
 
   def initialize(  )
-    
+    @enable = true
+    if Object.const_defined?(:EpgPatchEnable) == true
+      if EpgPatchEnable == false
+        @enable = false
+      end
+    end
   end
 
   def getData()
     data = {}
-    dir = $baseDir + "/../EpgPatch"
-    Dir.open( dir ).each do |fname|
-      if fname =~ /(.*?)\.dat$/
-        path = dir + "/" + fname
-        dataRead( path, data )
+    if @enable == true
+      dir = $baseDir + "/../EpgPatch"
+      Dir.open( dir ).each do |fname|
+        if fname =~ /(.*?)\.dat$/
+          path = dir + "/" + fname
+          dataRead( path, data )
+        end
       end
     end
     return data
