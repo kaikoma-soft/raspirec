@@ -26,70 +26,71 @@ html
     link rel='stylesheet' href='/overlaid.css'
     link rel='stylesheet' href='/nav.css'
 
-    nav
-      div.nav-wrapper 
-        /! .yellow.darken-3
-        a.right.brand-logo href='/' 
-          | raspirec
-        a.sidenav-trigger.top-nav href="#!" data-target="mobile-demo" 
-          i.material-icons menu
-        ul.left.hide-on-med-and-down#nav-mobile
+    div.navbar-fixed
+      nav
+        div.nav-wrapper 
+          /! .yellow.darken-3
+          a.right.brand-logo href='/' 
+            | raspirec
+          a.sidenav-trigger.top-nav href="#!" data-target="mobile-demo" 
+            i.material-icons menu
+          ul.left.hide-on-med-and-down#nav-mobile
+            li
+              a.dropdown-trigger href="#!" data-target="DD0" style="padding-left:3em;padding-right:3em;"  番組表
+            li
+              a.dropdown-trigger href="#!" data-target="DD1" style="padding-left:4em;padding-right:4em;"  予約
+            li
+              a.dropdown-trigger href="#!" data-target="DD2" style="padding-left:4em;padding-right:4em;"  その他
+
+      ul.dropdown-content id="DD0" style="padding-left:0em;padding-right:0em;"
+        li
+          a href='/prg_tbl/GR0' 地デジ 番組表
+        - if ( BSCS_tuner_num + GBC_tuner_num ) > 0
           li
-            a.dropdown-trigger href="#!" data-target="DD0" style="padding-left:3em;padding-right:3em;"  番組表
+            a href='/prg_tbl/BS0' BS 番組表
           li
-            a.dropdown-trigger href="#!" data-target="DD1" style="padding-left:4em;padding-right:4em;"  予約
+            a href='/prg_tbl/CS0' CS 番組表
+        li
+          a href='/fil_list'    フィルター
+        li
+          a href='/ch_tbl_list'   放送局一覧
+
+      ul.dropdown-content id="DD1" style="padding-left:0em;padding-right:0em;"
+        li
+          a href='/rsv_list'     予約一覧
+        li
+          a href='/rsv_tbl'      予約状況表
+        li
+          a href='/rsv_list_old' 録画済み一覧
+        li
+          a href='/aut_rsv_list' 自動予約
+
+      ul.dropdown-content id="DD2" style="padding-left:0em;padding-right:0em;"
+        li
+          a href='/search'         番組検索
+        li
+          a href='/log_view'       ログ
+
+        - if MonitorFunc == true
           li
-            a.dropdown-trigger href="#!" data-target="DD2" style="padding-left:4em;padding-right:4em;"  その他
+            a href='/monitor'       hls モニター
 
-    ul.dropdown-content id="DD0" style="padding-left:0em;padding-right:0em;"
-      li
-        a href='/prg_tbl/GR0' 地デジ 番組表
-      - if BSCS_tuner_num > 0
+        - if MPMonitor == true
+          li
+            a href='/mpv_mon'       mpv モニター
         li
-          a href='/prg_tbl/BS0' BS 番組表
-        li
-          a href='/prg_tbl/CS0' CS 番組表
-      li
-        a href='/fil_list'    フィルター
-      li
-        a href='/ch_tbl_list'   放送局一覧
+          a href='/control'        コントロールパネル
 
-    ul.dropdown-content id="DD1" style="padding-left:0em;padding-right:0em;"
-      li
-        a href='/rsv_list'     予約一覧
-      li
-        a href='/rsv_tbl'      予約状況表
-      li
-        a href='/rsv_list_old' 録画済み一覧
-      li
-        a href='/aut_rsv_list' 自動予約
-
-    ul.dropdown-content id="DD2" style="padding-left:0em;padding-right:0em;"
-      li
-        a href='/search'         番組検索
-      li
-        a href='/log_view'       ログ
-
-      - if MonitorFunc == true
-        li
-          a href='/monitor'       hls モニター
-
-      - if MPMonitor == true
-        li
-          a href='/mpv_mon'       mpv モニター
-      li
-        a href='/control'        コントロールパネル
-
-      - if Debug == true
-        li
-          a href='/kill'         restart httpd
-        li
-          a href='/kill2'        restart http,timer
+        - if Debug == true
+          li
+            a href='/kill'         restart httpd
+          li
+            a href='/kill2'        restart http,timer
 
     ul.sidenav#mobile-demo
       li
         a href='/prg_tbl/GR0' 地デジ 番組表
-      - if BSCS_tuner_num > 0
+      - if ( BSCS_tuner_num + GBC_tuner_num ) > 0
         li
           a href='/prg_tbl/BS0' BS 番組表
         li

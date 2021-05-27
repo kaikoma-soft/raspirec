@@ -40,13 +40,15 @@ class DBreserve
   #
   #   検索
   #
-  def select( db, id: nil, evid: nil, chid: nil, tstart: nil, tend: nil, limit: nil, order: nil, keyid: nil )
+  def select( db, id: nil, evid: nil, chid: nil, tstart: nil, tend: nil, limit: nil, order: nil, keyid: nil, recpt1pid: nil, stat: nil )
     (sql, args ) = makeSelectSql( @para, @tbl_name,
                                   id: id, evid: evid, chid: chid,
                                   tstart: tstart, tend: tend,
                                   limit: limit,
                                   order: order,
                                   keyid: keyid,
+                                  recpt1pid: recpt1pid,
+                                  stat:      stat,
                                 )
     row = db.execute( sql, *args )
     row2hash( @list, row )
@@ -339,4 +341,22 @@ class DBreserve
     return [ drer, pcr, execerror ]
   end
 
+  #
+  #  title hash を設定
+  #
+  def titleHash( db )
+    sql = "select id,title,tunerNum from reserve where stat = ? and tunerNum < ? "
+    row = db.execute( sql, RsvConst::NormalEnd, 0xffff )
+    row.each do |tmp|
+      ( id, title, tunerNum ) = tmp
+      titleH = Commlib::makeHashKey( title )
+      tunerNum2 = ( RsvConst::HashSetFlag << 16 ) + ( tunerNum & 0xffff )
+      sql = "update reserve set tunerNum = ?, recpt1pid = ? where id = ? ;"
+      db.execute( sql, tunerNum2, titleH, id )
+      #pp "#{id} #{title} #{titleH} #{tunerNum2}" if $debug == true
+    end
+    
+  end
+
+  
 end

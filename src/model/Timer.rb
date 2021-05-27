@@ -10,7 +10,6 @@ class Timer
   def initialize( )
     @sleepT = 5
     @loopT  = 1800
-
   end
 
   
@@ -106,10 +105,20 @@ class Timer
       #  録画ルーチン
       #
       ( queue, $recCount, nextRecTime ) = getNextProg()
+
+      # mpv モニタの停止 & EPG取得の停止
+      if queue.size > 0
+        Control.new.sendSignal( HttpdPidFile, :USR1 )
+        if Recpt1.new.killEpgPid() > 0
+          DBlog::sto( "録画開始の為 EPG取得を中止しました。" )
+          sleep(3)
+        end
+      end
+
       queue.each do |r|
         Thread.new do
           begin
-            recStart( r )
+            recStart( r )       # 録画
           rescue
             puts $!
             puts $@
@@ -117,62 +126,57 @@ class Timer
         end
       end
 
-      # mpv モニタの停止
-      if queue.size > 0
-        Control.new.sendSignal( HttpdPidFile, :USR1 )
-      end
-
       waitT = nextRecTime - now
+      time_limit = nextRecTime - 30
       if waitT > 3600
-        st = @loopT
-        daily()
+        sleepTime = @loopT
+        Daily.new.run()
+      elsif waitT.between?( 120,720 )
+        sleepTime = 60
       else
-        st = waitT / 2
+        sleepTime = waitT / 2
       end
-      st = 5 if st < 5
+      sleepTime = 5 if sleepTime < 5
+      DBlog::stoD( "sleepTime = #{sleepTime}" )
 
       if $recCount == 0
-        if 600 > st and st > 300
-          epgChTouch( 600 )
-        end
-      
-        #
-        #  EPG取得
-        #
-        if ( waitT  > EpgRsvTime ) 
-          time_limit = Time.now + waitT
-          Thread.new do
-            begin
-              if EpgLock::lock?() == false
-                EpgLock::lock()
-                if GetEPG.new.start( ( waitT * 0.8).to_i ) == true
-                  DBlog::sto( "FilterM.new.update" )
-                  FilterM.new.update()
-                end
-                #
-                #  TS ファイル転送
-                #
-                if TSFT == true
-                  FileCopy.new.start( time_limit )
-                end
-                #
-                #  パケットチェック
-                #
-                if PacketChkRun == true
-                  PacketChk.new.start( time_limit )
-                end
-                EpgLock::unlock()
+        Thread.new do
+          begin
+            if EpgLock::lock?() == false
+              EpgLock::lock()
+              
+              #
+              #  EPG取得
+              #
+              if GetEPG.new.start( time_limit ) == true
+                DBlog::stoD( "FilterM.new.update" )
+                FilterM.new.update()
               end
-            rescue
+              
+              #
+              #  TS ファイル転送
+              #
+              if TSFT == true
+                FileCopy.new.start( time_limit )
+              end
+              #
+              #  パケットチェック
+              #
+              if PacketChkRun == true
+                PacketChk.new.start( time_limit )
+              end
+              
               EpgLock::unlock()
-              puts $!
-              puts $@
             end
+          rescue
+            EpgLock::unlock()
+            puts $!
+            puts $@
           end
         end
       end
       
-      sleepB( st )
+      sleepB( sleepTime )
     end
   end
 
@@ -191,41 +195,6 @@ class Timer
     end
   end
 
-  #
-  #  一日一回
-  #
-  def daily()
-    keyval = DBkeyval.new
-    key = "daily"
-    $mutex.synchronize do
-      DBaccess.new().open do |db|
-        lastTime = keyval.select( db, key )
-        th = Time.now - ( 24 * 3600 )
-        if lastTime == nil or Time.at( lastTime ) < th
-          DBlog::debug( db, "daily task start" )
-          #
-          #  古いデータの削除
-          #
-          db.transaction do
-            now = Time.now.to_i
-            DBlog.new.deleteOld( db, now - LogSaveDay * 24 * 3600 )
-            DBreserve.new.deleteOld( db, now - RsvHisSaveDay * 24 * 3600 )
-            #DiskKeep.new.start(db)
-
-            lr = LogRote.new()
-            if lr.need?() == true
-              DBlog::debug( db, "Log rotate" )
-              sleep(1)
-              lr.exec()
-            end
-
-            keyval.upsert(db, key, Time.now.to_i )
-          end
-        end
-      end
-      DBlog::vacuum()
-    end
-  end
   
   #
   #  終了処理未了の後始末
@@ -452,58 +421,6 @@ class Timer
     end
   end
 
-  #
-  # 直近に録画番組がある局のEPG 取得のために、更新時間を細工
-  #
-  def epgChTouch( w2 = 600 )
-    st = et = nil
-    reserve = DBreserve.new
-    res = []
-    
-    DBaccess.new().open do |db|
-      db.transaction do
-        row = reserve.selectSP( db, stat: RsvConst::Normal, order: "order by start" )
-        row.each do |r|
-          if st == nil
-            st = r[:start] 
-            et = r[:end]
-            res << r
-          else
-            if r[:start].between?( st, et + w2 )
-              et = et > r[:end] ? et : r[:end]
-              res << r
-            end
-          end
-        end
-
-        chids = {}
-        res.each do |r|
-          DBlog::sto("#{r[:chid]} #{r[:title]}")
-          chids[ r[:chid] ] = true
-        end
-
-        if chids.size > 0
-          res = []
-          now = Time.now.to_i 
-          phchid = DBphchid.new
-          chids.keys.each do |chid|
-            row2 = phchid.select(db, chid: chid )
-            if row2.size > 0
-              tmp = row2.pop
-              if tmp[:updatetime] < ( now - @loopT )
-                t = now - ( 3600 * 24 )
-                phchid.touch( db, t, chid: tmp[:chid]  )
-                res << tmp[:chid]
-              end
-            end
-          end
-          if res.size > 0
-            DBlog::debug( db,"epgChTouch() touch #{res.join(" ")}" )
-          end
-        end
-      end
-    end
-  end
 
 
 end

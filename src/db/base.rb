@@ -21,7 +21,9 @@ module Base
                     limit: nil,
                     keyid: nil,
                     updatetime: nil,
-                    skip:   nil
+                    skip:   nil,
+                    stat:   nil,
+                    recpt1pid: nil
                    )
     where = []
     args = []
@@ -58,7 +60,17 @@ module Base
       args << updatetime
     end
 
-  if skip != nil 
+    if stat != nil 
+      where << " stat = ?  "
+      args << stat
+    end
+
+    if recpt1pid != nil 
+      where << " recpt1pid = ?  "
+      args << recpt1pid
+    end
+    
+    if skip != nil 
       where << " skip = ? "
       args << skip
     end

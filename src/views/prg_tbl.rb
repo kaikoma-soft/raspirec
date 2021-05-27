@@ -251,8 +251,8 @@ class PrgTbl
     now = Time.now.to_i
     moni = false
     if MPMonitor == true        # チュナー数に余裕があるか
-      if $mpvMon != nil
-        if $mpvMon.autoSel( @band ) != nil
+      if $tunerArray != nil
+        if $tunerArray.autoSel( @band ) != nil
           moni = true
         end
       end
@@ -304,8 +304,8 @@ class PrgTbl
           end
         end
         moni3 = sprintf(%Q{moni="%s"}, moni2)
-        tip   = sprintf(%Q{data-tooltip="%s<br>%s 〜 %s"},tmp[:title],stime,etime)
-        r << sprintf(%Q{  <div class='%s' %s %s %s %s> %s </div>},
+        tip   = sprintf(%Q{data-text="%s<br>%s<br>%s 〜 %s"},tmp[:name],tmp[:title],stime,etime)
+        r << sprintf(%Q{  <div class='%s' %s %s %s %s>  %s </div>},
                      cls.join(" "), style,pid, moni3, tip, tmp[:title])
 
         ct = tmp[:end]
@@ -338,19 +338,6 @@ class PrgTbl
     d
   end
 
-  def tooltip_sw()
-    buff = [ ]
-    val = @tt == false ? "true" : "false"
-    buff = <<EOS
-<script>   
-    $(document).ready(function() { 
-       $(".item").tooltip( "option", "disabled", #{val} );
-    });
-</script>
-EOS
-    buff
-  end
-  
   
 end
 

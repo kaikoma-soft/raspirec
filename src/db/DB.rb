@@ -10,7 +10,6 @@ class DBaccess
   def initialize( dbFname = DbFname )
     @db = nil
     @DBfile = dbFname
-    @DBLockfile = dbFname + ".flock"
     unless File.exist?(@DBfile )
       open() do |db|
         db.transaction do
@@ -22,37 +21,35 @@ class DBaccess
   end
 
   def open
-    File.open(@DBLockfile, File::RDWR|File::CREAT, 0644) do |fl|
-      fl.flock(File::LOCK_EX)
-      @db = SQLite3::Database.new( @DBfile )
-      @db.busy_timeout(1000)
-      ecount = 0
-      begin
-        yield self
-      rescue SQLite3::BusyException
-        STDERR.print ">SQLite3::BusyException #{ecount}\n"
-        STDERR.flush()
-        if ecount > 10
-          STDERR.print ">SQLite3::BusyException exit\n"
-          raise
-        end
-        ecount += 1
-        sleep( rand(1.0..3.0) )
-        retry
-      rescue => e
-        p $!
-        puts e.backtrace.first + ": #{e.message} (#{e.class})"
-        e.backtrace[1..-1].each { |m| puts "\tfrom #{m}" }
-        ecount += 1
-        if ecount > 10
-          STDERR.print ">SQLite3::BusyException exit\n"
-          raise
-        end
-        sleep( rand(1.0..3.0) )
-        retry
+    #puts caller[0][/`.*'/][1..-2]
+    @db = SQLite3::Database.new( @DBfile )
+    @db.busy_timeout(3000)
+    ecount = 0
+    begin
+      yield self
+    rescue SQLite3::BusyException
+      STDERR.print ">SQLite3::BusyException #{ecount}\n"
+      STDERR.flush()
+      if ecount > 60
+        STDERR.print ">SQLite3::BusyException exit\n"
+        raise
       end
-      close()
+      ecount += 1
+      sleep( 1 )
+      retry
+    rescue => e
+      p $!
+      puts e.backtrace.first + ": #{e.message} (#{e.class})"
+      e.backtrace[1..-1].each { |m| puts "\tfrom #{m}" }
+      ecount += 1
+      if ecount > 60
+        STDERR.print ">SQLite3::BusyException exit\n"
+        raise
+      end
+      sleep( 1 )
+      retry
     end
+    close()
   end
   
   def close
@@ -66,8 +63,8 @@ class DBaccess
     @db.execute( *args )
   end
 
-  def transaction()
-    @db.transaction do
+  def transaction( mode = :deferred )
+    @db.transaction( mode ) do
       yield
     end
   end

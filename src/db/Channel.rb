@@ -151,7 +151,7 @@ class DBchannel
     if band == Const::BS or band == Const::CS
       svid = h[:svid].to_i
       if ( band == Const::BS and svid > 699 ) or ( svid == 101 and band == Const::CS )
-        DBlog::sto( "set skip ch #{h["name"]} #{svid}")
+        # DBlog::sto( "set skip ch #{h["name"]} #{svid}") if $debug == true
         h[:skip] = 1
       end
     end
@@ -184,4 +184,17 @@ class DBchannel
     h
   end
 
+  #
+  # chid 対 phch の対応表(hash) を返す
+  #
+  def makeChid2Phch(db)
+    chid2phch = {}          
+    row = self.select( db )
+    row.each do |r|
+      chid = r[:chid]
+      phch = Commlib::makePhCh( r )
+      chid2phch[ chid ] = phch
+    end
+    return chid2phch
+  end
 end

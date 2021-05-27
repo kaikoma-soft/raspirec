@@ -10,19 +10,37 @@ class MpvMon <  Monitor
 
   attr_reader :statS, :devfn, :base_url
 
-  def initialize( devfn, cmd )
+  @@ta = nil
+
+  def initialize( num, cmd )
 
     super()
-    @devfn = devfn == nil ? $mpvMon.data.keys.sort.first : devfn
-    @cmd = cmd == nil ? "disp" : cmd       
-    $mpvMon.chkDeviceStat()
+    @ta = $tunerArray
+    @currenTune = nil
+    @devfn      = nil
+    @tunNum     = nil
+    
+    if num == nil
+      @tunNum = @ta.first.serial
+    else
+      @tunNum = num.to_i
+    end
 
-    if $mpvMon.devs2.include?(@devfn)
-      @statS = $mpvMon.data[ @devfn ].getStatStr()
-      @base_url = "/mpv_mon/#{@devfn}"
+    @ta.each do |t1|
+      if t1.serial == @tunNum
+        @currenTune = t1        # 現在選択中のチューナー
+        @devfn  = @currenTune.devfn
+        break
+      end
+    end
+                             
+    @cmd = cmd == nil ? "disp" : cmd
+    @ta.chkDeviceStat()
+    if @currenTune != nil
+      @statS = @currenTune.getStatStr()
+      @base_url = "/mpv_mon/#{@tunNum}"
     else
       @base_url = "/mpv_mon"
-      @devfn = nil
     end
 
   end
@@ -38,59 +56,72 @@ class MpvMon <  Monitor
       </input>
     </label>)
 
-    list = $mpvMon.devs2.sort
     a = []
-    list.each do |dev|
-      sel = $mpvMon.data[dev].devfn == @devfn ? "checked" : ""
-      tmp = $mpvMon.data[dev].devfn
-      stat = $mpvMon.data[dev].stat == :OK ? "" : "busy"
-      a << sprintf( hina, tmp, sel, stat, tmp )
+    @ta.each do |t1|
+      if t1.devfn != nil
+        dev = t1.devfn
+        sel = t1.serial == @tunNum ? "checked" : ""
+        name = t1.name
+        stat = t1.stat == :OK ? "" : "busy"
+        a << sprintf( hina, t1.serial, sel, stat, name )
+      end
     end
-    a.join("\n")
+      a.join("\n")
   end
 
   #
   #  選局中のチャンネル
   #
   def selCh()
-    return "-" if @devfn == nil or $mpvMon.data[@devfn].chName == nil
-    return $mpvMon.data[@devfn].chName
+    return "-" if @devfn == nil or @currenTune.chName == nil
+    return @currenTune.chName
   end
   
   #
   #  選局中の番組名
   #
   def prog_name()
-    return "-" if @devfn == nil or $mpvMon.data[@devfn].prog_name == nil
-    return $mpvMon.data[@devfn].prog_name
+    return "-" if @devfn == nil or @currenTune.prog_name == nil
+    return @currenTune.prog_name
   end
   
   #
   #  選局中の番組概要
   #
   def prog_detail()
-    return "-" if @devfn == nil or $mpvMon.data[@devfn].prog_detail == nil
-    return $mpvMon.data[@devfn].prog_detail
+    return "-" if @devfn == nil or @currenTune.prog_detail == nil
+    return @currenTune.prog_detail
   end
   
   #
   #  有効なバンドを返す。
   #
   def bands()
-    r = $mpvMon.data[@devfn].band
-    return r.keys.sort
+    r = []
+    if @currenTune != nil
+      r << "GR" if @currenTune.band[ Const::GR ] == true
+      r << "BS"  if @currenTune.band[ Const::BSCS ] == true
+      r << "CS"  if @currenTune.band[ Const::BSCS ] == true
+    end
+    return r
   end
 
   def activeBand?( band )
-    return $mpvMon.data[ @devfn ].selBand == band ? "active" : ""
+    if @currenTune != nil
+      return @currenTune.band[ band ] == true ? "active" : ""
+    end
+    return ""
   end
   
   def stop_a()
-    "<a href=\"/mpv_mon/#{@devfn}/stop\">  停止 </a>"
+    "<a href=\"/mpv_mon/#{@tunNum}/stop\">  停止 </a>"
   end
 
 
   def dis_stop(  )
-    return $mpvMon.data[ @devfn ].rec_pid == nil ? "disabled" : ""
+    if @currenTune != nil
+      return @currenTune.rec_pid == nil ? "disabled" : ""
+    end
+    return ""
   end
 end

@@ -16,6 +16,8 @@ h2.title
       a href="#search" 検索文字列
     li.title2
       a href="#TSnameFormat" TS ファイル名の生成ルール
+    li.title2
+      a href="#DevAutoDetection" デバイスファイルの自動検出
 
 hr
 
@@ -117,3 +119,123 @@ div
             td %DURATION%
             td 録画時間（秒）
     
+
+    li.title
+      a name="DevAutoDetection" デバイスファイルの自動検出
+
+    ul.collection.with-header
+      li.collection-header
+        |  config.rb 中で DevAutoDetection = true を設定した場合
+          デバイスファイルの自動検出を行い、下記の定数の設定を自動で行う。
+          <pre>
+          DeviceList_GR      # 地デジ チューナー デバイスファイル 
+          DeviceList_BSCS    # BS/CS                  〃
+          DeviceList_GBC     # 地デジ/BS/CS           〃
+          </pre>
+          ただし自動認識するデバイスファイル名は次のものに限る。
+        table
+          tr 
+            td メーカー名
+            td チューナー名
+            td ドライバー名
+            td 地デジ デバイスファイル名<br>(DeviceList_GR)
+            td BS/CS  デバイスファイル名<br>(DeviceList_BSCS)
+            td 地デジ/BS/CS  デバイスファイル名<br>(DeviceList_GBC)
+          tr 
+            td rowspan="3"  プレクス
+            td 
+              | PX-W3U4<br>
+                PX-Q3U4<br>
+                PX-W3PE4<br>
+                PX-Q3PE4<br>
+                PX-W3PE5
+            td  px4_drv 
+            td 
+              | /dev/px4video2,3<br>
+                /dev/px4video6,7<br>
+                /dev/px4video10,11<br>
+                /dev/px4video14,15
+            td 
+              |/dev/px4video0,1<br>
+               /dev/px4video4,5<br>
+               /dev/px4video8,9<br>
+               /dev/px4video12,13
+            td -
+          tr 
+            td PX-MLT5PE
+            td px4_drv 
+            td -
+            td -
+            td 
+              | /dev/pxmlt5video0 〜 15 <br>
+          tr 
+            td PX-MLT8PE
+            td px4_drv 
+            td -
+            td -
+            td 
+              | /dev/pxmlt8video0 〜 15 
+          tr 
+            td rowspan="2" e-Better 
+            td DTV02-1T1S-U <br> DTV02A-1T1S-U
+            td px4_drv 
+            td -
+            td -
+            td
+              | /dev/isdb2056video0 〜 15
+          tr 
+            td 
+              | DTV02A-4TS-P
+            td px4_drv 
+            td -
+            td -
+            td 
+              | /dev/isdb6014video0 〜 15
+          tr 
+            td rowspan="3" アースソフト
+            td 
+              | PT1, PT2
+            td  pt1_drv
+            td 
+              | /dev/pt1video2,3<br>
+                  /dev/pt1video6,7<br>
+                      /dev/pt1video10,11<br>
+                          /dev/pt1video14,15
+            td 
+              | /dev/pt1video0,1<br>
+                  /dev/pt1video4,5<br>
+                      /dev/pt1video8,9<br>
+                          /dev/pt1video12,13
+            td -
+          tr 
+            td 
+              | PT3
+            td pt3_drv
+            td 
+              | /dev/pt3video2,3<br>
+                  /dev/pt3video6,7<br>
+                      /dev/pt3video10,11<br>
+                          /dev/pt3video14,15
+            td 
+              | /dev/pt3video0,1<br>
+                  /dev/pt3video4,5<br>
+                      /dev/pt3video8,9<br>
+                          /dev/pt3video12,13
+            td -
+          tr 
+            td
+              | PT1,PT2
+            td earth_pt1
+            td 
+              | /dev/dvb/adapter0/frontend0<br>
+                /dev/dvb/adapter2/frontend0<br>
+                /dev/dvb/adapter4/frontend0<br>
+                /dev/dvb/adapter6/frontend0
+            td 
+              | /dev/dvb/adapter1/frontend0<br>
+                /dev/dvb/adapter3/frontend0<br>
+                /dev/dvb/adapter5/frontend0<br>
+                /dev/dvb/adapter7/frontend0
+            td -
+
+

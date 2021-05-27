@@ -8,13 +8,14 @@
 module Const
 
   ProgName = "raspirec"
-  ProgVer  = "Ver 1.0.4"
+  ProgVer  = "Ver 1.1.0"
 
   GR   = "GR"
   GRJ  = "地デジ"
   BS   = "BS"
   CS   = "CS"
   BSCS = "BSCS"
+  GBC  = "GRBSCS"
   Wday = { 0 => "(日)",
            1 => "(月)",
            2 => "(火)",
@@ -71,6 +72,7 @@ module RsvConst
   Dedupe     = 1                   # 重複予約を無効化
   Ftp_Complete = 1                 # 転送完了
   Ftp_AbNormal = 2                 # 異常終了
+  HashSetFlag  = 999              # title の hash を設定したかのフラグ
 end
 
 #

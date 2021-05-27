@@ -42,11 +42,11 @@ class PacketChk < FileCopy      # FileCopy を流用
         path += subdir2.sub(/^\//,'').sub(/\/$/,'').strip + "/"
       end
       path += l[:fname]
-      DBlog::sto( path );
+      #DBlog::sto( path );
 
       if test( ?f , path )
         size = File.size( path )
-        t = Time.now + (size / (PacketChk_rate * 2  ** 20)).to_i
+        t = (Time.now + (size / (PacketChk_rate * 2  ** 20))).to_i
         if t > time_limit
           DBlog::debug( nil, sprintf("time limit %s > %s", t, time_limit ))
           next

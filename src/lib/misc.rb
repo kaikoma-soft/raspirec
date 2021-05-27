@@ -106,3 +106,10 @@ end
 
 
 
+def ppp( str )
+  if $debug == true
+    if @ts != nil
+      DBlog::sto( str + " " + (Time.now - @ts).to_s )
+    end
+  end
+end

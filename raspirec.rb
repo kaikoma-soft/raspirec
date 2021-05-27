@@ -1,3 +1,4 @@
+#!/usr/local/bin/ruby
 # coding: utf-8
 #
 
@@ -100,6 +101,11 @@ def mainLoop()
   if $opt[:conf] != nil
     ENV["RASPIREC_CONF_OPT"] = $opt[:conf]
   end
+
+  if Object.const_defined?(:DevAutoDetection) == true and
+    DevAutoDetection == true
+    DeviceChk.new.run
+  end
   
   pids = []
   pids << Thread.new do
@@ -113,7 +119,7 @@ def mainLoop()
       DBlog::sto("timer_main start #{$timer_pid}")
       Process.waitpid( $timer_pid )
       DBlog::sto("timer_main end")
-      sleep 1
+      sleep 5
       break if $endParoc == true
       break if tcount > LoopMax
       tcount += 1
@@ -134,7 +140,7 @@ def mainLoop()
       DBlog::sto("httpd_main start #{$httpd_pid}")
       Process.waitpid( $httpd_pid )
       DBlog::sto("httpd_main end")
-      sleep 1
+      sleep 5
       break if $endParoc == true
       break if hcount > LoopMax
       hcount += 1

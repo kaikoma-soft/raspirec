@@ -9,8 +9,8 @@ class Config
 
   Text = {
     "httpd" => <<-EOS,
-Http_port    httpd のポート番号を指定する。<BR>WEBインターフェースには 
-+            http://XXX.YYY.ZZZ:${Http_port}/ でアクセスする。
+Http_port    httpd のポート番号を指定する。<BR>
++            例： http://localhost:4567/
 EOS
     "dirFile" => <<-EOS,
 Recpt1_cmd   recpt1/recdvb コマンドの path を指定する。
@@ -32,21 +32,23 @@ Gap_time      録画が連続し、前番組が時短になった場合の、
 +              <br>TVチューナー依存ですが、あまり短いと動作が不安定になります。
 EOS
     "tuner" => <<-EOS,
-GR_tuner_num         地デジチュナー数
-BSCS_tuner_num       BSCSチュナー数
-Total_tuner_limit    トータルチュナー数制限を掛ける場合に指定する。
-+                    通常は GR_tuner_num +  BSCS_tuner_num = Total_tuner_limit
+GR_tuner_num         地デジ チューナー数
+BSCS_tuner_num       BS/CS チューナー数
+GBC_tuner_num        ３波(地デジ/BS/CS)チューナー数
+Total_tuner_limit    同時に動作するチューナー数に制限を掛ける場合に指定する。
++                    使用しない場合は false 
 EOS
 
     "epg" => <<-EOS,
-GR_EPG_channel      地デジ EPG 受信局を設定する。<br>
+GR_EPG_channel      地デジ EPG 受信局を物理チャンネルで指定する。<br>
 +                   東京スカイツリーならば 
 +                   %w( 27 26 25 24 22 23 21 16 ) になります。
 +       <a href="https://www.maspro.co.jp/contact/channel.pdf#page=4"> 参考 </a>
-BS_EPG_channel      BS EPG 受信局を設定する。BSを受信しない場合は空にする。
+BS_EPG_channel      BS EPG 受信局を指定する。BSを受信しない場合は空にする。
 +                   <br>通常の番組情報は、どれか 1局だけ受信すれば十分だが、
 +                   詳細情報を取得するには、その情報を取りたい局を指定する必要がある。
-CS_EPG_channel      CS EPG 受信局を設定する。CSを受信しない場合は空にする。
+CS_EPG_channel      CS EPG 受信局を指定する。CSを受信しない場合は空にする。
++                   指定はトランスポンダ(CS2〜CS24)単位で行う。
 GR_EpgRsvTime       地デジ EPG受信時間 (秒)
 BS_EpgRsvTime       BS EPG受信時間 (秒)
 CS_EpgRsvTime       CS EPG受信時間 (秒)
@@ -86,8 +88,12 @@ EOS
     "mpvMon" => <<-EOS,
 MPMonitor        true = mpv モニタ機能を有効、false = 無効 <br>無効の場合は、下記のパラメータは無視される。
 +                設定方法は <a href="https://kaikoma-soft.github.io/raspirec-option.html"> こちら </a> を参照して下さい。
-DeviceList_GR    地デジのデバイスファイルを指定する。
-DeviceList_BSCS  BS,CS のデバイスファイルを指定する。
+DevAutoDetection  DeviceList_GR, DeviceList_BSCS, DeviceList_GBC を自動設定する。 
++                 <br> true = 有効。 
++                 詳細は <a href="../help#DevAutoDetection"> 補足説明 </a> を参照して下さい。
+DeviceList_GR    地デジ チューナーのデバイスファイルを指定する。
+DeviceList_BSCS  BS,CS チューナーのデバイスファイルを指定する。
+DeviceList_GBC   三波共用(地デジ/BS/CS)チューナーのデバイスファイルを指定する。
 MPlayer_cmd      mpv のコマンド及び引数を指定する。
 RemoteMonitor    表示するマシンが別の場合 ture, 同一の場合に false
 UDPbasePort      使用する UDP のポート番号、デバイスの数だけプラスされる。

@@ -6,21 +6,46 @@
 #
 
 require 'open3'
-require 'rexml/document'
 require 'timeout'
-
-[ ".", ".." ].each do |dir|
-  if test(?f,dir + "/require.rb")
-    $: << dir
-  end
-end
-require 'require.rb'
 
 
 class ExecError < StandardError; end
 
 class Recpt1
 
+  @@epgPid = []                 # EPG取得時の pid
+
+  def initialize( )
+  end
+
+  def clearEpgPid()
+    @@epgPid = []
+  end
+
+  def addEpgPid(pid)
+    $mutex = Mutex.new if $mutex == nil
+    $mutex.synchronize do
+      @@epgPid << pid
+    end
+  end
+
+  def killEpgPid()
+    DBlog::sto( "killEpgPid()" )
+    count = 0
+    while @@epgPid.size > 0
+      pid = @@epgPid.shift
+      begin
+        Process.kill(:HUP, pid );
+        Process.waitpid( pid, Process::WNOHANG )
+        count += 1
+      rescue Errno::ECHILD,Errno::ESRCH
+      end
+      DBlog::sto( "killEpgPid() kill #{pid}" )
+    end
+    
+    return count
+  end
+  
   #
   #   epg データを取得
   #
@@ -41,7 +66,8 @@ class Recpt1
 
         $rec_pid[ wait1.pid ] = true
         $rec_pid[ wait2.pid ] = true
-
+        addEpgPid( wait1.pid )
+        
         begin
           time2 = ( time + 3 ).to_i
           Timeout.timeout( time2 ) do

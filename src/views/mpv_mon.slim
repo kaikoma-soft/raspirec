@@ -19,7 +19,7 @@ css:
 
 
 - require_relative 'mpv_mon.rb'
-- dp = MpvMon.new( @devfn, @cmd )
+- dp = MpvMon.new( @tunNum, @cmd )
 - dp.createData( )
 
 
@@ -27,9 +27,13 @@ css:
   form id="form2" method="POST" action="/mpv_mon"
     table.striped
       tr
-        th デバイス
+        th チューナー
         td
           == dp.deviceSelect()
+      tr
+        th デバイスファイル名
+        td
+          == dp.devfn()
       tr
         th.nowrap
           | 状態 
