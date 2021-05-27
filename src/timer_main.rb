@@ -10,6 +10,7 @@ base = File.dirname( $0 )
     $baseDir = dir
   end
 end
+RewriteConst = true
 require 'require.rb'
 
 $debug = Debug
@@ -43,6 +44,7 @@ end
 
 $rec_pid = {}                   # 子プロセス の pid
 $mutex = Mutex.new
+$tunerArray = TunerArray.new
 
 #
 #  :CHLD のハンドラ

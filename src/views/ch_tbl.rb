@@ -112,7 +112,7 @@ class ChTbl
     px = ((( time ).to_f / 3600 ) *  @hour_pixel ).to_i
     style = sprintf(%Q{style="height:%dpx;" },px)
     cls2 = cls != nil ? %Q{class='#{cls.join(" ")}'} : ""
-    tip2 = tip != nil ? %Q{data-tooltip="#{tip}"} : ""
+    tip2 = tip != nil ? %Q{data-text="#{tip}"} : ""
     pid2 = pid != nil ? %Q{pid="#{pid}"} : ""
     moni = %Q(moni="off")
 

@@ -11,6 +11,7 @@ base = File.dirname( $0 )
   end
 end
 
+RewriteConst = true
 require 'require.rb'
 
 
@@ -46,15 +47,16 @@ def childWait()
   end
 end
 
+#$mpvMon = MpvMonMain.new
+$tunerArray = TunerArray.new
+
 #
 #  モニタの停止
 #
 def moni_stop( txt )
   n = 0
-  if $mpvMon != nil
-    $mpvMon.data.each_pair do |k,v|
-      n += 1 if v.stop() == true
-    end
+  if $tunerArray != nil
+    n += $tunerArray.stop()
   end
   n +=1 if MonitorM.new.osoji() == true
   
@@ -87,7 +89,6 @@ Signal.trap( :INT )  { DBlog::sto("httpd :INT") ; endParoc() }
 Signal.trap( :TERM ) { DBlog::sto("httpd :TERM") ; endParoc() }
 Signal.trap( :USR1 ) { DBlog::sto("httpd :USR1") ; sigUsr1() }
 
-$mpvMon = MpvMonMain.new
 
 enable :sessions
 set :server, "webrick"
@@ -400,35 +401,35 @@ end
 #
 #  mpv モニター
 #
-def mpv_mon_func( devfn ,cmd, chid )
-  @devfn, @cmd, @chid = devfn, cmd, chid
+def mpv_mon_func( tunNum ,cmd, chid )
+  @tunNum, @cmd, @chid = tunNum, cmd, chid
 
   rdflag = false
-  if $mpvMon != nil and devfn != nil
-    devfn = $mpvMon.autoSel(chid)  if devfn == "auto"
-    if devfn != nil
+  if $tunerArray != nil and tunNum != nil
+    tunNum = $tunerArray.autoSel(chid)  if tunNum == "auto"
+    if tunNum != nil
       case cmd
-      when "ch"  then     $mpvMon.data[ devfn ].play( chid ) ; rdFlag = true
-      when "stop" then    $mpvMon.data[ devfn ].stop()       ; rdFlag = true
+      when "ch"   then  $tunerArray.play( tunNum.to_i, chid ) ; rdFlag = true
+      when "stop" then  $tunerArray.stop( tunNum.to_i )       ; rdFlag = true
       end
     else
-      @devfn = nil
+      @tunNum = nil
       @cmd   = "disp"
     end
   end
 
   if rdFlag == true
     sleep(0.5)
-    url = "/mpv_mon/#{devfn}/disp"
+    url = "/mpv_mon/#{tunNum}/disp"
     redirect to(url)
   else
     slim :mpv_mon
   end
 end
 
-get  '/mpv_mon/*/*/*' do |devfn,cmd,chid| mpv_mon_func( devfn,cmd,chid ) end
-get  '/mpv_mon/*/*'   do |devfn,cmd|      mpv_mon_func( devfn,cmd, nil ) end
-get  '/mpv_mon'       do                  mpv_mon_func( nil, "disp",nil) end
+get  '/mpv_mon/*/*/*' do |tunNum,cmd,chid| mpv_mon_func( tunNum,cmd,chid ) end
+get  '/mpv_mon/*/*'   do |tunNum,cmd|      mpv_mon_func( tunNum,cmd, nil ) end
+get  '/mpv_mon'       do                   mpv_mon_func( 1, "disp",nil)    end
 
 
 #

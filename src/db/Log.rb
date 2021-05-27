@@ -55,6 +55,12 @@ class DBlog
   def self.sto( str )
     write( nil, str, Stdout )
   end
+
+  def self.stoD( str )          # デバック時のみ出力
+    if $debug == true
+      write( nil, str, Stdout )
+    end
+  end
   
   def self.debug( db, str )
     write( db, str, Debug )

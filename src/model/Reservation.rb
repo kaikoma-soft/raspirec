@@ -10,17 +10,23 @@ class Reservation
 
   def initialize( params = nil )
     @params = params if params != nil
+    DBlog::sto("Reservation new" ) if $debug == true
+    @ts = Time.now
   end
 
+  
   #
   #  予約のチェック
   #
   def check( db )
-    now = Time.now.to_i
+    @ts = Time.now
+    ppp("Reservation.check() start")
+    ts1 = Time.now
     reserve = DBreserve.new
     programs = DBprograms.new
     row1 = reserve.selectSP( db, stat: RsvConst::WaitStat )
     dupchk = []
+    ppp("Reservation.check() P1")
     row1.each do |r|
       next if r[:stat] == RsvConst::NotUse
       if r[:dedupe] == RsvConst::Dedupe
@@ -53,6 +59,7 @@ class Reservation
       end
     end
 
+    ppp("Reservation.check() P2")
     #
     # 消失からの復帰
     #
@@ -69,25 +76,39 @@ class Reservation
       end
     end
 
+    ppp("Reservation.check() P3")
+    #
+    #  録画終了したものの title の hash 値を設定
+    #
+    reserve.titleHash( db )
+
+    ppp("Reservation.check() P4")
     #
     # 重複 check
     #
+    ts2 = Time.now
     dupchk.each do |r|
       # title = Commlib::deleteOptStr( r[:title] )
       title = r[:title].sub(/【再】/,'').sub(/^\[[無新]\]/,'')
-      row1 = reserve.selectSP( db, stat: RsvConst::NormalEnd, title: title )
-      if row1.size > 0
-        come1 = "重複の為無効化:"
-        (day, time, w) = Commlib::stet_to_s( r[:start], r[:end] )
-        come2 = sprintf("%s %s %s %s %s",come1, day, time, r[:name],r[:title])
-        DBlog::atte(db, come2 )
-        come1 = "重複"
-        reserve.updateStat( db,r[:id],stat: RsvConst::NotUse, comment: come1 )
+      titleH = Commlib::makeHashKey( title )
+      row1 = reserve.select( db, stat: RsvConst::NormalEnd, recpt1pid: titleH.to_i )
+      row1.each do |r2|
+        if r2[:title] == title
+          come1 = "重複の為無効化:"
+          (day, time, w) = Commlib::stet_to_s( r[:start], r[:end] )
+          come2 = sprintf("%s %s %s %s %s",come1, day, time, r[:name],r[:title])
+          DBlog::atte(db, come2 )
+          come1 = "重複"
+          reserve.updateStat( db,r[:id],stat: RsvConst::NotUse, comment: come1 )
+          break
+        end
       end
     end
-    
-    Tuner.new.schedule2(db)
+    ppp("Reservation.check() P5")
 
+    TunerAssignNew.new.schedule2(db)
+
+    ppp("Reservation.check() end")
   end
     
   #
@@ -117,6 +138,7 @@ class Reservation
         self.check( db )
       end
     end
+    
   end
 
   #
@@ -131,6 +153,7 @@ class Reservation
         self.check( db )
       end
     end
+    
   end
   
   #
@@ -184,6 +207,24 @@ end
 
 if File.basename($0) == "Reservation.rb"
 
-  Reservation.new( ARGV[0].to_i )
+  base = File.dirname( $0 )
+  [ ".", "..","src", base ].each do |dir|
+    if test( ?f, dir + "/require.rb")
+      $: << dir
+      $baseDir = dir
+    end
+  end
 
+  flag = false
+  if Object.const_defined?(:RewriteConst) == false
+    Object.const_set( :RewriteConst, true )
+    flag = true
+  end
+  require 'require.rb'
+
+  if flag == false
+    $tunerArray = TunerArray.new
+    a = Reservation.new( ARGV[0].to_i )
+    a.checkBG().join
+  end
 end

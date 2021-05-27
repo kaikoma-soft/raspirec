@@ -125,11 +125,11 @@ create table reserve (
     subdir              text,      -- 格納 subDir
     fname               text,      -- TS ファイル名
     ftp_stat            integer,   -- 転送ステータス 0:未 1:完了
-    tunerNum            integer,   -- チューナー番号
-    recpt1pid           integer,   -- recpt1 プロセスID
+    tunerNum            integer,   -- チューナー番号  / 終了後は title hash の代入フラグ = 999 ( 16bit shift) を重畳
+    recpt1pid           integer,   -- recpt1 プロセスID / 終了後は title のhash
     category            integer,   -- programs は消えるので保存用
     dedupe              bool,      -- 重複排除  0:しない  1:する (自動のみ)
-    dropNum             integer    -- 予約
+    dropNum             integer    -- パケット検査結果
 );  -- 
 create index res1 on reserve (id) ;
 create index res3 on reserve (type) ;

@@ -42,6 +42,7 @@ div id="sample-dialog" title="詳細" style="display:none;"
    p 
 
 == Commlib::include( SrcDir + "/views/move_top.html" )
+== Commlib::include( SrcDir + "/views/tooltip.js" )
 
 css:
   .inline-block {
@@ -106,9 +107,6 @@ javascript:
         $(this).css('border','');
     });
 
-    $(document).ready(function(){
-       $('.item').tooltip();
-    });
 
     $(".item").click(function(event){
         var rid = $(this).attr('rid');

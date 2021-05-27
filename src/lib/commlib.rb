@@ -9,6 +9,22 @@
 module Commlib
 
   #
+  #  chid から band を判定
+  #
+  def chid2band( chid )
+    band = case chid
+           when /^GR/ then Const::GR 
+           when /^BS/ then Const::BSCS
+           when /^CS/ then Const::BSCS
+           when /^\d+$/ then
+             n = chid.to_i
+             n < 100 ? Const::GR : Const::BSCS
+           end
+    return band
+  end
+  module_function :chid2band
+  
+  #
   #  選局に必要な物理チャンネル名を生成
   #
   def makePhCh( data )
@@ -21,6 +37,18 @@ module Commlib
   end
   module_function :makePhCh
 
+  #
+  #  文字列からハッシュキー(数値)を生成
+  #
+  def makeHashKey( str )
+    require 'digest/md5'
+    digest = Digest::MD5.new
+    digest.update( str )
+    r = digest.hexdigest.hex % ( 2 ** 32 )
+    return r
+  end
+  module_function :makeHashKey
+  
   #
   #  時短に重畳した時間制限を分離
   #

@@ -22,13 +22,13 @@ then
     ffmpeg  \
         -re \
         -i pipe:0 \
+        -r 10 \
         -bsf:v h264_mp4toannexb \
         -movflags faststart \
         -max_muxing_queue_size 1024 \
         -analyzeduration 10M -probesize 10M  \
         -map 0:v:0 -map 0:a -ignore_unknown \
         -c:v h264 -g 10 \
-        -vf "fps=10,yadif=0:-1:1" \
         -c:a copy \
         -flags +cgop+global_header \
         -f hls \
@@ -40,3 +40,5 @@ then
 else
     echo "dir not found $STREAM_DIR "
 fi
+
+# -vf "fps=10,yadif=0:-1:1" 

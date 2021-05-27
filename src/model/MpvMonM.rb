@@ -7,14 +7,13 @@
 
 class MpvMonMain
 
-  attr_reader   :data, :devs2
+  attr_reader   :data, :devs
 
   def initialize(  )
     @data = {}
-    @band    = %w( GR BSCS 3W )
+    @band    = %w( GR BSCS GBC )
     @prefix = "DeviceList"
-    @devs = DeviceList_GR + DeviceList_BSCS
-    @devs2 = []
+    @devs = DeviceList_GR + DeviceList_BSCS + DeviceList_GBC
 
     count = 0
     @band.each do |suffix|
@@ -23,11 +22,9 @@ class MpvMonMain
         ary = eval( name )
         if ary.class == Array
           ary.each do |dev|
-            dev2 = File.basename( dev )
-            @devs2 << dev2
-            @data[ dev2 ] ||= MpvMonM.new( dev )
-            @data[ dev2 ].addBand( suffix )
-            @data[ dev2 ].set_count( count )
+            @data[ dev ] ||= MpvMonM.new( dev )
+            @data[ dev ].addBand( suffix )
+            @data[ dev ].set_count( count )
             count += 1
           end
         end
@@ -35,9 +32,10 @@ class MpvMonMain
     end
 
     @devs.each do |dev|
-      unless FileTest.chardev?(dev)
-        dev2 = File.basename( dev )
-        @data[dev2].stat = :NotFond
+      if FileTest.chardev?( dev ) or FileTest.blockdev?(dev)
+        @data[dev].stat = :OK
+      else
+        @data[dev].stat = :NotFond
       end
     end
 
@@ -48,20 +46,19 @@ class MpvMonMain
   #
   def chkDeviceStat()
 
-    @devs2.each do |dev2|
-      if @data[ dev2 ].stat != :NotFond
-        @data[ dev2 ].stat = :OK
+    @devs.each do |dev|
+      if @data[ dev ].stat != :NotFond
+        @data[ dev ].stat = :OK
       end
     end
 
     lsof = Object.const_defined?(:Lsof_cmd) == true ? Lsof_cmd : "lsof"
-    cmd = %W( #{lsof} +d /dev )
+    cmd = [ lsof, "+D", "/dev", :err=>[:child, :out] ]
     IO.popen( cmd, "r") do |io|
       io.each_line do |line|
         dev = line.split.last
         if @devs.include?( dev )
-          dev2 = File.basename( dev )
-          @data[ dev2 ].stat = :Busy
+          @data[ dev ].stat = :Busy
         end
       end
     end
@@ -80,7 +77,7 @@ class MpvMonMain
 
     chkDeviceStat()
 
-    @devs2.each do |devfn|
+    @devs.each do |devfn|
       if @data[ devfn ].band[ band ] == true
         if @data[ devfn ].stat == :OK
           return devfn
@@ -140,7 +137,7 @@ class MpvMonM
       @band[ Const::BS ] = true
       @band[ Const::CS ] = true
     end
-    if band == "3W"
+    if band == "GBC"
       @band[ Const::GR ] = true
       @band[ Const::BS ] = true
       @band[ Const::CS ] = true

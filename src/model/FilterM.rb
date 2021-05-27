@@ -8,6 +8,7 @@
 class FilterM
 
   def initialize( params = nil )
+    DBlog::sto("FilterM new" ) if $debug == true
     @params = params if params != nil
   end
 
@@ -160,15 +161,24 @@ class FilterM
       fd = filter.select( db, id: nil )
     end
 
-    fd.each do |fd2|
+    while fd.size > 0
       DBaccess.new().open do |db|
         db.transaction do
-          r = search3( db, fd2 )
-          filterR.delete( db, fd2[:id] )
-          r.each do |rid|
-            filterR.insert(db, fd2[:id], rid )
+          t1 = Time.now
+          while fd.size > 0
+            fd2 = fd.shift
+            r = search3( db, fd2 )
+            filterR.delete( db, fd2[:id] )
+            r.each do |rid|
+              filterR.insert(db, fd2[:id], rid )
+            end
+            filter.update_res(db, fd2[:id],r.size )
+            sa = Time.now - t1
+            if sa > 0.5
+              DBlog::sto( "searchAll() break #{sa}" ) if $debug == true
+              break
+            end
           end
-          filter.update_res(db, fd2[:id],r.size )
         end
       end
       sleep( 1 ) if sleep == true
@@ -235,9 +245,9 @@ class FilterM
     DBaccess.new().open do |db|
       db.transaction do
         rsv_update( db )
-        rsv.check( db )
         lap = Time.now - st
         DBlog::debug( db, sprintf("FilterM::update() %.1f sec",lap ))
+        rsv.check( db )
       end
     end
   end
@@ -385,7 +395,9 @@ class FilterM
     end
 
     if $debug == true
-      tmp = sprintf("search3() result = %3d time=%.3f",r.size,Time.now - startT)
+      id = fd[:id] == nil ? 0 : fd[:id]
+      tmp = sprintf("search3() id = %5d, result = %3d, time=%.3f",
+                    id,r.size,Time.now - startT)
       DBlog::sto( tmp )
     end
 

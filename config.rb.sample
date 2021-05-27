@@ -12,7 +12,7 @@ Http_port  = 4567
 Recpt1_cmd = "/usr/local/bin/recpt1"
 Recpt1_opt = %w( )
 Epgdump    = "/usr/local/bin/epgdump"
-
+#
 BaseDir    = ENV["HOME"] + "/raspirec"
 DataDir    = ENV["HOME"] + "/raspirec_data"
 TSDir      = DataDir + "/TS"
@@ -23,28 +23,31 @@ SrcDir     = BaseDir + "/src"
 #
 # 録画タイミング関係
 #
-Start_margin  = 10              # 録画開始前マージン(秒)
-After_margin  = 3               # 録画終了後マージン(秒)
-Gap_time      = 5               # 録画終了-次番組開始間隔(秒)
+Start_margin  = 10             # 録画開始前マージン(秒)
+After_margin  = 3              # 録画終了後マージン(秒)
+Gap_time      = 5              # 録画終了-次番組開始間隔(秒)
 
 #
 #  チューナー関係
 #
-GR_tuner_num      = 2           # 地デジチュナー数
-BSCS_tuner_num    = 2           # BSCSチュナー数
-Total_tuner_limit = 4           # トータルチュナー数制限
+
+GR_tuner_num      = 2           # 地デジ チューナー数
+BSCS_tuner_num    = 2           # BS/CS  チューナー数
+GBC_tuner_num     = 0           # 地デジ/BS/CS チューナー数
+#
+Total_tuner_limit = false # トータルチューナー数制限 使用しない場合は false
 
 #
 #  EPG関係
 #
-GR_EPG_channel = %w( 27 26 25 24 22 23 21 16 )    # 地デジ EPG 受信局
-BS_EPG_channel = %w( BS15_0 )                     # BS EPG 受信局
-CS_EPG_channel = %w( CS4 CS2 )                    # CS EPG 受信局
-GR_EpgRsvTime  = 60                               # EPG受信時間 (秒)
-BS_EpgRsvTime  = 300                              # EPG受信時間 (秒)
-CS_EpgRsvTime  = 300                              # EPG受信時間 (秒)
-EPGperiod      = 8                                # EPG 取得周期 (H)
-#EpgBanTime     = [ 2, 3, 4, 5 ]                   # EPG禁止時間帯(24H制)
+GR_EPG_channel = %w( 27 26 25 24 22 23 21 16 ) # 地デジ EPG受信局(スカイツリー)
+BS_EPG_channel = %w( BS15_0 BS9_0 )            # BS EPG 受信局
+CS_EPG_channel = %w( CS4 CS2 )                 # CS EPG 受信局
+GR_EpgRsvTime  = 50                            # EPG受信時間 (秒)
+BS_EpgRsvTime  = 150                           # EPG受信時間 (秒)
+CS_EpgRsvTime  = 200                           # EPG受信時間 (秒)
+EPGperiod      = 8                             # EPG 取得周期 (H)
+EpgBanTime     = [ 2, 3, 4, 5 ]                # EPG禁止時間帯(24H制)
 
 #
 #   ダイアログのオプション初期値 ( true でチェック付き )
@@ -75,11 +78,16 @@ StreamDir    = DataDir + "/stream"                # ストリーム出力先デ�
 #
 #   media player モニタ機能
 #
-MPMonitor       = true                              # mpv モニタ機能を有効に
-DeviceList_GR   = %w( /dev/px4video2 /dev/px4video3 /dev/px4video6 /dev/px4video7 )
-DeviceList_BSCS = %w( /dev/px4video0 /dev/px4video1 /dev/px4video4 /dev/px4video5 )
+MPMonitor       = true          # mpv モニタ機能を有効に
+#
+DevAutoDetection = true         # デバイスファイルの自動検出 true = 有効 
+DeviceList_GR   = []            # 地デジ チューナー デバイスファイル 
+DeviceList_BSCS = []            # BS/CS                  〃
+DeviceList_GBC  = []            # 三波共用(地デジ/BS/CS) 〃
+#
 MPlayer_cmd     = %w( mpv --deinterlace=yes --autofit=720x405 --quiet )
 #MPlayer_cmd     = %w( mpv --deinterlace=yes --autofit=640x360 --quiet )
+#
 RemoteMonitor   = true          # チューナーと表示が別マシンの場合に ture
 UDPbasePort     = 12345         # UDP port 
 XServerName     = "desktop"     # mpv を実行するマシン名
@@ -107,7 +115,7 @@ DiskKeepPercent = false    # 古いTSファイルを削除してDiskの容量確
 Local_jquery    = false    # jquery等をローカルに用意した場合に true
 StationPage     = 7        # 番組表で、1ページ当たりの放送局数 (個)
 TSnameFormat    = "%YEAR%-%MONTH%-%DAY%_%HOUR%:%MIN%_%DURATION%_%TITLE%_%CHNAME%" # TS ファイル名の書式
-EpgPatchEnable  = true     # EPGPatch機能の制御。デフォル有効。false = 無効 
+EpgPatchEnable  = true     # EPGPatch機能の制御。デフォルトで有効。false = 無効 
 
 TitleRegex = [        # 題名の削除フィルター
     /【N】/,
@@ -140,13 +148,13 @@ DbFname      = DBDir + "/epg.db"
 EPGLockFN    = DBDir + "/epg.lock"
 MainLockFN   = DBDir + "/main.lock"
 DbupdateFN   = DBDir + "/db.update"
+DeviceChkFN  = DBDir + "/devicechk.yaml"
 
 LogDir       = DataDir + '/log'
 JsonDir      = DataDir + '/json'
 PidFile      = LogDir + '/raspirec.pid'
 TimerPidFile = LogDir + '/timer.pid'
 HttpdPidFile = LogDir + '/httpd.pid'
-ConfDir      = BaseDir + '/Conf.d'
 
 LogFname     = LogDir + '/raspirec.log'
 StdoutM      = LogDir + "/main_out.log"  # main debug 標準出力ファイル
@@ -156,9 +164,8 @@ StderrH      = LogDir + "/httpd_err.log" # httpd debug 標準エラーファイ�
 StdoutT      = LogDir + "/timer_out.log" # timer debug 標準出力ファイル
 StderrT      = LogDir + "/timer_err.log" # timer debug 標準エラーファイル
 
-EpgRsvTime = [ GR_EpgRsvTime, BS_EpgRsvTime, CS_EpgRsvTime ].max * 1.5
-
 Debug      = false              # log ファイルへ出力するように
 Debug_mem  = false              # メモリの消費量の表示
+
 
 

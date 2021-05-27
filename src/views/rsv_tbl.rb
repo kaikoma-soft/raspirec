@@ -9,7 +9,7 @@
 class RsvTbl
 
   Base = "/rsv_tbl"
-  
+
   def initialize( date = nil, time = nil)
 
     @time = nil                 # カレント時間
@@ -29,14 +29,13 @@ class RsvTbl
 
     @tate = 24                  # 縦の長さ (H)
     @hour_pixel = 60            # 1時間の長さ (px)
-    @maxnum = { Const::GR   => GR_tuner_num, # 横軸の数
-                Const::BSCS => BSCS_tuner_num,
-              }
-    @st = @time.to_i             # start time
-    @et = @st + @tate * 3600     # end time
-    
-    @rsvData = getPrgData( @st, @et )
+    @st = @time.to_i            # start time
+    @et = @st + @tate * 3600    # end time
+    @tunerA  = $tunerArray      # チューナーの配列
+    @tunerA.allClear()
 
+    getPrgData( @st, @et )
+    
   end
 
   #
@@ -44,7 +43,12 @@ class RsvTbl
   #
   def nowLine()
 
-    stationN = @maxnum[ Const::GR ] + @maxnum[ Const::BSCS ]
+    stationN = @tunerA.size 
+    @tunerA.each do |tmp|
+      if tmp.band[ :short ] == true and tmp.data.size == 0
+        stationN -= 1
+      end
+    end
     stationW = 160 + 2
     
     Commlib::nowLine( Time.at(@st), @tate, @hour_pixel, stationN, stationW, -10 )
@@ -58,25 +62,23 @@ class RsvTbl
 
     programs = DBprograms.new
     reserve = DBreserve.new
-    rsvData = {}
     DBaccess.new().open do |db|
       row = reserve.selectSP(db, tstart: st, tend: et)
       row.each do |r|
         next if r[:stat] == RsvConst::NotUse
         next if r[:stat] == RsvConst::RecStop2
+        #next if r[:stat] == RsvConst::NormalEnd
         band = r[:band] == Const::GR ? Const::GR : Const::BSCS
-        tunerNum = r[:tunerNum] == nil ? 0 : r[:tunerNum]
-        @maxnum[ band ] = tunerNum if @maxnum[ band ] < tunerNum
-        tunerNum -= 1
+        tunerNum = r[:tunerNum] == nil ? 0 : r[:tunerNum] & 0xffff
         row2 = programs.select(db,chid: r[:chid], evid: r[:evid] )
         r[:prog] = row2.first
-        rsvData[ band ] ||= {}
-        rsvData[ band ][ tunerNum ] ||= []
-        rsvData[ band ][ tunerNum ] << r
+        if r[:stat] == RsvConst::Conflict
+          band = :short
+          tunerNum = 1
+        end
+        @tunerA.addData( band, tunerNum, r )
       end
     end
-
-    rsvData
   end
 
   #
@@ -147,11 +149,9 @@ class RsvTbl
   #
   def yokojiku()
     r = []
-    @maxnum[ Const::GR ].times do |n|
-      r << sprintf(%Q{<div class='station'> GR-%s </div>},n+1)
-    end
-    @maxnum[ Const::BSCS ].times do |n|
-      r << sprintf(%Q{<div class='station'> BSCS-%s </div>},n+1)
+    @tunerA.each do |tmp|
+      next if tmp.band[ :short ] == true and tmp.data.size == 0
+      r << sprintf(%Q{<div class='station'> %s </div>},tmp.name)
     end
     r.join("\n")
   end
@@ -160,7 +160,7 @@ class RsvTbl
     px = ((( time ).to_f / 3600 ) *  @hour_pixel ).to_i
     style = sprintf(%Q{style="height:%dpx;" },px)
     cls2 = cls != nil ? %Q{class='#{cls.join(" ")}'} : ""
-    tip2 = tip != nil ? %Q{data-tooltip="#{tip}"} : ""
+    tip2 = tip != nil ? %Q{data-text="#{tip}"} : ""
     rid2 = rid != nil ? %Q{rid="#{rid}"} : ""
 
     sprintf(%Q{  <div %s %s %s %s> %s </div>},cls2, rid2,tip2,style, text )
@@ -172,62 +172,62 @@ class RsvTbl
   def prgTable()
     r = []
     
-    @maxnum.keys.each do |band|
-      @maxnum[band].times do |n|
-        ct = @st                     # current time
-        r << sprintf(%Q{<div class='dtc'>})
-        if @rsvData[band] == nil or @rsvData[band][n] == nil
+    @tunerA.each do |t1|
+      next if t1.band[ :short ] == true and t1.data.size == 0
+      ct = @st                     # current time
+      r << sprintf(%Q{<div class='dtc'>})
+      if t1.data.size == 0
+        cls = [ "colorGray" ]
+        r << printItem( ( @et - ct), "&nbsp;", cls: cls  )
+      else
+        t1.data.each do |tmp|
+          hosei = 0
+          if tmp[:start ] > ct # ダミーの挿入
+            cls = [ "colorGray" ]
+            r << printItem( (tmp[:start ] - ct), "&nbsp;", cls: cls  )
+            ct = tmp[:start ]
+          elsif tmp[:start ] < ct
+            hosei = tmp[:start ] - ct
+          end
+          if tmp[:end] > @et
+            hosei -= ( tmp[:end] - @et )
+          end
+          l = tmp[:end] - tmp[:start] + hosei
+
+          if tmp[:prog] != nil
+            cls = [ "item", sprintf("color%d",tmp[:prog][:categoryA][0][0]) ]
+          else
+            cls = [ "item" ]
+          end
+          
+          if tmp[:stat] == RsvConst::Conflict
+            cls << "alertR"
+          elsif tmp[:stat] != RsvConst::Normal and tmp[:stat] != RsvConst::RecNow
+            cls << "alertBD"
+          elsif tmp[:jitanExe] == RsvConst::JitanEOn
+            cls << "alertGD"
+          end
+
+          chname= tmp[:name]
+          rid   = tmp[:id]
+          title = tmp[:title].gsub(/\"/,"&quot;")
+          stime = Time.at( tmp[:start] ).strftime("%H:%M")
+          etime = Time.at( tmp[:end] ).strftime("%H:%M")
+          tip   = %Q{#{chname}<br>#{title}<br>#{stime} 〜 #{etime}}
+          r << printItem( l, title, rid: rid, tip: tip, cls: cls )
+          
+          ct = tmp[:end]
+
+        end
+        if @et > ct
           cls = [ "colorGray" ]
           r << printItem( ( @et - ct), "&nbsp;", cls: cls  )
-        else
-          @rsvData[band][n].each_with_index do |tmp,m|
-            hosei = 0
-            if tmp[:start ] > ct # ダミーの挿入
-              cls = [ "colorGray" ]
-              r << printItem( (tmp[:start ] - ct), "&nbsp;", cls: cls  )
-              ct = tmp[:start ]
-            elsif tmp[:start ] < ct
-              hosei = tmp[:start ] - ct
-            end
-            if tmp[:end] > @et
-              hosei -= ( tmp[:end] - @et )
-            end
-            l = tmp[:end] - tmp[:start] + hosei
-
-            if tmp[:prog] != nil
-              cls = [ "item", sprintf("color%d",tmp[:prog][:categoryA][0][0]) ]
-            else
-              cls = [ "item" ]
-            end
-              
-            if tmp[:stat] != RsvConst::Normal and tmp[:stat] != RsvConst::RecNow
-              cls << "alertBD"
-            elsif tmp[:jitanExe] == RsvConst::JitanEOn
-              cls << "alertGD"
-            end
-
-            chname= tmp[:name]
-            rid   = tmp[:id]
-            title = tmp[:title].gsub(/\"/,"&quot;")
-            stime = Time.at( tmp[:start] ).strftime("%H:%M")
-            etime = Time.at( tmp[:end] ).strftime("%H:%M")
-            tip   = %Q{#{chname}<br>#{title}<br>#{stime} 〜 #{etime}}
-            r << printItem( l, title, rid: rid, tip: tip, cls: cls )
-                            
-            ct = tmp[:end]
-          end
-          if @et > ct
-            cls = [ "colorGray" ]
-            r << printItem( ( @et - ct), "&nbsp;", cls: cls  )
-          end
         end
-        r << sprintf(%Q{</div>})
       end
+      r << sprintf(%Q{</div>})
     end
     r.join("\n")
   end
 
-
-  
 end
 
