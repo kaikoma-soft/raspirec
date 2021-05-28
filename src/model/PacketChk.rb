@@ -48,7 +48,7 @@ class PacketChk < FileCopy      # FileCopy を流用
         size = File.size( path )
         t = (Time.now + (size / (PacketChk_rate * 2  ** 20))).to_i
         if t > time_limit
-          DBlog::debug( nil, sprintf("time limit %s > %s", t, time_limit ))
+          DBlog::stoD( sprintf("time limit %s > %s", t, time_limit ))
           next
         end
 

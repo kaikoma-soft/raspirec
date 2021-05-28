@@ -16,6 +16,7 @@
 | 定数名             | 説明 |
 |--------------------|------|
 |Http_port|httpd のポート番号を指定する。<BR>WEBインターフェースには http://XXX.YYY.ZZZ:${Http_port}/ でアクセスする。|
+
 #### ディレクトリ、ファイル関係
 
 | 定数名             | 説明 |
@@ -25,6 +26,7 @@
 |Epgdump|epgdump コマンドの path を指定する。|
 |BaseDir|raspirec がインストールされているディレクトリを設定する。( raspirec.rb があるディレクトリ )|
 |DataDir|データベースや録画したファイルの置き場所を指定する。|
+
 #### 録画タイミング関係
 
 | 定数名             | 説明 |
@@ -32,13 +34,16 @@
 |Start_margin|番組開始前の録画マージンを指定(秒)。録画は PC の時計を基準に、開始します。|
 |After_margin|番組終了後の録画マージンを指定(秒)。録画は PC の時計を基準に、終了します。|
 |Gap_time|録画が連続し、前番組が時短になった場合の、前番組録画終了から次番組開始間隔を指定(秒)。<br>前番組は Start_margin +  Gap_time の秒数だけ録画時間が削られます。<br>TVチューナー依存ですが、あまり短いと動作が不安定になります。|
+
 #### チューナー関係
 
 | 定数名             | 説明 |
 |--------------------|------|
 |GR_tuner_num|地デジチュナー数|
 |BSCS_tuner_num|BSCSチュナー数|
-|Total_tuner_limit|トータルチュナー数制限を掛ける場合に指定する。通常は GR_tuner_num +  BSCS_tuner_num = Total_tuner_limit|
+|GBC_tuner_num|地デジ/BS/CS チューナー数|
+|Total_tuner_limit|トータルチュナー数制限を掛ける場合に指定する。使用しない場合は false|
+
 #### EPG関係
 
 | 定数名             | 説明 |
@@ -51,6 +56,7 @@
 |CS_EpgRsvTime|CS EPG受信時間 (秒)|
 |EPGperiod|EPG 取得周期 (H)|
 |EpgBanTime|EPG の取得禁止時間帯の指定。(24H制 時間単位) 1時から5時までを禁止したい場合は、[ 1,2,3,4,5 ] と指定する。使用しない場合は nil|
+
 #### ダイアログのオプション初期値
 
 | 定数名             | 説明 |
@@ -58,6 +64,7 @@
 |D_FreeOnly|無料放送のみ|
 |D_dedupe|重複予約は無効化する|
 |D_jitan|チューナー不足の場合に時短を許可|
+
 #### TSファイル転送
 
 | 定数名             | 説明 |
@@ -82,14 +89,17 @@
 | 定数名             | 説明 |
 |--------------------|------|
 |MPMonitor|true = mpv モニタ機能を有効、false = 無効 <br>無効の場合は、下記のパラメータは無視される。設定方法は <a href="https://kaikoma-soft.github.io/raspirec-option.html"> こちら </a> を参照して下さい。|
+|DevAutoDetection| DeviceList_GR, DeviceList_BSCS, DeviceList_GBC を自動設定する。true = 有効。|
 |DeviceList_GR|地デジのデバイスファイルを指定する。|
 |DeviceList_BSCS|BS,CS のデバイスファイルを指定する。|
+|DeviceList_GBC | 地デジ,BS,CS のデバイスファイルを指定する。|
 |MPlayer_cmd|mpv のコマンド及び引数を指定する。|
 |RemoteMonitor|表示するマシンが別の場合 ture, 同一の場合に false|
 |UDPbasePort|使用する UDP のポート番号、デバイスの数だけプラスされる。|
 |XServerName|RemoteMonitor が true の場合に、mpvを実行、表示するマシンのマシン名を設定する。|
 |RecHostName|RemoteMonitor が true の場合に、チューナー(raspirecが実行されている)のマシン名を設定する。|
 |Lsof_cmd|lsof コマンドへのパス。Ubuntu では /usr/bin/lsof |
+
 #### その他
 
 | 定数名             | 説明 |
@@ -104,3 +114,4 @@
 |Debug_mem|ture で メモリの消費量をモニタするようになる。|
 |TitleRegex|「自動予約」ボタンを押して番組検索に遷移した時に、番組タイトルから「題名」を生成する為の、余計な文字を削除する正規表現の配列|
 |SearchStringRegex|「自動予約」ボタンを押して番組検索に遷移した時に、番組タイトルから「検索文字列」を生成する為の、余計な文字を削除する正規表現の配列|
+|EpgPatchEnable|EPGPatch機能を有効にする。 false = 無効。デフォルトは有効|
