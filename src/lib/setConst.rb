@@ -68,7 +68,7 @@ setDefaultConst("GBC_tuner_num", 0 )
 setDefaultConst("DeviceList_GBC",[])
 setDefaultConst("EpgBanTime", nil )
 setDefaultConst("DeviceChkFN", DBDir + "/devicechk.yaml" )
-
+setDefaultConst("EPG_tuner_limit",false )
 
 #
 # パケットチェック機能を有効にするか？
