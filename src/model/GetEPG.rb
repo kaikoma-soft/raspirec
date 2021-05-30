@@ -184,7 +184,8 @@ class GetEPG
     while chs.size > 0
 
       tcount = ta.usedCount()
-      if Total_tuner_limit == false or Total_tuner_limit > tcount
+      if ( Total_tuner_limit == false or Total_tuner_limit > tcount ) and
+        ( EPG_tuner_limit == false or EPG_tuner_limit > tcount )
 
         # 空いているチューナーを探す 
         tune = phch = band = nil
@@ -221,7 +222,7 @@ class GetEPG
           end
         end
       else
-        DBlog::sto("Total_tuner_limit over #{tcount}" )
+        DBlog::stoD("tuner_limit over #{tcount}" )
       end
       sleep( 10 )
     end

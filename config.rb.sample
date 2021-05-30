@@ -44,10 +44,11 @@ GR_EPG_channel = %w( 27 26 25 24 22 23 21 16 ) # 地デジ EPG受信局(スカ�
 BS_EPG_channel = %w( BS15_0 BS9_0 )            # BS EPG 受信局
 CS_EPG_channel = %w( CS4 CS2 )                 # CS EPG 受信局
 GR_EpgRsvTime  = 50                            # EPG受信時間 (秒)
-BS_EpgRsvTime  = 150                           # EPG受信時間 (秒)
-CS_EpgRsvTime  = 200                           # EPG受信時間 (秒)
+BS_EpgRsvTime  = 180                           # EPG受信時間 (秒)
+CS_EpgRsvTime  = 240                           # EPG受信時間 (秒)
 EPGperiod      = 8                             # EPG 取得周期 (H)
 EpgBanTime     = [ 2, 3, 4, 5 ]                # EPG禁止時間帯(24H制)
+EPG_tuner_limit = false # EPG取得時のチューナー数制限 使用しない場合は false
 
 #
 #   ダイアログのオプション初期値 ( true でチェック付き )
