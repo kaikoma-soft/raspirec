@@ -69,6 +69,8 @@ setDefaultConst("DeviceList_GBC",[])
 setDefaultConst("EpgBanTime", nil )
 setDefaultConst("DeviceChkFN", DBDir + "/devicechk.yaml" )
 setDefaultConst("EPG_tuner_limit",false )
+setDefaultConst("Browser_cmd", "/usr/bin/firefox" )
+
 
 #
 # パケットチェック機能を有効にするか？

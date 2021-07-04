@@ -8,7 +8,7 @@
 module Const
 
   ProgName = "raspirec"
-  ProgVer  = "Ver 1.1.1"
+  ProgVer  = "Ver 1.2.0"
 
   GR   = "GR"
   GRJ  = "地デジ"

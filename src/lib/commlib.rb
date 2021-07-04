@@ -9,6 +9,22 @@
 module Commlib
 
   #
+  #  実行ファイルの存在チェック
+  #
+  def executable?( fname )
+    if fname =~ /^\//
+      return true if FileTest.executable?( fname )
+    else
+      ENV["PATH"].split(/:/).each do |path|
+        path2 = path + "/" + fname 
+        return true if FileTest.executable?( path2 )
+      end
+    end
+    return false
+  end
+  module_function :executable?
+  
+  #
   #  chid から band を判定
   #
   def chid2band( chid )

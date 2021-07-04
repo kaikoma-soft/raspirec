@@ -5,8 +5,8 @@
 #
 class Tuner
   attr_reader   :name, :band, :num
-  attr_accessor :data, :used, :devfn, :serial
-  attr_reader   :rec_pid, :mpv_pid, :phch, :chName, :prog_name, :prog_detail, :fifo, :selBand
+  attr_accessor :data, :used, :devfn, :serial, :selBand, :chName, :chid
+  attr_reader   :rec_pid, :mpv_pid, :phch, :prog_name, :prog_detail, :fifo
   attr_accessor :stat, :statS
 
   def initialize( name, gr, bscs, short )
@@ -22,6 +22,7 @@ class Tuner
     @mpv_pid = nil                # mpv のpid
     @phch        = nil            # 現在の物理チャンネル
     @chName      = "-"            # 放送局名
+    @chid        = nil            # chid
     @prog_name   = "-"            # 番組名
     @prog_detail = "-"            # 番組概要
     @stat        = :OK            # 状態(シンボル :OK,:Busy,:NotFond)
@@ -138,25 +139,27 @@ class Tuner
   #
   #  再生
   #
-  def play( chid )
+  def play( chid, prgInfo = true )
 
     sleep(1) if stop()          # 起動中があれば停止
 
     # 物理チャンネル,svid の取得, 番組情報の取得
-    channel = DBchannel.new
-    programs = DBprograms.new
-    DBaccess.new().open do |db|
-      db.transaction do
-        row = channel.select( db, chid: chid )
-        if row != nil and row.size > 0
-          ( @phch, @svid, @selBand ) = makePhch( row[0] )
-          @chName = row[0][:name]
-        end
-        now = Time.now.to_i
-        row = programs.selectSP( db, chid: chid, tstart: now, tend: now )
-        if row != nil and row.size > 0
-          @prog_name = row[0][:title]
-          @prog_detail = row[0][:detail]
+    if prgInfo == true
+      channel = DBchannel.new
+      programs = DBprograms.new
+      DBaccess.new().open do |db|
+        db.transaction do
+          row = channel.select( db, chid: chid )
+          if row != nil and row.size > 0
+            ( @phch, @svid, @selBand ) = makePhch( row[0] )
+            @chName = row[0][:name]
+          end
+          now = Time.now.to_i
+          row = programs.selectSP( db, chid: chid, tstart: now, tend: now )
+          if row != nil and row.size > 0
+            @prog_name = row[0][:title]
+            @prog_detail = row[0][:detail]
+          end
         end
       end
     end
@@ -175,16 +178,16 @@ class Tuner
       port = UDPbasePort + @serial
       cmd1 += %W( --udp --addr #{XServerName} --port #{port} 99999 )
       cmd2 = %W( ssh -t -t #{XServerName} env DISPLAY=:0 )
-      cmd2 += MPlayer_cmd + %W( udp://#{RecHostName}:#{port}/ )
+      cmd2 += [ Mpv_cmd ] + Mpv_opt + %W( udp://#{RecHostName}:#{port}/ )
     else
       @fifo  = makeFifo( @serial ) if @fifo == nil
       cmd1 += %W( 99999 #{@fifo} )
-      cmd2 = MPlayer_cmd + %W( #{@fifo} )
+      cmd2 = [ Mpv_cmd ] + Mpv_opt + %W( #{@fifo} )
     end
-    cmd2.push( %Q(--title="#{@chName}" )) if MPlayer_cmd[0] =~ /mpv/
+    cmd2.push( %Q(--title="#{@chName}" )) if Mpv_cmd =~ /mpv/
+    
     @rec_pid = cmdStart( cmd1 )
     @mpv_pid = cmdStart( cmd2 )
-
   end
 
   #

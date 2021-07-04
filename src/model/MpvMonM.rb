@@ -262,13 +262,13 @@ class MpvMonM
       port = UDPbasePort + @count
       cmd1 += %W( --udp --addr #{XServerName} --port #{port} 99999 )
       cmd2 = %W( ssh -t -t #{XServerName} env DISPLAY=:0 )
-      cmd2 += MPlayer_cmd + %W( udp://#{RecHostName}:#{port}/ )
+      cmd2 += [ Mpv_cmd ] + Mpv_opt + %W( udp://#{RecHostName}:#{port}/ )
     else
       @fifo  = makeFifo( @devfn ) if @fifo == nil
       cmd1 += %W( 99999 #{@fifo} )
-      cmd2 = MPlayer_cmd + %W( #{@fifo} )
+      cmd2 = [ Mpv_cmd ] + Mpv_opt + %W( #{@fifo} )
     end
-    cmd2.push( %Q(--title="#{@chName}" )) if MPlayer_cmd[0] =~ /mpv/
+    cmd2.push( %Q(--title="#{@chName}" )) if Mpv_cmd =~ /mpv/
     @rec_pid = cmdStart( cmd1 )
     @mpv_pid = cmdStart( cmd2 )
 
