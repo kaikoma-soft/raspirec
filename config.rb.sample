@@ -86,15 +86,23 @@ DeviceList_GR   = []            # 地デジ チューナー デバイスファ�
 DeviceList_BSCS = []            # BS/CS                  〃
 DeviceList_GBC  = []            # 三波共用(地デジ/BS/CS) 〃
 #
-MPlayer_cmd     = %w( mpv --deinterlace=yes --autofit=720x405 --quiet )
-#MPlayer_cmd     = %w( mpv --deinterlace=yes --autofit=640x360 --quiet )
+Mpv_cmd         = "/usr/bin/mpv"
+Mpv_opt         = %W( --deinterlace=yes --autofit=640x360 --quiet )
+#Mpv_opt        = %W( --deinterlace=yes --autofit=720x405 --quiet )
 #
-RemoteMonitor   = true          # チューナーと表示が別マシンの場合に ture
-UDPbasePort     = 12345         # UDP port 
+RemoteMonitor   = false         # チューナーと表示が別マシンの場合に ture
+UDPbasePort     = 12345         # UDP port のベース
 XServerName     = "desktop"     # mpv を実行するマシン名
 RecHostName     = "raspi"       # raspirec,recpt1 を実行するマシン名
 Lsof_cmd        = "/usr/bin/lsof"
 
+#
+#   raspirecTV 
+#
+Browser_cmd      = "/usr/bin/firefox"
+RaspirecTV_font  = "Sans 12"
+RaspirecTV_GEO   = "50+50"          # WxH+X+Y or X+Y
+RaspirecTV_SOCAT = "/usr/bin/socat" # RemoteMonitor == true の時のみ
 
 #
 #   パケットチェック機能

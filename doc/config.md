@@ -94,12 +94,17 @@
 |DeviceList_GR|地デジのデバイスファイルを指定する。|
 |DeviceList_BSCS|BS,CS のデバイスファイルを指定する。|
 |DeviceList_GBC | 地デジ,BS,CS のデバイスファイルを指定する。|
-|MPlayer_cmd|mpv のコマンド及び引数を指定する。|
+|Mpv_cmd|mpv の実行ファイル名(絶対パス)|
+|Mpv_opt|mpv の引数を指定する。
 |RemoteMonitor|表示するマシンが別の場合 ture, 同一の場合に false|
 |UDPbasePort|使用する UDP のポート番号、デバイスの数だけプラスされる。|
 |XServerName|RemoteMonitor が true の場合に、mpvを実行、表示するマシンのマシン名を設定する。|
 |RecHostName|RemoteMonitor が true の場合に、チューナー(raspirecが実行されている)のマシン名を設定する。|
 |Lsof_cmd|lsof コマンドへのパス。Ubuntu では /usr/bin/lsof |
+|Browser_cmd| 番組表を表示するブラウザの実行ファイル名(絶対パス) |
+|RaspirecTV_font|フォント指定|
+|RaspirecTV_GEO|座標指定 ( WxH+X+Y or X+Y )|
+|RaspirecTV_SOCAT|socat の実行ファイル名(絶対パス)(RemoteMonitor == true の時のみ)|
 
 #### その他
 
