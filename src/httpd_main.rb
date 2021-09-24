@@ -89,6 +89,8 @@ Signal.trap( :INT )  { DBlog::sto("httpd :INT") ; endParoc() }
 Signal.trap( :TERM ) { DBlog::sto("httpd :TERM") ; endParoc() }
 Signal.trap( :USR1 ) { DBlog::sto("httpd :USR1") ; sigUsr1() }
 
+DBlog::info(nil,"httpd_main start #{$httpd_pid} (#{Const::ProgVer})")
+
 
 enable :sessions
 set :server, "webrick"
@@ -270,6 +272,7 @@ def control( act ,arg = nil )
   when "restart" then cp.restart()
   when "stop"    then cp.stop()
   when "fcopy"   then cp.fcopy( @params )
+  when "logRote" then cp.logrote()
   else DBlog::sto("control() not found #{act}")
   end
   redirect "/",301

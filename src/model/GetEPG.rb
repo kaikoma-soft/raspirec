@@ -41,68 +41,65 @@ class GetEPG
       category = DBcategory.new
       phchid   = DBphchid.new
 
-      DBaccess.new().open do |db|
-        db.transaction do
-          data.each do |d|
+      DBaccess.new().open( tran: true ) do |db|
+        data.each do |d|
+          ch2 = channel.select( db, chid: d["id"] )
+          data2 = channel.dataConv( d, ch, $epgPatch )
+          if ch2.size == 0
+            channel.insert( db, data2 )
+            DBlog::debug(db,"channel情報追加 #{d["name"]}" )
             ch2 = channel.select( db, chid: d["id"] )
-            data2 = channel.dataConv( d, ch, $epgPatch )
-            if ch2.size == 0
-              channel.insert( db, data2 )
-              DBlog::debug(db,"channel情報追加 #{d["name"]}" )
-              ch2 = channel.select( db, chid: d["id"] )
-            else
-              # データに変更が無いか
-              diffkey = channel.dataDiff( ch2[0], data2 )
-              diffkey.each do |key|
-                old = ch2[0][key]
-                new = data2[key]
-                DBlog::warn(db,"channel情報変更 #{data2[:name]} #{key.to_s} #{old} -> #{new}" )
-                channel.update( db, d["id"], key, new )
-              end
+          else
+            # データに変更が無いか
+            diffkey = channel.dataDiff( ch2[0], data2 )
+            diffkey.each do |key|
+              old = ch2[0][key]
+              new = data2[key]
+              DBlog::warn(db,"channel情報変更 #{data2[:name]} #{key.to_s} #{old} -> #{new}" )
+              channel.update( db, d["id"], key, new )
             end
+          end
 
-            # EPG 更新日付
-            if @timeUpdate == true
-              now = Time.now.to_i
-              channel.update( db, d["id"], :updatetime, now )
-              phchid.add(db, ch, d["id"], now )
-            end
+          # EPG 更新日付
+          if @timeUpdate == true
+            now = Time.now.to_i
+            channel.update( db, d["id"], :updatetime, now )
+            phchid.add(db, ch, d["id"], now )
+          end
             
-            datas = []
-            d["programs"].each do |pro|
-              cateId = category.conv2id(db, pro["category"] )
-              pro2 = programs.dataConv( db, pro, ch2[0][:chid],cateId )
-              r = programs.select( db, chid: pro2[:chid], evid: pro2[:evid] )
-              if r.size == 0
-                #programs.insert( db, data )
-                next if pro2[:title] == nil or pro2[:title] == ""
-                datas << pro2
-                count[:ins] += 1
-              elsif r.size == 1
+          datas = []
+          d["programs"].each do |pro|
+            cateId = category.conv2id(db, pro["category"] )
+            pro2 = programs.dataConv( db, pro, ch2[0][:chid],cateId )
+            r = programs.select( db, chid: pro2[:chid], evid: pro2[:evid] )
+            if r.size == 0
+              #programs.insert( db, data )
+              next if pro2[:title] == nil or pro2[:title] == ""
+              datas << pro2
+              count[:ins] += 1
+            else
+              r.each do |r2|
                 # 拡張情報は抜ける場合があるので補正
-                if r[0][:extdetail] != "--- []\n"
+                if r2[:extdetail] != "--- []\n"
                   pro2[:extdetail] == "--- []\n"
-                  pro2[:extdetail] = r[0][:extdetail]
+                  pro2[:extdetail] = r2[:extdetail]
                 end
-                if programs.diff( r[0], pro2 ) == true
-                  programs.update( db, r[0][:id], pro2 )
+                if programs.diff( r2, pro2 ) == true
+                  programs.update( db, r2[:id], pro2 )
                   count[:upd] += 1
                 else
                   count[:same] += 1
                 end
-              else
-                fpw.close if fpw != nil
-                raise
               end
             end
-            if datas.size > 0
-              programs.bulkinsert2( db, datas )
-            end
           end
-          str = sprintf("%-9s : ins=>%4d,upd=>%4d,same=>%4d",
-                        "Ch=#{ch}",count[:ins],count[:upd],count[:same])
-          DBlog::debug(db, str )
+          if datas.size > 0
+            programs.bulkinsert2( db, datas )
+          end
         end
+        str = sprintf("%-9s : ins=>%4d,upd=>%4d,same=>%4d",
+                      "Ch=#{ch}",count[:ins],count[:upd],count[:same])
+        DBlog::debug(db, str )
       end
     end
     if fpw != nil
@@ -118,13 +115,11 @@ class GetEPG
   #   失敗時の処理
   #
   def errorProc( ch )
-    DBaccess.new().open do |db|
-      db.transaction do
-        phchid   = DBphchid.new
-        time = Time.now.to_i - ( EPGperiod * 3600 ) + 3600
-        phchid.touch( db, time, phch: ch   )
-        DBlog::debug(db,"Error: ch=#{ch} の EPG 取得に失敗しました" )
-      end
+    DBaccess.new().open( tran: true ) do |db|
+      phchid   = DBphchid.new
+      time = Time.now.to_i - ( EPGperiod * 3600 ) + 3600
+      phchid.touch( db, time, phch: ch   )
+      DBlog::debug(db,"Error: ch=#{ch} の EPG 取得に失敗しました" )
     end
   end
 
@@ -161,15 +156,13 @@ class GetEPG
     channel = DBchannel.new
     programs = DBprograms.new
     phchid   = DBphchid.new
-    DBaccess.new().open do |db|
-      db.transaction do
-        DBlog::debug( db,"EPG取得開始" )
-        DBkeyval.new.upsert( db, StatConst::KeyName, StatConst::EPGget )
+    DBaccess.new().open( tran: true ) do |db|
+      DBlog::debug( db,"EPG取得開始" )
+      DBkeyval.new.upsert( db, StatConst::KeyName, StatConst::EPGget )
 
-        if channel.select( db ).size == 0
-          @shortTime = true
-          DBlog::sto( "初回時のみ EPG 取得時間短縮" )
-        end
+      if channel.select( db ).size == 0
+        @shortTime = true
+        DBlog::sto( "初回時のみ EPG 取得時間短縮" )
       end
     end
 
@@ -248,8 +241,8 @@ class GetEPG
         chs = channel.select( db )
       end
       while chs.size > 0
-        DBaccess.new().open do |db|
-          db.transaction do
+        begin
+          DBaccess.new().open( tran: true ) do |db|
             st = Time.now
             while chs.size > 0
               row = chs.shift
@@ -257,20 +250,20 @@ class GetEPG
               break if ( sa = Time.now - st ) > 0.5
             end
           end
+          sleep(1)
+        rescue => e
+          DBlog::stoD("Error: GC transaction exception" )
         end
-        sleep(1)
       end
     end
 
     str = sprintf("ins=>%4d,upd=>%4d,del=>%4d,same=>%4d",
                   count[:ins],count[:upd],count[:del],count[:same] )
 
-    DBaccess.new().open do |db|
-      db.transaction do
-        phchid_gc(db)
-        DBlog::debug(db,"EPG取得終了 #{str}" )
-        DBkeyval.new.upsert( db, StatConst::KeyName, StatConst::None )
-      end
+    DBaccess.new().open( tran: true ) do |db|
+      phchid_gc(db)
+      DBlog::debug(db,"EPG取得終了 #{str}" )
+      DBkeyval.new.upsert( db, StatConst::KeyName, StatConst::None )
     end
 
     return true if count[:ins] > 0 or count[:upd] > 0
@@ -423,6 +416,29 @@ class GetEPG
     
     return chs
   end
+
+  #
+  #  録画途中の EPG更新の入り口
+  #
+  def tailEpgStart( fname, ch )
+    DBlog::stoD( "tailEpgStart() start" )
+    count = { :upd => 0, :ins => 0, :del => 0, :same => 0 }
+    if test( ?f, fname )
+      readJsonProc( fname, ch, count  )
+    else
+      DBlog::sto( "Error: json file not found #{fname}")
+    end
+    DBlog::stoD( "tailEpgStart() end" )
+
+    if count[:ins] > 0 or count[:upd] > 0
+      str = sprintf("ins=>%4d,upd=>%4d,del=>%4d,same=>%4d",
+                    count[:ins],count[:upd],count[:del],count[:same] )
+      DBlog::sto( str )
+      return true
+    end
+    return false
+  end
+  
 end
 
 
@@ -456,10 +472,8 @@ if File.basename($0) == "GetEPG.rb"
   $tunerArray = TunerArray.new
   
   phchid  = DBphchid.new
-  DBaccess.new().open do |db|
-    db.transaction do
-      phchid.touch( db, (Time.now - 3600 * 24 ).to_i, chid: "BS_141" )
-    end
+  DBaccess.new().open( tran: true ) do |db|
+    phchid.touch( db, (Time.now - 3600 * 24 ).to_i, chid: "BS_141" )
   end
   
   ge = GetEPG.new

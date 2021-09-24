@@ -9,6 +9,37 @@
 module Commlib
 
   #
+  #  プロセスが生きているか？ true = 生きている, false = 存在しない
+  #
+  def alivePid?( pid )
+    begin
+      if Process.waitpid( pid,  Process::WNOHANG ) == nil
+        return true
+      end
+    rescue Errno::ECHILD
+    end
+    return false
+  end
+  module_function :alivePid?
+  
+  #
+  #  予定時間までの半分 sleep   未到達 = true
+  #
+  def sleepTimeBin( target )
+    now = Time.now
+    if now.to_i < target
+      t = ( target - now.to_i ) / 2
+      t = 0.2 if t < 2
+      #DBlog::stoD("sleepTimeBin() = #{t}")
+      sleep( t )
+      return true
+    else
+      return false
+    end
+  end
+  module_function :sleepTimeBin
+
+  #
   #  実行ファイルの存在チェック
   #
   def executable?( fname )

@@ -58,6 +58,15 @@
 |EpgBanTime|EPG の取得禁止時間帯の指定。(24H制 時間単位) 1時から5時までを禁止したい場合は、[ 1,2,3,4,5 ] と指定する。使用しない場合は nil|
 |EPG_tuner_limit|EPG取得時の使用チュナー数に制限を掛ける場合に指定する。使用しない場合は false|
 
+
+#### 自動録画延長機能
+| 定数名             | 説明 |
+|--------------------|------|
+|AutoRecExt          | 自動録画延長機能  true で有効。 詳細は <a href="https://kaikoma-soft.github.io/raspirec-RecExt.html"> こちら </a> を参照 |
+|ARE_sampling_time   | 番組終了の n 秒前に EPG 採取 |
+|ARE_epgdump_opt     | 最後尾切り出しの epgdump のオプション |
+
+
 #### ダイアログのオプション初期値
 
 | 定数名             | 説明 |

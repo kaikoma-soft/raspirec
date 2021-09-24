@@ -44,16 +44,14 @@ class FileCopy
     
     reserve  = DBreserve.new
     list = nil
-    DBaccess.new().open do |db|
-      db.transaction do
-        ret = DBkeyval.new.select( db, "tsft" )
-        if ret == "true"
-          return 
-        end
-        list = reserve.getTSFT( db )
-        DBlog::debug( db,"転送開始") if list.size > 0
-        DBkeyval.new.upsert( db, StatConst::KeyName, StatConst::FileCopy )
+    DBaccess.new().open( tran: true ) do |db|
+      ret = DBkeyval.new.select( db, "tsft" )
+      if ret == "true"
+        return 
       end
+      list = reserve.getTSFT( db )
+      DBlog::debug( db,"転送開始") if list.size > 0
+      DBkeyval.new.upsert( db, StatConst::KeyName, StatConst::FileCopy )
     end
 
     abNormal = []
@@ -63,7 +61,7 @@ class FileCopy
         DBlog::sto("rec now ssh_ncbreak" )
         break
       end
-      
+
       path = TSDir + "/"
       if l[:subdir] != nil and l[:subdir] != ""
         subdir2 = Commlib::normStr( l[:subdir] )
@@ -79,16 +77,22 @@ class FileCopy
           next
         end
 
-        #( speed, errmsg )  = ssh_nc( TSFT_toDir, l[:subdir], path )
-        ( speed, errmsg )  = scp( TSFT_toDir, subdir2, path )
-        
-        if speed > 0
-          DBaccess.new().open do |db|
-            db.transaction do
-              tmp = sprintf("転送終了: %s (%.1f Mbyte/sec)", l[:fname], speed )
-              DBlog::info(db,tmp)
+        if $debug == true
+          if l[:subdir] =~ /TEST/
+            DBlog::sto( "転送 skip #{l[:fname]}")
+            DBaccess.new().open do |db|
               reserve.updateStat( db, l[:id], ftp_stat: RsvConst::Ftp_Complete )
             end
+            next
+          end
+        end
+        
+        ( speed, errmsg )  = scp( TSFT_toDir, subdir2, path )
+        if speed > 0
+          DBaccess.new().open( tran: true ) do |db|
+            tmp = sprintf("転送終了: %s (%.1f Mbyte/sec)", l[:fname], speed )
+            DBlog::info(db,tmp)
+            reserve.updateStat( db, l[:id], ftp_stat: RsvConst::Ftp_Complete )
           end
         else
           tmp = sprintf("転送失敗: %s : %s", errmsg, l[:fname] )
@@ -99,16 +103,14 @@ class FileCopy
       end
     end
     if abNormal.size > 0
-      DBaccess.new().open do |db|
-        db.transaction do
-          abNormal.each do |tmp|
-            ( id, fname ) = tmp
-            reserve.updateStat( db, id, ftp_stat: RsvConst::Ftp_AbNormal)
-            tmp = sprintf("転送失敗: file not found : %s", fname )
-            DBlog::warn( db,tmp)
-          end
-          DBkeyval.new.upsert( db, StatConst::KeyName, StatConst::None )
+      DBaccess.new().open( tran: true ) do |db|
+        abNormal.each do |tmp|
+          ( id, fname ) = tmp
+          reserve.updateStat( db, id, ftp_stat: RsvConst::Ftp_AbNormal)
+          tmp = sprintf("転送失敗: file not found : %s", fname )
+          DBlog::warn( db,tmp)
         end
+        DBkeyval.new.upsert( db, StatConst::KeyName, StatConst::None )
       end
     end
 

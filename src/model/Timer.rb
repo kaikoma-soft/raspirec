@@ -4,14 +4,16 @@
 #
 #  タイマー
 #
+class ReservExtOn < StandardError; end
 
 class Timer
 
+  @@json_mutex = Mutex.new
+  
   def initialize( )
     @sleepT = 5
     @loopT  = 1800
   end
-
   
   #
   #   録画対象を抽出
@@ -21,46 +23,42 @@ class Timer
     channel = DBchannel.new
     keyval = DBkeyval.new
     now = Time.now.to_i
-    readyTime = now + 20
+    readyTime = now + Start_margin + 10
     nextRecTime = now + 3600 * 24
     queue = []
     recC = 0 
     
     DBaccess.new().open do |db|
-      db.transaction do
-        row = reserve.selectSP( db, stat: RsvConst::Normal, order: "order by start" )
-        row.each do |r|
-          next if r[:stat] == RsvConst::NotUse
-          if r[:stat] == RsvConst::Normal
-            start2 = r[:start] - Start_margin
-            nextRecTime = start2 if start2 < nextRecTime
-            if start2 < readyTime and r[:end] > now
-              DBlog::sto("録画準備開始 #{r[:title]}")
-              reserve.updateStat( db, r[:id], stat: RsvConst::RecNow )
-              r2 = channel.select( db, chid: r[:chid] )
-              r2.first.each_pair do |k,v|
-                r[k] = v if r[k] == nil
-              end
-              queue << r
-            elsif r[:end] < ( now - 60 )
-              tremRec( db, r, "未開始" )
+      row = reserve.selectSP( db, stat: RsvConst::Normal, order: "order by start" )
+      row.each do |r|
+        next if r[:stat] == RsvConst::NotUse
+        if r[:stat] == RsvConst::Normal
+          start2 = r[:start] - Start_margin
+          nextRecTime = start2 if start2 < nextRecTime
+          if start2 < readyTime and r[:end] > now
+            DBlog::sto("録画準備開始 #{r[:title]}")
+            reserve.updateStat( db, r[:id], stat: RsvConst::RecNow )
+            r2 = channel.select( db, chid: r[:chid] )
+            r2.first.each_pair do |k,v|
+              r[k] = v if r[k] == nil
             end
+            queue << r
+          elsif r[:end] < ( now - 60 )
+            tremRec( db, r, "未開始" )
           end
         end
+      end
         
-        # 録画中のまま放置されたものの後処理
-        row = reserve.selectSP( db, stat: RsvConst::RecNow )
-        row.each do |r|
-          if r[:stat] == RsvConst::RecNow
-            if r[:end] < ( now - 60 )
-              tremRec( db, r, "終了処理未了" )
-            else
-              recC += 1
-            end
+      # 録画中のまま放置されたものの後処理
+      row = reserve.selectSP( db, stat: RsvConst::RecNow )
+      row.each do |r|
+        if r[:stat] == RsvConst::RecNow
+          if r[:end] < ( now - 60 )
+            tremRec( db, r, "終了処理未了" )
+          else
+            recC += 1
           end
         end
-        #epgLastTime = keyval.select( db, Const::LastEpgTime  )
-
       end
     end
     return [ queue, recC, nextRecTime ]
@@ -80,19 +78,13 @@ class Timer
           DBlog::sto( "DiskKeep start" )
           lastTimeD = Time.now 
           while true
-            if $recCount == 0
-              if ( Time.now - lastTimeD ) > ( 6 * 3600 )
-                $mutex.synchronize do
-                  DBaccess.new().open do |db|
-                    db.transaction do
-                      DiskKeep.new.start(db)
-                    end
-                  end
-                end
-                lastTimeD = Time.now
+            if ( Time.now - lastTimeD ) > ( 3 * 3600 )
+              DBaccess.new().open do |db|
+                DiskKeep.new.start(db)
               end
+              lastTimeD = Time.now
             end
-            sleep( 3600 )
+            sleep( 3601 )
           end
         end
       end
@@ -316,6 +308,20 @@ class Timer
   end
 
   #
+  #   終了時間の計算
+  #
+  def endTImeCalc( data )
+    
+    endTime = data[:end]
+    if data[:jitanExe] == RsvConst::JitanEOn
+      endTime -= ( Start_margin + Gap_time )
+    else
+      endTime += After_margin
+    end
+    return endTime
+  end
+  
+  #
   #  録画実行
   #
   def recStart( data )
@@ -344,6 +350,9 @@ class Timer
           DBlog::warn(db, "ファイル名長(#{bs}) > 255")
         end
       end
+      if AutoRecExt == true
+        duration *= 2
+      end
       arg = [ ]
       arg += Recpt1_opt if Recpt1_opt != nil
       arg += ch + [ duration.to_s, fname ]
@@ -352,27 +361,22 @@ class Timer
         waitT = retryC + 5
       end
 
-      pid = Recpt1.new.recTS( arg, fname, waitT )
-      $mutex.synchronize do
-        #DBlog::sto( "pid=#{pid}")
-        DBlog::info( nil,"録画開始: #{data[:title]} : pid=#{pid}")
-      end
+      recpt1 = Recpt1.new
+      pid = recpt1.recTS( arg, fname, waitT, finish.to_i )
+      #DBlog::sto( "pid=#{pid}")
+      DBlog::info( nil,"録画開始: #{data[:title]} : pid=#{pid}")
     rescue ExecError
       retryC += 1
       if retryC < 10
-        $mutex.synchronize do
-          DBlog::warn( nil,"録画開始失敗: #{data[:title]} retry #{retryC}")
-        end
+        DBlog::warn( nil,"録画開始失敗: #{data[:title]} retry #{retryC}")
         sleep( 1 + sleeptime )
         retry
       else
-        $mutex.synchronize do
-          DBaccess.new().open do |db|
-            text = "録画開始失敗:"
-            DBreserve.new.updateStat(db,data[:id],stat: RsvConst::AbNormalEnd, comment: text )
-            text += " #{data[:title]}"
-            DBlog::warn(db, text)
-          end
+        DBaccess.new().open do |db|
+          text = "録画開始失敗:"
+          DBreserve.new.updateStat(db,data[:id],stat: RsvConst::AbNormalEnd, comment: text )
+          text += " #{data[:title]}"
+          DBlog::warn(db, text)
         end
         return
       end
@@ -381,46 +385,202 @@ class Timer
       puts $@
     end
     
-    $mutex.synchronize do
-      DBaccess.new().open do |db|
-        DBreserve.new.updateStat(db,data[:id],
-                                 stat: RsvConst::RecNow,
-                                 recpt1pid: pid,
-                                 fname: File.basename(fname) )
+    DBaccess.new().open do |db|
+      DBreserve.new.updateStat(db,data[:id],
+                               stat: RsvConst::RecNow,
+                               recpt1pid: pid,
+                               fname: File.basename(fname) )
+    end
+
+    endTime1 = data[:end]          # 終了予定時間
+    endTime2 = endTImeCalc( data ) # 終了予定時間(マージン込)
+
+    #
+    #  終了 ARE_sampling_time秒前に EPGデータ 取得
+    #
+    if AutoRecExt == true
+      
+      Thread.new(pid) do |pid|
+        begin
+          Thread.current[:oldet2] = endTime2
+          ( endTime1, endTime2 ) = ReservExt( fname,pid,endTime1,endTime2, data )
+          if Thread.current[:oldet2] != endTime2
+            DBlog::stoD("ReservExt endTime diff ")
+            raise ReservExtOn
+          end
+        rescue ReservExtOn
+          DBlog::stoD("retry")
+          retry
+        rescue => e
+          DBlog::sto("Error: ReservExt()")
+          DBlog::sto( $! )
+          DBlog::sto( e.backtrace.first + ": #{e.message} (#{e.class})")
+          e.backtrace[1..-1].each { |m| DBlog::sto("\tfrom #{m}") }
+        end
+      end
+    end
+
+    #
+    #  終了待ち
+    #
+    Thread.new(pid) do |pid|
+      orgEndTime = endTime2
+      DBlog::stoD("予定終了時間 #{pid} #{Time.at(endTime2).to_s}")
+      while Commlib::sleepTimeBin( endTime2 )
+        if orgEndTime != endTime2
+          DBlog::warn(nil,"録画中 終了時間変更 #{data[:title]} #{pid} #{Time.at(orgEndTime)} -> #{Time.at(endTime2)}")
+          orgEndTime = endTime2
+        end
+      end
+      if Commlib::alivePid?( pid )
+        DBlog::stoD("終了時間到達 #{pid} #{Time.now.to_s}")
+        begin
+          Process.kill(:KILL, pid)
+        rescue
+        end
       end
     end
     
+    
     $rec_pid[ pid ] = true
-    #DBlog::sto( "waitpid start #{pid}")
+    DBlog::stoD( "waitpid start #{pid}")
     Process.waitpid( pid )
     $rec_pid.delete( pid )
-    #DBlog::sto( "waitpid end #{pid}")
+    DBlog::stoD( "waitpid end #{pid}")
     
-    $mutex.synchronize do
-      DBaccess.new().open do |db|
-        db.transaction do
-          if ( sa = ( Time.now - finish )) < -5
-            reserve = DBreserve.new
-            row = reserve.select( db, id: data[:id] )
-            if row[0][:stat] == RsvConst::RecNow
-              text = sprintf("録画時間未達: (%d秒)",sa.to_i )
-              DBlog::warn(db,"#{text} #{data[:title]}")
-              DBreserve.new.updateStat(db,data[:id],stat: RsvConst::AbNormalEnd, comment: text )
-            end
-          else
-            DBreserve.new.updateStat( db, data[:id],
-                                      stat:     RsvConst::NormalEnd,
-                                      ftp_stat: RsvConst::Off,
-                                      fname:    File.basename(fname),
-                                    )
-            DBlog::info(db, "録画終了: #{data[:title]}")
-            DBupdateChk.new.touch()          
-          end
+    reserve = DBreserve.new
+    DBaccess.new().open do |db|
+      if ( sa = ( Time.now - finish )) < -5
+        row = reserve.select( db, id: data[:id] )
+        if row != nil and row[0][:stat] == RsvConst::RecNow
+          text = sprintf("録画時間未達: (%d秒)",sa.to_i )
+          DBlog::error(db,"#{text} #{data[:title]}")
+          reserve.updateStat(db,data[:id],stat: RsvConst::AbNormalEnd, comment: text )
         end
+      else
+        reserve.updateStat( db, data[:id],
+                            stat:     RsvConst::NormalEnd,
+                            ftp_stat: RsvConst::Off,
+                            fname:    File.basename(fname),
+                          )
+        DBlog::info(db, "録画終了: #{data[:title]}")
+        DBupdateChk.new.touch()          
       end
     end
   end
 
 
+  #
+  #  番組終了間際の EPG取得 -> 延長
+  #
+  def ReservExt(tsfname, pid, endTime1, endTime2, data )
+    newEndTime1 = endTime1
+    newEndTime2 = endTime2
+    epgTime = endTime1 - ARE_sampling_time
+    if ( epgTime - Time.now.to_i ) > 0
+      DBlog::stoD("予定EPG取得時間 #{pid} #{Time.at(epgTime).to_s}")
+      while Commlib::sleepTimeBin( epgTime ) 
+      end
+      if Commlib::alivePid?( pid )
+        DBlog::stoD("EPG取得時間到達 #{pid} #{Time.now.to_s}")
+        phch = Commlib::makePhCh( data )
+        jsonFname = JsonDir + "/#{phch}_#{pid}.json"
 
+        mue = MeetUpEvent.new( endTime1, pid )
+
+        sleep(5) # 同時に複数終了する可能性がありそのバラツキ吸収の為
+        
+        @@json_mutex.synchronize do
+          DBlog::stoD("epgdump start #{pid}")
+          args = [ "json", tsfname, jsonFname] + ARE_epgdump_opt
+          dumppid = spawn( Epgdump, *args, :err=>:out )
+          Process.waitpid( dumppid )
+          if $debug == true
+            tmp = chkJsonEvid( jsonFname, data[:evid], endTime1, false )
+            #jsonFname = tmp # debug時
+          end
+          DBlog::stoD("epgdump end   #{pid}")
+        end
+
+        GetEPG.new.tailEpgStart( jsonFname, phch )
+
+        reserve = DBreserve.new
+        programs = DBprograms.new
+
+        DBlog::stoD( "----- mue start #{pid} -------" )
+        mue.wait() do
+          DBlog::stoD( "FilterM.new.update" )
+          FilterM.new.update()  # 再スケージュール
+        end
+        DBlog::stoD( "------ mue end #{pid} ------" )
+        
+        DBaccess.new().open do |db|
+          row = reserve.select( db, chid: data[:chid], evid: data[:evid] )
+          if row.size > 0
+            newEndTime1 = row[0][:end]
+            newEndTime2 = endTImeCalc( row[0] )
+            DBlog::stoD("newEndTime = #{Time.at( newEndTime2)} #{pid}" )
+            if newEndTime2 != endTime2
+              DBlog::stoD("*** 終了時間変更 *** #{Time.at(newEndTime2).to_s} #{pid}")
+            end
+          end
+        end
+      end
+    end
+    return [ newEndTime1, newEndTime2 ]
+  end
+
+  #
+  #  EPG json ファイル中に指定した event_id が存在するかチェック
+  #
+  def chkJsonEvid( fname, evid, endTime1, debug = false )
+    DBlog::stoD("chkJsonEvid( #{fname}, #{evid} #{Time.at(endTime1)} )")
+    flag = false
+    et = 0
+    fname2 = fname + ".tmp"
+    File.open( fname, "r" ) do |fp|
+      str = fp.read
+      data = JSON.parse(str)
+      data.each do |ch|
+        if ch[ "programs" ] != nil
+          ch[ "programs" ].each do |prog|
+            if prog[ "event_id" ] == evid
+              flag = true
+              et = (prog[ "end" ] / 1000 ).to_i
+              if debug == true
+                if rand(3) > 0                              # 2/3 の確率で
+                  prog[ "end" ] = ( endTime1 + 180 ) * 1000 # 3分延長
+                  
+                  DBlog::stoD("chkJsonEvid() *** 延長 ***  #{evid} #{Time.at(endTime1)}")
+                else
+                  DBlog::stoD("chkJsonEvid() 延長なし  #{evid}")
+                end
+              end
+            end
+          end
+        end
+      end
+
+      if debug == true        # debug 用
+        File.open( fname2, "w" ) do |fp|
+          JSON.dump( data, fp)
+        end
+      end
+    end
+    
+    if flag == false
+      DBlog::stoD("chkJsonEvid() *** NG evid not found ***  #{evid}")
+    else
+      if endTime1 != et
+        DBlog::stoD("chkJsonEvid() *** NG diff *** #{evid} #{Time.at(et).to_s}")
+      else
+        DBlog::stoD("chkJsonEvid() OK #{evid} #{et} #{Time.at(et).to_s}")
+      end
+    end
+    if debug == true
+      return fname2
+    end
+    return fname
+  end
+  
 end

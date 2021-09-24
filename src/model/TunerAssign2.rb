@@ -16,15 +16,11 @@ class TunerAssignNew
   #
   def schedule( db = nil, debug: false )
     if db == nil
-      DBaccess.new().open do |db|
-        db.transaction do
-          schedule2( db, debug: debug )
-        end
+      DBaccess.new().open( tran: true ) do |db|
+        schedule2( db, debug: debug )
       end
     else
-      db.transaction do
-        schedule2(db, debug: debug )
-      end
+      schedule2(db, debug: debug )
     end
   end
 
@@ -78,7 +74,7 @@ class TunerAssignNew
     return false
   end
 
-  def schedule2(db, debug: false)
+  def schedule2( db, debug: false)
     DBlog::sto("TunerAssignNew.schedule2() start") if $debug == true
     ts = Time.now
     
@@ -159,7 +155,7 @@ class TunerAssignNew
               r[:assign] = true
               break
             else
-              raise
+              DBlog::sto("Error: jitan_reg() is fail")
             end
           end
         end
@@ -233,7 +229,7 @@ class TunerAssignNew
           band = :short
         end
         if ta.addData( band, tnum, r ) == false
-          raise
+          DBlog::sto("Error: TunerArray::addData()")
         end
       end
 

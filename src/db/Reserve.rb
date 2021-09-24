@@ -76,8 +76,9 @@ class DBreserve
     row = db.execute( sql, *argv )
     return row[0][0]
   end
-  
-  #   検索
+
+  #
+  #   検索 ( reserve inner join channel )
   #
   def selectSP( db, id: nil, order: nil, stat: nil, tstart: nil, tend: nil, title: nil, titleL: nil, limit: nil )
     chan = %w( name band )

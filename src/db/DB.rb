@@ -11,45 +11,59 @@ class DBaccess
     @db = nil
     @DBfile = dbFname
     unless File.exist?(@DBfile )
-      open() do |db|
-        db.transaction do
-          createDB()
-        end
+      open( tran: true ) do |db|
+        createDB()
       end
       File.chmod( 0600, @DBfile )
     end
   end
 
-  def open
+  def open( tran: false, mode: :deferred )       # tran = true transaction
+    
     #puts caller[0][/`.*'/][1..-2]
     @db = SQLite3::Database.new( @DBfile )
-    @db.busy_timeout(3000)
+    @db.busy_timeout(1000)
     ecount = 0
     begin
-      yield self
-    rescue SQLite3::BusyException
-      STDERR.print ">SQLite3::BusyException #{ecount}\n"
-      STDERR.flush()
-      if ecount > 60
-        STDERR.print ">SQLite3::BusyException exit\n"
-        raise
+      if tran == true
+        @db.transaction( mode ) do
+          yield self
+        end
+      else
+        yield self
       end
+    rescue SQLite3::BusyException => e
+      DBlog::sto("SQLite3::BusyException tran = #{tran.to_s} #{ecount}")
+      begin
+        @db.rollback() if tran == true
+      rescue
+        #DBlog::sto("rollback fail #{$!}")
+      end
+      if ecount > 20
+        DBlog::sto("SQLite3::BusyException exit")
+        DBlog::sto( $! )
+        DBlog::sto( e.backtrace.first + ": #{e.message} (#{e.class})" )
+        e.backtrace[1..-1].each { |m| DBlog::sto("\tfrom #{m}") }
+        return
+      end
+      @db.rollback
       ecount += 1
       sleep( 1 )
       retry
     rescue => e
-      p $!
-      puts e.backtrace.first + ": #{e.message} (#{e.class})"
-      e.backtrace[1..-1].each { |m| puts "\tfrom #{m}" }
-      ecount += 1
-      if ecount > 60
-        STDERR.print ">SQLite3::BusyException exit\n"
-        raise
+      DBlog::sto("SQLite3::another error")
+      DBlog::sto( $! )
+      DBlog::sto( e.backtrace.first + ": #{e.message} (#{e.class})")
+      e.backtrace[1..-1].each { |m| DBlog::sto("\tfrom #{m}") }
+      begin
+        @db.rollback() if tran == true
+      rescue
+        #DBlog::sto("rollback fail #{$!}")
       end
-      sleep( 1 )
-      retry
+      return
+    ensure
+      close()
     end
-    close()
   end
   
   def close
@@ -63,11 +77,11 @@ class DBaccess
     @db.execute( *args )
   end
 
-  def transaction( mode = :deferred )
-    @db.transaction( mode ) do
-      yield
-    end
-  end
+  #def transaction( mode = :immediate ) # :deferred or :immediate
+  #  @db.transaction( mode ) do
+  #    yield
+  #  end
+  #end
 
   def prepare( str )
     @db.prepare( str )

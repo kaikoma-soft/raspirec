@@ -147,19 +147,17 @@ class Tuner
     if prgInfo == true
       channel = DBchannel.new
       programs = DBprograms.new
-      DBaccess.new().open do |db|
-        db.transaction do
-          row = channel.select( db, chid: chid )
-          if row != nil and row.size > 0
-            ( @phch, @svid, @selBand ) = makePhch( row[0] )
-            @chName = row[0][:name]
-          end
-          now = Time.now.to_i
-          row = programs.selectSP( db, chid: chid, tstart: now, tend: now )
-          if row != nil and row.size > 0
-            @prog_name = row[0][:title]
-            @prog_detail = row[0][:detail]
-          end
+      DBaccess.new().open( tran: true ) do |db|
+        row = channel.select( db, chid: chid )
+        if row != nil and row.size > 0
+          ( @phch, @svid, @selBand ) = makePhch( row[0] )
+          @chName = row[0][:name]
+        end
+        now = Time.now.to_i
+        row = programs.selectSP( db, chid: chid, tstart: now, tend: now )
+        if row != nil and row.size > 0
+          @prog_name = row[0][:title]
+          @prog_detail = row[0][:detail]
         end
       end
     end

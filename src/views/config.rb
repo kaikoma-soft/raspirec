@@ -59,6 +59,13 @@ EpgBanTime          EPG の取得禁止時間帯の指定。(24H制 時間単位
 EPG_tuner_limit     EPG取得時の使用チュナー数に制限を掛ける場合に指定する。使用しない場合は false
 EOS
 
+    "RecExt" => <<-EOS,
+AutoRecExt          自動録画延長機能  true で有効。 詳細は
++                   <a href="https://kaikoma-soft.github.io/raspirec-RecExt.html"> こちら </a> を参照
+ARE_sampling_time   番組終了の n 秒前に EPG 採取
+ARE_epgdump_opt     最後尾切り出しの epgdump のオプション
+EOS
+    
     "dlgOpt" => <<-EOS,
 D_FreeOnly          無料放送のみ
 D_dedupe            重複予約は無効化する
@@ -151,6 +158,7 @@ EOS
     "recTime" => "録画タイミング関係",
     "tuner"   => "チューナー関係",
     "epg"     => "EPG関係",
+    "RecExt"  => "録画自動延長",
     "dlgOpt"  => "ダイアログのオプション初期値",
     "tsft"    => "TSファイル転送",
     "hlsMon"  => "HLS モニタ機能",

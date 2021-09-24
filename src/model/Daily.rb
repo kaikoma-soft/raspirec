@@ -34,23 +34,21 @@ class Daily
       #
       #  古いデータの削除
       #
-      DBaccess.new().open do |db|
-        db.transaction do
-          DBlog::debug( db, "daily task start" )
-          now = Time.now.to_i
-          DBlog.new.deleteOld( db, now - LogSaveDay * 24 * 3600 )
-          DBreserve.new.deleteOld( db, now - RsvHisSaveDay * 24 * 3600 )
+      DBaccess.new().open( tran: true ) do |db|
+        DBlog::debug( db, "daily task start" )
+        now = Time.now.to_i
+        DBlog.new.deleteOld( db, now - LogSaveDay * 24 * 3600 )
+        DBreserve.new.deleteOld( db, now - RsvHisSaveDay * 24 * 3600 )
 
-          lr = LogRote.new()
-          if lr.need?() == true
-            DBlog::debug( db, "Log rotate" )
-            sleep(1)
-            lr.exec()
-          end
-
-          @@lastTime = Time.now.to_i 
-          keyval.upsert(db, key, @@lastTime ) # 日付更新
+        lr = LogRote.new()
+        if lr.need?() == true
+          DBlog::debug( db, "Log rotate" )
+          sleep(1)
+          lr.exec()
         end
+
+        @@lastTime = Time.now.to_i 
+        keyval.upsert(db, key, @@lastTime ) # 日付更新
       end
 
       #

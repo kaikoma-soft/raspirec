@@ -12,6 +12,18 @@ class Control
 
   end
 
+  #
+  #   ログファイルのローテート
+  #
+  def logrote()
+    lr = LogRote.new()
+    DBlog::sto( "Log rotate" )
+    lr.exec()
+  end
+
+  #
+  #  file 転送
+  #
   def fcopy( params )
     Thread.new do
       fname = params[ "fname" ]
@@ -29,50 +41,42 @@ class Control
       else
         tmp = sprintf("手動転送失敗: %s : %s",errmsg , fname )
       end
-      DBaccess.new().open do |db|
-        db.transaction do
-          DBlog::info(db,tmp)
-        end
+      DBaccess.new().open() do |db|
+        DBlog::info(db,tmp)
       end
     end
   end
     
   def tsft( arg )               #  "true" で不許可
-    DBaccess.new().open do |db|
-      db.transaction do
-        DBkeyval.new.upsert( db, "tsft", arg )
-        if arg != "true"
-          DBupdateChk.new.touch()
-        end
+    DBaccess.new().open( tran: true ) do |db|
+      DBkeyval.new.upsert( db, "tsft", arg )
+      if arg != "true"
+        DBupdateChk.new.touch()
       end
     end
   end
   
   def logdel( arg )
-    DBaccess.new().open do |db|
-      db.transaction do
-        sql = "delete from log "
-        if arg != "all"
-          n = arg.to_i
-          if n > 0
-            time = Time.now.to_i - n * 3600 * 24 
-            sql += " where time < #{time} ;"
-          end
+    DBaccess.new().open( tran: true ) do |db|
+      sql = "delete from log "
+      if arg != "all"
+        n = arg.to_i
+        if n > 0
+          time = Time.now.to_i - n * 3600 * 24 
+          sql += " where time < #{time} ;"
         end
-        db.execute( sql )
       end
+      db.execute( sql )
     end
   end
   
   def epg()
     phchid = DBphchid.new
     t = Time.now.to_i - ( 3600 * 24 )
-    DBaccess.new().open do |db|
-      db.transaction do
-        row = phchid.select( db )
-        row.each do |r|
-          phchid.touch( db, t, phch: r[:phch] )
-        end
+    DBaccess.new().open( tran: true ) do |db|
+      row = phchid.select( db )
+      row.each do |r|
+        phchid.touch( db, t, phch: r[:phch] )
       end
     end
     DBupdateChk.new.touch()
