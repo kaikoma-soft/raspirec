@@ -87,7 +87,7 @@ File.open( TimerPidFile, "w") do |fp|
   fp.puts( Process.pid  )
 end
 
-DBlog::debug( nil,"timer main start" )
+DBlog::info(nil,"timer_main start #{$timer_pid} (#{Const::ProgVer})")
 EpgLock::unlock()
 
 #

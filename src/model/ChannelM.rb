@@ -17,12 +17,10 @@ class ChannelM
   #
   def set( chid, skip )
 
-    DBaccess.new().open do |db|
-      db.transaction do
-        channel = DBchannel.new
-        val = skip == "on" ? 1 : 0
-        channel.updateSkip( db, val, chid )
-      end
+    DBaccess.new().open(tran: true) do |db|
+      channel = DBchannel.new
+      val = skip == "on" ? 1 : 0
+      channel.updateSkip( db, val, chid )
     end
   end
   
@@ -31,11 +29,9 @@ class ChannelM
   #
   def delete( chid )
 
-    DBaccess.new().open do |db|
-      db.transaction do
-        channel = DBchannel.new
-        channel.delete( db, chid )
-      end
+    DBaccess.new().open(tran: true) do |db|
+      channel = DBchannel.new
+      channel.delete( db, chid )
     end
   end
   
@@ -45,11 +41,9 @@ class ChannelM
   #
   def invalid( chid )
 
-    DBaccess.new().open do |db|
-      db.transaction do
-        channel = DBchannel.new
-        channel.invalid( db, chid )
-      end
+    DBaccess.new().open( tran: true ) do |db|
+      channel = DBchannel.new
+      channel.invalid( db, chid )
     end
   end
   

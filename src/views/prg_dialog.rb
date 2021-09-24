@@ -65,7 +65,7 @@ class Dialog_pid
     ( tmp, cate ) = getData()    
     if tmp != nil and tmp.size > 0
       r << printTable2("放送局名", tmp[:name]  + " (#{tmp[:chid]})" )
-      r << printTable2("番組名",   tmp[:title] + " (#{tmp[:pid]})" )
+      r << printTable2("番組名",   tmp[:title] + " (evid=#{tmp[:evid]})" )
       r << printTable2("概要",     tmp[:detail] ) if tmp[:detail].strip != ""
       r << printTable2("録画時間", Commlib::stet_to_s( tmp[:start], tmp[:end] ).join(" "))
       

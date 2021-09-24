@@ -70,6 +70,9 @@ setDefaultConst("EpgBanTime", nil )
 setDefaultConst("DeviceChkFN", DBDir + "/devicechk.yaml" )
 setDefaultConst("EPG_tuner_limit",false )
 setDefaultConst("Browser_cmd", "/usr/bin/firefox" )
+setDefaultConst("AutoRecExt", false )
+setDefaultConst("ARE_sampling_time", 90 )
+setDefaultConst("ARE_epgdump_opt", %w( --tail 50M ) )
 
 
 #

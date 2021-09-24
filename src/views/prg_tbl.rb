@@ -291,7 +291,8 @@ class PrgTbl
             end
           end
         end
-                
+        tmp[:title] = "NULL" if tmp[:title] == nil or tmp[:title] == ""
+        
         px = (( l.to_f / 3600 ) *  @hour_pixel ).to_i
         style = sprintf(%Q{style="height:%dpx;" },px)
         pid   = sprintf(%Q{pid="%d" }, tmp[:pid])

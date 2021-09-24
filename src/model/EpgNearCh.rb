@@ -30,69 +30,67 @@ class EpgNearCh
     list = []
     res = []
 
-    DBaccess.new().open do |db|
-      db.transaction do
+    DBaccess.new().open( tran: true ) do |db|
 
-        row = reserve.selectSP( db, stat: RsvConst::Normal, order: "order by start" )
-        if row.size == 0 or ( row.first[:start] > nearTime )
-          return []
-        end
+      row = reserve.selectSP( db, stat: RsvConst::Normal, order: "order by start" )
+      if row.size == 0 or ( row.first[:start] > nearTime )
+        return []
+      end
         
-        # 直近の連続した予約を抽出
-        row.each do |r|
-          if st == nil
-            st = r[:start] 
-            et = r[:end]
+      # 直近の連続した予約を抽出
+      row.each do |r|
+        if st == nil
+          st = r[:start] 
+          et = r[:end]
+          list << r
+        else
+          if r[:start].between?( st, et + @sepTime )
+            et = et > r[:end] ? et : r[:end]
             list << r
           else
-            if r[:start].between?( st, et + @sepTime )
-              et = et > r[:end] ? et : r[:end]
-              list << r
-            else
-              break
-            end
+            break
           end
         end
+      end
 
-        updtime = {}               # chid 毎の EPG更新時間(正規)
-        row = phchid.select( db )
-        row.each do |tmp|
-          chid = tmp[:chid]
-          if updtime[chid] == nil or updtime[chid] < tmp[:updatetime]
-            updtime[chid] = tmp[:updatetime]
-          end
+      updtime = {}               # chid 毎の EPG更新時間(正規)
+      row = phchid.select( db )
+      row.each do |tmp|
+        chid = tmp[:chid]
+        if updtime[chid] == nil or updtime[chid] < tmp[:updatetime]
+          updtime[chid] = tmp[:updatetime]
         end
+      end
 
-        chid2phch = channel.makeChid2Phch(db)
-        
-        list.each do |r|
-          chid = r[:chid]
-          phch = chid2phch[ chid ]
-          flag = false
-          if updtime[chid] < ( now - 10 * 60 )
-            if @@updT[chid] == nil or @@updT[chid] < ( now - 10 * 60 )
-               flag = true
-            end
-          end
-          # if $debug == true
-          #   sa1 = r[:start] - now
-          #   sa2 = now - updtime[chid]
-          #   sa3 = now - ( @@updT[chid] == nil ? now : @@updT[chid] )
-          #   mark = flag == true ? "+" : " "
-          #   tmp = sprintf("%s %6s 録 %5d 秒前 EPG1 %5d 秒前 EPG2 %5d 秒前 %s",
-          #                 mark, phch, sa1,sa2,sa3, r[:title])
-          #   DBlog::stoD(tmp)
-          # end
-          if flag == true
-            @@updT[chid] = now
-            res << phch
+      chid2phch = channel.makeChid2Phch(db)
+      
+      list.each do |r|
+        chid = r[:chid]
+        phch = chid2phch[ chid ]
+        flag = false
+        if updtime[chid] < ( now - 10 * 60 )
+          if @@updT[chid] == nil or @@updT[chid] < ( now - 10 * 60 )
+            flag = true
           end
         end
-        res.uniq!
-        
-        if res.size > 0
-          DBlog::debug( db,"EpgNearCh #{res.join(" ")}" )
+        # if $debug == true
+        #   sa1 = r[:start] - now
+        #   sa2 = now - updtime[chid]
+        #   sa3 = now - ( @@updT[chid] == nil ? now : @@updT[chid] )
+        #   mark = flag == true ? "+" : " "
+        #   tmp = sprintf("%s %6s 録 %5d 秒前 EPG1 %5d 秒前 EPG2 %5d 秒前 %s",
+        #                 mark, phch, sa1,sa2,sa3, r[:title])
+        #   DBlog::stoD(tmp)
+        # end
+        if flag == true
+          @@updT[chid] = now
+          res << phch
         end
+      end
+      res.uniq!
+      
+      if res.size > 0
+        DBlog::debug( db,"EpgNearCh #{res.join(" ")}" )
       end
     end
     return res

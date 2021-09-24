@@ -92,7 +92,7 @@ $httpd_main = "#{SrcDir}/httpd_main.rb"
 #  main loop
 #
 def mainLoop()
-  DBlog::sto("main loop start")
+  DBlog::sto("main loop start (#{Const::ProgVer})")
 
   File.open( PidFile, "w") do |fp|
     fp.puts( Process.pid  )
@@ -116,9 +116,8 @@ def mainLoop()
         args << "--debug" if $debug == true
         exec("ruby", *args )
       end
-      DBlog::sto("timer_main start #{$timer_pid}")
       Process.waitpid( $timer_pid )
-      DBlog::sto("timer_main end")
+      DBlog::warn(nil, "timer_main end")
       sleep 5
       break if $endParoc == true
       break if tcount > LoopMax
@@ -137,9 +136,8 @@ def mainLoop()
         args += %w( -- --debug ) if $debug == true
         exec("ruby", *args )
       end
-      DBlog::sto("httpd_main start #{$httpd_pid}")
       Process.waitpid( $httpd_pid )
-      DBlog::sto("httpd_main end")
+      DBlog::warn(nil, "httpd_main end")
       sleep 5
       break if $endParoc == true
       break if hcount > LoopMax

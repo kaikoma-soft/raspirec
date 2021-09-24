@@ -52,9 +52,13 @@ form( id="form" method="post" action="/control/fcopy" )
           input type="submit" value="送信する" name="fcopy"
 
     tr
-      td.nowrap  ログの削除
+      td.nowrap  ログ(DB)の削除
       td.nowrap  colspan="2"
         a.btn.waves-effect.waves-light.green.darken-4 href="/control/logdel/all" 実行
+    tr
+      td.nowrap  ログファイルの強制ローテート
+      td.nowrap  colspan="2"
+        a.btn.waves-effect.waves-light.green.darken-4 href="/control/logRote" 実行
     tr
       td.nowrap  プログラムの再起動
       td.nowrap  colspan="2"

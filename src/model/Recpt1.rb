@@ -16,6 +16,7 @@ class Recpt1
   @@epgPid = []                 # EPG取得時の pid
 
   def initialize( )
+    @endTime = nil #Time.now.to_i + 600
   end
 
   def clearEpgPid()
@@ -139,16 +140,28 @@ class Recpt1
     r
   end
 
+  #
+  #  終了時間の設定
+  #
+  def setEndTime( endTime )
+    @endTime = endTime
+  end
+  
+  #
+  #   録画の実行
+  #
+  def recTS( args, outfname, waitT, endTime = nil )
 
-  #
-  #
-  #
-  def recTS( args, outfname, waitT )
-
+    @endTime = endTime if endTime != nil
     raise ExecError if test(?f, outfname )      # 出力ファイルが既に有る
 
+    
     pid = fork do
-      exec( Recpt1_cmd, *args )
+      now = Time.now
+      txt = sprintf("%s: %s\n",now.strftime("%H:%M:%S"),args.join(" "))
+      STDOUT.puts( txt )
+      STDOUT.flush
+      exec( Recpt1_cmd, *args, :err=>:out )
     end
     $rec_pid[ pid ] = true
 
@@ -168,6 +181,8 @@ class Recpt1
       end
       raise ExecError
     end
+
     return pid
   end
+
 end

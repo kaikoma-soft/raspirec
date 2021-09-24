@@ -14,16 +14,14 @@ class ChTblList
     @tate = 24
     @ret = {}
     channel = DBchannel.new
-    DBaccess.new().open do |db|
-      db.transaction do
-        row = channel.select(db, order: "order by svid")
-        row.each do |r|
-          next if r[:updatetime] == -1
-          cl = r[:skip] == 0 ? "disp" : "skip"
-          tmp = sprintf(%Q{ <a class="%s" href=#{Base}/%s > %s </a> },cl,r[:chid],r[:name])
-          @ret[ r[:band] ] ||= []
-          @ret[ r[:band] ] <<  tmp
-        end
+    DBaccess.new().open() do |db|
+      row = channel.select(db, order: "order by svid")
+      row.each do |r|
+        next if r[:updatetime] == -1
+        cl = r[:skip] == 0 ? "disp" : "skip"
+        tmp = sprintf(%Q{ <a class="%s" href=#{Base}/%s > %s </a> },cl,r[:chid],r[:name])
+        @ret[ r[:band] ] ||= []
+        @ret[ r[:band] ] <<  tmp
       end
     end
 

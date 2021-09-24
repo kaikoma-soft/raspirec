@@ -27,7 +27,7 @@ class DiskKeep
     target = total * keep
     delsize = ( total * keep ) - free
 
-    printf("Disk容量 :  %6.2f GB\n", total / @gb )
+    #printf("Disk容量 :  %6.2f GB\n", total / @gb )
     #printf("確保目標 :  %6.2f GB (%.1f%%)\n", target /@gb, keep * 100 )
     #printf("空き容量 :  %6.2f GB (%.1f%%)\n", free / @gb, 100.0 * free / total )
     

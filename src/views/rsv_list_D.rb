@@ -148,8 +148,8 @@ EOS
     name = t[:name] == nil ? "" : t[:name]
     detail = t[:detail] == nil ? "" : t[:detail]
     
-    [["放送局名",  name + " " + "(#{t[:chid]})" ],
-     ["番組名",    t[:title] + " " + "(#{t[:evid]})" ],
+    [["放送局名",  name + "  " + "(#{t[:chid]})" ],
+     ["番組名",    t[:title] + "  " + "(evid=#{t[:evid]})" ],
      ["内容",      detail ],
      ["録画時間",  t[:date] ],
      ["種別",      t[:type] == 0 ? "手動予約" : "自動予約"],

@@ -55,27 +55,24 @@ class ChTbl
     rsvData = {}
     now = Time.now
     zeroji = Time.local( now.year,now.mon,now.day ).to_i
-    DBaccess.new().open do |db|
-      db.transaction do
-        getChData( db, chid )
-        row = programs.selectSP(db, chid: chid, tend: zeroji )
-        row.each do |r|
-          day = Commlib::stet_to_s( r[:start], r[:end] )[0]
-          t = Time.at(r[:start])
-          @stByDay[ day ] = Time.local( t.year,t.mon,t.day )
-          rsvData[ day ] ||= []
-          rsvData[ day ] << r
-        end
-
-        row = reserve.selectSP( db ) # stat: RsvConst::ActStat
-        row.each do |tmp|
-          @rsv[ tmp[:chid] ] ||= {}
-          @rsv[ tmp[:chid] ][ tmp[:evid] ] = tmp[:stat]
-        end
-
+    DBaccess.new().open( tran: true ) do |db|
+      getChData( db, chid )
+      row = programs.selectSP(db, chid: chid, tend: zeroji )
+      row.each do |r|
+        day = Commlib::stet_to_s( r[:start], r[:end] )[0]
+        t = Time.at(r[:start])
+        @stByDay[ day ] = Time.local( t.year,t.mon,t.day )
+        rsvData[ day ] ||= []
+        rsvData[ day ] << r
       end
-    end
 
+      row = reserve.selectSP( db ) # stat: RsvConst::ActStat
+      row.each do |tmp|
+        @rsv[ tmp[:chid] ] ||= {}
+        @rsv[ tmp[:chid] ][ tmp[:evid] ] = tmp[:stat]
+      end
+
+    end
     rsvData
   end
 

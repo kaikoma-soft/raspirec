@@ -7,6 +7,8 @@
 
 class FilterM
 
+  @@updateExec = nil            # update() 2重起動防止用
+  
   def initialize( params = nil )
     DBlog::sto("FilterM new" ) if $debug == true
     @params = params if params != nil
@@ -75,25 +77,21 @@ class FilterM
     filter = DBfilter.new
     filterR = DBfilterResult.new
     reserve = DBreserve.new
-    DBaccess.new().open do |db|
-      db.transaction do
-        if id == nil            # 新規
-          filter.insert( db, d )
-          id = filterR.last_insert_rowid(db)
-        else                    # 変更
-          filter.update( db, d, id )
-        end
-        filterR.delete( db, id )
-        reserve.delete( db, keyid: id, start: Time.now.to_i )
+    DBaccess.new().open( tran: true ) do |db|
+      if id == nil            # 新規
+        filter.insert( db, d )
+        id = filterR.last_insert_rowid(db)
+      else                    # 変更
+        filter.update( db, d, id )
       end
+      filterR.delete( db, id )
+      reserve.delete( db, keyid: id, start: Time.now.to_i )
     end
     r = search_new( id )
     if type == :autoRsv # 自動予約
-      DBaccess.new().open do |db|
-        db.transaction do
-          rsv_update( db, id: id )
-          Reservation.new.check( db )
-        end
+      DBaccess.new().open( tran: true ) do |db|
+        rsv_update( db, id: id )
+        Reservation.new.check( db )
       end
     end
     
@@ -109,13 +107,11 @@ class FilterM
     end
     filter = DBfilter.new
     filterR = DBfilterResult.new
-    DBaccess.new().open do |db|
-      db.transaction do
-        reserve = DBreserve.new
-        reserve.delete( db, keyid: id, start: Time.now.to_i )
-        filter.delete( db, id )
-        filterR.delete( db, id )
-      end
+    DBaccess.new().open( tran: true ) do |db|
+      reserve = DBreserve.new
+      reserve.delete( db, keyid: id, start: Time.now.to_i )
+      filter.delete( db, id )
+      filterR.delete( db, id )
     end
   end
   
@@ -131,17 +127,15 @@ class FilterM
     filter  = DBfilter.new
     filterR = DBfilterResult.new
     fd = nil
-    DBaccess.new().open do |db|
-      db.transaction do
-        fd = filter.select( db, id: id )
-        filterR.delete( db, fd[0][:id] )
-        fd2 = fd[0]
-        r = search3( db, fd2 )
-        r.each do |rid|
-          filterR.insert(db, fd2[:id], rid )
-        end
-        filter.update_res(db, fd2[:id],r.size )
+    DBaccess.new().open( tran: true ) do |db|
+      fd = filter.select( db, id: id )
+      filterR.delete( db, fd[0][:id] )
+      fd2 = fd[0]
+      r = search3( db, fd2 )
+      r.each do |rid|
+        filterR.insert(db, fd2[:id], rid )
       end
+      filter.update_res(db, fd2[:id],r.size )
     end
 
   end
@@ -162,22 +156,20 @@ class FilterM
     end
 
     while fd.size > 0
-      DBaccess.new().open do |db|
-        db.transaction do
-          t1 = Time.now
-          while fd.size > 0
-            fd2 = fd.shift
-            r = search3( db, fd2 )
-            filterR.delete( db, fd2[:id] )
-            r.each do |rid|
-              filterR.insert(db, fd2[:id], rid )
-            end
-            filter.update_res(db, fd2[:id],r.size )
-            sa = Time.now - t1
-            if sa > 0.5
-              DBlog::sto( "searchAll() break #{sa}" ) if $debug == true
-              break
-            end
+      DBaccess.new().open( tran: true ) do |db|
+        t1 = Time.now
+        while fd.size > 0
+          fd2 = fd.shift
+          r = search3( db, fd2 )
+          filterR.delete( db, fd2[:id] )
+          r.each do |rid|
+            filterR.insert(db, fd2[:id], rid )
+          end
+          filter.update_res(db, fd2[:id],r.size )
+          sa = Time.now - t1
+          if sa > 0.5
+            DBlog::sto( "searchAll() break #{sa}" ) if $debug == true
+            break
           end
         end
       end
@@ -239,17 +231,25 @@ class FilterM
   #  一括更新
   #
   def update( sleep = true )
+
+    if @@updateExec != nil
+      if ( Time.now - @@updateExec ) < 600 # 
+        DBlog::sto( "FilterM::update() 二重起動防止" )
+        return
+      end
+    end
+    @@updateExec = Time.now
+    
     st = Time.now
     searchAll( sleep )
     rsv = Reservation.new
-    DBaccess.new().open do |db|
-      db.transaction do
-        rsv_update( db )
-        lap = Time.now - st
-        DBlog::debug( db, sprintf("FilterM::update() %.1f sec",lap ))
-        rsv.check( db )
-      end
+    DBaccess.new().open( tran: true ) do |db|
+      rsv_update( db )
+      lap = Time.now - st
+      DBlog::debug( db, sprintf("FilterM::update() %.1f sec",lap ))
+      rsv.check( db )
     end
+    @@updateExec = nil
   end
   
 
@@ -395,10 +395,10 @@ class FilterM
     end
 
     if $debug == true
-      id = fd[:id] == nil ? 0 : fd[:id]
-      tmp = sprintf("search3() id = %5d, result = %3d, time=%.3f",
-                    id,r.size,Time.now - startT)
-      DBlog::sto( tmp )
+      #id = fd[:id] == nil ? 0 : fd[:id]
+      #tmp = sprintf("search3() id = %5d, result = %3d, time=%.3f",
+      #              id,r.size,Time.now - startT)
+      #DBlog::sto( tmp )
     end
 
     r

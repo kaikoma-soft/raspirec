@@ -18,11 +18,9 @@ class Control
     ret = { :tsft => false }
     keyval = DBkeyval.new
     DBaccess.new().open do |db|
-      db.transaction do
-        row = keyval.select( db, "tsft" )
-        if row == "true"
-          ret[ :tsft ] = true
-        end
+      row = keyval.select( db, "tsft" )
+      if row == "true"
+        ret[ :tsft ] = true
       end
     end
 

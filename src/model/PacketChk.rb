@@ -19,11 +19,9 @@ class PacketChk < FileCopy      # FileCopy を流用
   def start2( time_limit )
     
     list = nil
-    DBaccess.new().open do |db|
-      db.transaction do
-        list = @reserve.getPacketChk( db )
-        DBkeyval.new.upsert( db, StatConst::KeyName, StatConst::PacketChk )
-      end
+    DBaccess.new().open( tran: true ) do |db|
+      list = @reserve.getPacketChk( db )
+      DBkeyval.new.upsert( db, StatConst::KeyName, StatConst::PacketChk )
     end
     DBlog::sto( "Packet Check 開始 #{list.size}") if list.size > 0
 
@@ -56,13 +54,11 @@ class PacketChk < FileCopy      # FileCopy を流用
         pcr = pcr == "OK" ? 0 : 1 if pcr != 0
 
         if speed > 0
-          DBaccess.new().open do |db|
-            db.transaction do
-              tmp = sprintf("PacketChk 終了: %s (%.1f Mbyte/sec)", l[:fname], speed )
-              DBlog::info(db,tmp)
-              val = @reserve.makeDropNum( drer, pcr, 0 )
-              @reserve.updateStat( db, l[:id], dropNum: val )
-            end
+          DBaccess.new().open( tran: true ) do |db|
+            tmp = sprintf("PacketChk 終了: %s (%.1f Mbyte/sec)", l[:fname], speed )
+            DBlog::info(db,tmp)
+            val = @reserve.makeDropNum( drer, pcr, 0 )
+            @reserve.updateStat( db, l[:id], dropNum: val )
           end
         else
           tmp = sprintf("PacketChk 失敗: %s", l[:fname] )
@@ -76,17 +72,15 @@ class PacketChk < FileCopy      # FileCopy を流用
       end
     end
 
-    DBaccess.new().open do |db|
-      db.transaction do
-        if abNormal.size > 0
-          abNormal.each do |tmp|
-            ( id, fname ) = tmp
-            val = @reserve.makeDropNum( 0, 0, 1 )
-            @reserve.updateStat( db, id, dropNum: val )
-          end
+    DBaccess.new().open( tran: true ) do |db|
+      if abNormal.size > 0
+        abNormal.each do |tmp|
+          ( id, fname ) = tmp
+          val = @reserve.makeDropNum( 0, 0, 1 )
+          @reserve.updateStat( db, id, dropNum: val )
         end
-        DBkeyval.new.upsert( db, StatConst::KeyName, StatConst::None )
       end
+      DBkeyval.new.upsert( db, StatConst::KeyName, StatConst::None )
     end
 
     

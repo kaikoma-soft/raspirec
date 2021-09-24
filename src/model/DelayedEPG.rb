@@ -20,36 +20,34 @@ class DelayedEPG
     chid2upt = {}               # chid 対 更新時間
     chid2phch = {}              # chid 対 phch
 
-    DBaccess.new().open do |db|
-      db.transaction do
+    DBaccess.new().open( tran: true ) do |db|
 
-        # EPG取得 の最終実施時間の取得
-        ph = phchid.select(db)
-        ph.each do |tmp|
-          chid2upt[ tmp[:chid] ] = tmp[:updatetime]
-          chid2phch[ tmp[:chid] ] = tmp[:phch]
-        end
-        #pp chid2upt
+      # EPG取得 の最終実施時間の取得
+      ph = phchid.select(db)
+      ph.each do |tmp|
+        chid2upt[ tmp[:chid] ] = tmp[:updatetime]
+        chid2phch[ tmp[:chid] ] = tmp[:phch]
+      end
+      #pp chid2upt
 
-        # 最近の録画リスト取得
-        order = "order by  end desc"
-        row = reserve.select( db, stat: RsvConst::NormalEnd, order: order, limit: "10" )
-        exist = {}                  # 重複
-        row.each do |tmp|
-          #pp "+ #{tmp[:title]} #{Time.at(tmp[:end]).to_s}"
-          chid = tmp[:chid]
-          et   = tmp[:end]
-          if chid2upt[chid] < et
-            #pp et - chid2upt[chid] 
-            path = makePath( tmp )
-            if test(?f, path )
-              if exist[ chid ] == nil
-                list << tmp
-                exist[ chid ] = true
-              end
-            else
-              pp "file not found #{path}"
+      # 最近の録画リスト取得
+      order = "order by  end desc"
+      row = reserve.select( db, stat: RsvConst::NormalEnd, order: order, limit: "10" )
+      exist = {}                  # 重複
+      row.each do |tmp|
+        #pp "+ #{tmp[:title]} #{Time.at(tmp[:end]).to_s}"
+        chid = tmp[:chid]
+        et   = tmp[:end]
+        if chid2upt[chid] < et
+          #pp et - chid2upt[chid] 
+          path = makePath( tmp )
+          if test(?f, path )
+            if exist[ chid ] == nil
+              list << tmp
+              exist[ chid ] = true
             end
+          else
+            pp "file not found #{path}"
           end
         end
       end
@@ -137,10 +135,8 @@ if File.basename($0) == "DelayedEPG.rb"
   require 'require.rb'
 
   phchid  = DBphchid.new
-  DBaccess.new().open do |db|
-    db.transaction do
-      phchid.add(db, "BS15_0","BS_200", (Time.now - 3600 * 24 ).to_i )
-    end
+  DBaccess.new().open( tran: true ) do |db|
+    phchid.add(db, "BS15_0","BS_200", (Time.now - 3600 * 24 ).to_i )
   end
 
   $debug = true
