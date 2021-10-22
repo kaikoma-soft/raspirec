@@ -8,8 +8,6 @@ class ReservExtOn < StandardError; end
 
 class Timer
 
-  @@json_mutex = Mutex.new
-  
   def initialize( )
     @sleepT = 5
     @loopT  = 1800
@@ -129,7 +127,7 @@ class Timer
         sleepTime = waitT / 2
       end
       sleepTime = 5 if sleepTime < 5
-      DBlog::stoD( "sleepTime = #{sleepTime}" )
+      #DBlog::stoD( "sleepTime = #{sleepTime}" )
 
       if $recCount == 0
         Thread.new do
@@ -141,7 +139,7 @@ class Timer
               #  EPG取得
               #
               if GetEPG.new.start( time_limit ) == true
-                DBlog::stoD( "FilterM.new.update" )
+                #DBlog::stoD( "FilterM.new.update" )
                 FilterM.new.update()
               end
               
@@ -181,7 +179,7 @@ class Timer
     n.times do |m|
       sleep( @sleepT )
       if updateChk.update?() 
-        DBlog::sto( "タイマー break" ) if $debug == true
+        #DBlog::sto( "タイマー break" ) if $debug == true
         break
       end
     end
@@ -192,7 +190,7 @@ class Timer
   #  終了処理未了の後始末
   #
   def tremRec( db, r, text )
-    DBlog::sto("tremRec( #{r[:title]})")
+    DBlog::stoD("tremRec( #{r[:title]})")
     reserve = DBreserve.new
     reserve.updateStat( db, r[:id], stat: RsvConst::AbNormalEnd, comment: text )
   end
@@ -363,7 +361,7 @@ class Timer
 
       recpt1 = Recpt1.new
       pid = recpt1.recTS( arg, fname, waitT, finish.to_i )
-      #DBlog::sto( "pid=#{pid}")
+      DBlog::stoD( "pid=#{pid}")
       DBlog::info( nil,"録画開始: #{data[:title]} : pid=#{pid}")
     rescue ExecError
       retryC += 1
@@ -412,10 +410,7 @@ class Timer
           DBlog::stoD("retry")
           retry
         rescue => e
-          DBlog::sto("Error: ReservExt()")
-          DBlog::sto( $! )
-          DBlog::sto( e.backtrace.first + ": #{e.message} (#{e.class})")
-          e.backtrace[1..-1].each { |m| DBlog::sto("\tfrom #{m}") }
+          Commlib::errPrint("Error: ReservExt()", $!, e )
         end
       end
     end
@@ -449,7 +444,7 @@ class Timer
     DBlog::stoD( "waitpid end #{pid}")
     
     reserve = DBreserve.new
-    DBaccess.new().open do |db|
+    DBaccess.new.open(tran: true ) do |db| # 中止の場合は競争なので、要tran
       if ( sa = ( Time.now - finish )) < -5
         row = reserve.select( db, id: data[:id] )
         if row != nil and row[0][:stat] == RsvConst::RecNow
@@ -486,34 +481,21 @@ class Timer
         phch = Commlib::makePhCh( data )
         jsonFname = JsonDir + "/#{phch}_#{pid}.json"
 
-        mue = MeetUpEvent.new( endTime1, pid )
-
-        sleep(5) # 同時に複数終了する可能性がありそのバラツキ吸収の為
-        
-        @@json_mutex.synchronize do
-          DBlog::stoD("epgdump start #{pid}")
-          args = [ "json", tsfname, jsonFname] + ARE_epgdump_opt
-          dumppid = spawn( Epgdump, *args, :err=>:out )
-          Process.waitpid( dumppid )
-          if $debug == true
-            tmp = chkJsonEvid( jsonFname, data[:evid], endTime1, false )
-            #jsonFname = tmp # debug時
-          end
-          DBlog::stoD("epgdump end   #{pid}")
+        DBlog::stoD("epgdump start #{pid}")
+        args = [ "json", tsfname, jsonFname] + ARE_epgdump_opt
+        dumppid = spawn( Epgdump, *args, :err=>:out )
+        Process.waitpid( dumppid )
+        if $debug == true
+          tmp = chkJsonEvid( jsonFname, data[:evid], endTime1, false )
+          #jsonFname = tmp # debug時
         end
+        DBlog::stoD("epgdump end   #{pid}")
 
         GetEPG.new.tailEpgStart( jsonFname, phch )
 
         reserve = DBreserve.new
         programs = DBprograms.new
 
-        DBlog::stoD( "----- mue start #{pid} -------" )
-        mue.wait() do
-          DBlog::stoD( "FilterM.new.update" )
-          FilterM.new.update()  # 再スケージュール
-        end
-        DBlog::stoD( "------ mue end #{pid} ------" )
-        
         DBaccess.new().open do |db|
           row = reserve.select( db, chid: data[:chid], evid: data[:evid] )
           if row.size > 0

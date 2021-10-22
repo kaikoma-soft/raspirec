@@ -5,17 +5,108 @@
 #  EPG 取得
 #
 require 'timeout'
+require 'thread'
+
+class ReadjsonData
+  attr_reader :fname, :phch, :count, :busy, :base
+  def initialize( fname, phch, count )
+    @fname = fname 
+    @phch  = phch 
+    @count = count
+    @busy  = false
+    @base = File.basename( fname )
+  end
+
+  def to_a()
+    return [ @fname, @phch, @count, @base ]
+  end
+  
+  def setBusy( val )
+    @busy = val
+  end
+end
 
 class GetEPG
 
+  @@queue = nil
+  @@queue2 = nil
+  @@queue2_busy = false
+  
   def initialize(  )
     @shortTime = false          # EPG取得時間短縮モード
     @timeUpdate = true          # EPG取得時間の更新をする
     if $epgPatch == nil
       $epgPatch = EpgPatch.new.getData()
     end
+
+    #
+    #  readjsonProc() へのキュー 初期化
+    #
+    if @@queue == nil           
+      @@queue = Queue.new
+      th1 = Thread.start do
+        while data = @@queue.pop
+          ( outfname, phch, count, base  ) = data.to_a
+          readJsonProc( outfname, phch, count  )
+          data.setBusy( false )
+        end
+      end
+    end
+
+    #
+    #  readjsonProc() へのキュー 初期化 10秒遅延 Update 付き
+    #
+    if @@queue2 == nil           
+      @@queue2 = Queue.new
+      waitTime = 10
+      th1 = Thread.start do
+        while data = @@queue2.pop
+          @@queue2_busy = true
+          ( outfname, phch, count, base ) = data.to_a
+          readJsonProc( outfname, phch, count  )
+          sleep(1)
+          if @@queue2.size == 0
+            n = 0
+            while n < waitTime
+              if @@queue2.size > 0
+                DBlog::stoD( " break #{@@queue2.size}")
+                break
+              end
+              sleep(1)
+              n += 1
+            end
+            if n == waitTime
+              DBlog::stoD( "with_update FilterM.new.update" )
+              FilterM.new.update() # 再スケージュール
+              @@queue2_busy = false
+           end
+          end
+        end
+      end
+    end
+    
   end
 
+  def addQueue( data )
+    data.setBusy( true )
+    @@queue.push( data )
+    while data.busy == true
+      sleep(1)
+    end
+  end
+
+  def addQueue_with_update( data )
+    @@queue2_busy = true
+    @@queue2.push( data )
+    while @@queue2_busy == true
+      sleep(1)
+    end
+  end
+
+  def queueSize( data )
+    return @@queue.size
+  end
+  
   #
   #  json ファイルの読み込み
   #
@@ -28,80 +119,82 @@ class GetEPG
     end
     
     count = { :upd => 0, :ins => 0, :del => 0, :same => 0 }
+    data = nil
     File.open( fname, "r" ) do |fp|
       str = fp.read
       data = JSON.parse(str)
-      if data == nil or data.size == 0
-        errorProc( ch )
-        return false
-      end
+    end
+    if data == nil or data.size == 0
+      errorProc( ch )
+      return false
+    end
 
-      channel  = DBchannel.new
-      programs = DBprograms.new
-      category = DBcategory.new
-      phchid   = DBphchid.new
+    channel  = DBchannel.new
+    programs = DBprograms.new
+    category = DBcategory.new
+    phchid   = DBphchid.new
 
-      DBaccess.new().open( tran: true ) do |db|
-        data.each do |d|
+    DBaccess.new().open( tran: true ) do |db|
+      data.each do |d|
+        ch2 = channel.select( db, chid: d["id"] )
+        data2 = channel.dataConv( d, ch, $epgPatch )
+        if ch2.size == 0
+          channel.insert( db, data2 )
+          DBlog::debug(db,"channel情報追加 #{d["name"]}" )
           ch2 = channel.select( db, chid: d["id"] )
-          data2 = channel.dataConv( d, ch, $epgPatch )
-          if ch2.size == 0
-            channel.insert( db, data2 )
-            DBlog::debug(db,"channel情報追加 #{d["name"]}" )
-            ch2 = channel.select( db, chid: d["id"] )
-          else
-            # データに変更が無いか
-            diffkey = channel.dataDiff( ch2[0], data2 )
-            diffkey.each do |key|
-              old = ch2[0][key]
-              new = data2[key]
-              DBlog::warn(db,"channel情報変更 #{data2[:name]} #{key.to_s} #{old} -> #{new}" )
-              channel.update( db, d["id"], key, new )
-            end
+        else
+          # データに変更が無いか
+          diffkey = channel.dataDiff( ch2[0], data2 )
+          diffkey.each do |key|
+            old = ch2[0][key]
+            new = data2[key]
+            DBlog::warn(db,"channel情報変更 #{data2[:name]} #{key.to_s} #{old} -> #{new}" )
+            channel.update( db, d["id"], key, new )
           end
+        end
 
-          # EPG 更新日付
-          if @timeUpdate == true
-            now = Time.now.to_i
-            channel.update( db, d["id"], :updatetime, now )
-            phchid.add(db, ch, d["id"], now )
-          end
-            
-          datas = []
-          d["programs"].each do |pro|
-            cateId = category.conv2id(db, pro["category"] )
-            pro2 = programs.dataConv( db, pro, ch2[0][:chid],cateId )
-            r = programs.select( db, chid: pro2[:chid], evid: pro2[:evid] )
-            if r.size == 0
-              #programs.insert( db, data )
-              next if pro2[:title] == nil or pro2[:title] == ""
-              datas << pro2
-              count[:ins] += 1
-            else
-              r.each do |r2|
-                # 拡張情報は抜ける場合があるので補正
-                if r2[:extdetail] != "--- []\n"
-                  pro2[:extdetail] == "--- []\n"
-                  pro2[:extdetail] = r2[:extdetail]
-                end
-                if programs.diff( r2, pro2 ) == true
-                  programs.update( db, r2[:id], pro2 )
-                  count[:upd] += 1
-                else
-                  count[:same] += 1
-                end
+        # EPG 更新日付
+        if @timeUpdate == true
+          now = Time.now.to_i
+          channel.update( db, d["id"], :updatetime, now )
+          phchid.add(db, ch, d["id"], now )
+        end
+        
+        datas = []
+        d["programs"].each do |pro|
+          cateId = category.conv2id(db, pro["category"] )
+          pro2 = programs.dataConv( db, pro, ch2[0][:chid],cateId )
+          r = programs.select( db, chid: pro2[:chid], evid: pro2[:evid] )
+          if r.size == 0
+            #programs.insert( db, data )
+            next if pro2[:title] == nil or pro2[:title] == ""
+            datas << pro2
+            count[:ins] += 1
+          else
+            r.each do |r2|
+              # 拡張情報は抜ける場合があるので補正
+              if r2[:extdetail] != "--- []\n"
+                pro2[:extdetail] == "--- []\n"
+                pro2[:extdetail] = r2[:extdetail]
+              end
+              if programs.diff( r2, pro2 ) == true
+                programs.update( db, r2[:id], pro2 )
+                count[:upd] += 1
+              else
+                count[:same] += 1
               end
             end
           end
-          if datas.size > 0
-            programs.bulkinsert2( db, datas )
-          end
         end
-        str = sprintf("%-9s : ins=>%4d,upd=>%4d,same=>%4d",
-                      "Ch=#{ch}",count[:ins],count[:upd],count[:same])
-        DBlog::debug(db, str )
+        if datas.size > 0
+          programs.bulkinsert2( db, datas )
+        end
       end
+      str = sprintf("%-9s : ins=>%4d,upd=>%4d,same=>%4d",
+                    "Ch=#{ch}",count[:ins],count[:upd],count[:same])
+      DBlog::debug(db, str )
     end
+
     if fpw != nil
       fpw.puts("upd=#{count[:upd]}")
       fpw.puts("ins=#{count[:ins]}") 
@@ -172,7 +265,6 @@ class GetEPG
     recpt1 = Recpt1.new
     recpt1.clearEpgPid()
     pids = []
-    jsonfiles = []
 
     while chs.size > 0
 
@@ -204,33 +296,24 @@ class GetEPG
           end
 
           outfname = JsonDir + "/#{phch}.json"
-          jsonfiles << [ outfname, phch ]
 
           pids << Thread.new(phch, band, tune, outfname) do |phch, band,tune,outfname|
             tune.used = true
             execEpgRec( recpt1, phch, band, outfname )
             DBlog::stoD("execEpgRec() end #{phch}" )
-            sleep(1)
             tune.used = false
+            rjd = ReadjsonData.new( outfname, phch, count )
+            addQueue( rjd )
           end
         end
       else
-        DBlog::stoD("tuner_limit over #{tcount}" )
+        #DBlog::stoD("tuner_limit over #{tcount}" )
       end
-      sleep( 10 )
+      sleep( 3 )
     end
     pids.each {|t| t.join}
     recpt1.clearEpgPid()
 
-    #
-    #  読み込み
-    #
-    jsonfiles.each do |tmp|
-      ( fname, ch ) = tmp
-      if test( ?f, fname )
-        readJsonProc( fname, ch, count  )
-      end
-    end
     
     #
     # ガーベージコレクション
@@ -257,8 +340,8 @@ class GetEPG
       end
     end
 
-    str = sprintf("ins=>%4d,upd=>%4d,del=>%4d,same=>%4d",
-                  count[:ins],count[:upd],count[:del],count[:same] )
+    str = sprintf("ins=>%4d,upd=>%4d,same=>%4d,del=>%4d",
+                  count[:ins],count[:upd],count[:same],count[:del] )
 
     DBaccess.new().open( tran: true ) do |db|
       phchid_gc(db)
@@ -294,7 +377,7 @@ class GetEPG
     delList.keys.each do |phch|
       phchid.delete( db, phch )
     end
-    DBlog::sto( "phchid_gc( #{delList.keys.join(" ")})" )
+    DBlog::stoD( "phchid_gc( #{delList.keys.join(" ")})" )
     
     row = phchid.select( db )
     row.each do |tmp|
@@ -342,13 +425,15 @@ class GetEPG
     pid = fork do  
       reader.close
       begin
-        Timeout.timeout( 120 ) do
+        Timeout.timeout( 10 ) do
           readJson( fname, ch, writer )
         end
       rescue Timeout::Error
         pid2 = Process.pid
-        DBlog::debug(nil, "readJson() time out kill #{pid2} #{ch}" )
+        str = "Error: readJson() time out kill #{pid2} #{ch}"
+        DBlog::sto( str )
         Process.kill(:KILL, pid2 );
+        DBlog::debug(nil, str )
       end
     end
     writer.close
@@ -424,16 +509,14 @@ class GetEPG
     DBlog::stoD( "tailEpgStart() start" )
     count = { :upd => 0, :ins => 0, :del => 0, :same => 0 }
     if test( ?f, fname )
-      readJsonProc( fname, ch, count  )
+      rjd = ReadjsonData.new( fname, ch, count )
+      addQueue_with_update( rjd )
     else
       DBlog::sto( "Error: json file not found #{fname}")
     end
     DBlog::stoD( "tailEpgStart() end" )
 
     if count[:ins] > 0 or count[:upd] > 0
-      str = sprintf("ins=>%4d,upd=>%4d,del=>%4d,same=>%4d",
-                    count[:ins],count[:upd],count[:del],count[:same] )
-      DBlog::sto( str )
       return true
     end
     return false
@@ -453,18 +536,18 @@ if File.basename($0) == "GetEPG.rb"
   require 'require.rb'
 
   $rec_pid = []
-  $mutex = Mutex.new
+  $debug = true
 
   #
   #  録画開始に伴う EPG の中止
   #
   def sigUsr2()
-    DBlog::sto( "sigUsr2()" )
+    DBlog::stoD( "sigUsr2()" )
     Recpt1.new.killEpgPid()
   end
 
   Signal.trap( :USR2 ) do
-    DBlog::sto("Signal.trap :USR2")
+    DBlog::stoD("Signal.trap :USR2")
     $recCount = 1
     sigUsr2()
   end
@@ -473,11 +556,11 @@ if File.basename($0) == "GetEPG.rb"
   
   phchid  = DBphchid.new
   DBaccess.new().open( tran: true ) do |db|
-    phchid.touch( db, (Time.now - 3600 * 24 ).to_i, chid: "BS_141" )
+    #phchid.touch( db, (Time.now - 3600 * 24 ).to_i, chid: "BS_141" )
   end
   
   ge = GetEPG.new
-  ge.start
+  ge.start( Time.now.to_i + 600 )
   
   exit
   

@@ -169,7 +169,9 @@ class TunerArray < Array
     band = r[:band2]
     st   = r[:start2]
     et   = r[:end2]
-    self.each do |t1|
+
+    tuners = sortYu( band, r[:tunerNum] )
+    tuners.each do |t1|
       if t1.band[ band ] == true
         if t1.data.size == 0
           return t1
@@ -192,21 +194,41 @@ class TunerArray < Array
   end
 
   #
+  #   過去の割り当てたチューナー番号があれば、それを先頭にした配列を返す
+  #
+  def sortYu( band, tunerNum )
+    if tunerNum != nil
+      r = []
+      self.each do |tuner|
+        if tuner.band[ band ] == true and tuner.num[ band ] == tunerNum
+          r.unshift( tuner )
+        else
+          r.push( tuner )
+        end
+      end
+      return r
+    else
+      return self
+    end
+  end
+  
+  #
   #  挿入出来る空き時間があるか？(時短適用時)
   #
   def insert_jitan?( r )
     band = r[:band2]
     st   = r[:start2]
 
-    self.each do |tuner|
+    tuners = sortYu( band, r[:tunerNum] )
+    tuners.each do |tuner|
       if tuner.band[ band ] == true
         tuner.data.each_with_index do |t2,n|
 
-          pet = tuner.data[n][:end3]
-          if tuner.data[n+1] != nil # 次がある場合
-            nst = tuner.data[n+1][:start2]
+          pet = tuner.data[n][:end3]       # 前番組の終了時間
+          if tuner.data[n+1] != nil        # 次がある場合
+            nst = tuner.data[n+1][:start2] # 次番組の開始時間
           else
-            nst = r[:end2] + 9
+            nst = r[:end2] + Gap_time
           end
 
           # 前番組を時短

@@ -31,7 +31,7 @@ class Recpt1
   end
 
   def killEpgPid()
-    DBlog::sto( "killEpgPid()" )
+    DBlog::stoD( "killEpgPid()" )
     count = 0
     while @@epgPid.size > 0
       pid = @@epgPid.shift
@@ -41,7 +41,7 @@ class Recpt1
         count += 1
       rescue Errno::ECHILD,Errno::ESRCH
       end
-      DBlog::sto( "killEpgPid() kill #{pid}" )
+      DBlog::stoD( "killEpgPid() kill #{pid}" )
     end
     
     return count

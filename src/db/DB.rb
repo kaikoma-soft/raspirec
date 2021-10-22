@@ -18,15 +18,30 @@ class DBaccess
     end
   end
 
-  def open( tran: false, mode: :deferred )       # tran = true transaction
-    
-    #puts caller[0][/`.*'/][1..-2]
+  def parse_caller(at)
+    if /^(.+?):(\d+)(?::in `(.*)')?/ =~ at
+      file = File.basename( $1 )
+      line = $2.to_i
+      method = $3
+      return sprintf( "DB_caller : %s %d %s", file, line, method )
+    end
+    ""
+  end
+  
+  #
+  #  DB open  mode = :immediate or :deferred or :exclusive
+  # 
+  def open( tran: false, mode: :immediate )       # tran = true transaction
+    #DBlog::stoD( parse_caller( caller.first ) ) if $debug == true
     @db = SQLite3::Database.new( @DBfile )
     @db.busy_timeout(1000)
     ecount = 0
+    roll = false
     begin
+      roll = false
       if tran == true
         @db.transaction( mode ) do
+          roll = true
           yield self
         end
       else
@@ -35,30 +50,26 @@ class DBaccess
     rescue SQLite3::BusyException => e
       DBlog::sto("SQLite3::BusyException tran = #{tran.to_s} #{ecount}")
       begin
-        @db.rollback() if tran == true
+        @db.rollback() if roll == true
       rescue
-        #DBlog::sto("rollback fail #{$!}")
+        DBlog::sto("rollback fail #{$!}")
       end
       if ecount > 20
-        DBlog::sto("SQLite3::BusyException exit")
-        DBlog::sto( $! )
-        DBlog::sto( e.backtrace.first + ": #{e.message} (#{e.class})" )
-        e.backtrace[1..-1].each { |m| DBlog::sto("\tfrom #{m}") }
+        Commlib::errPrint( "SQLite3::BusyException exit", $!, e )
         return
+      else
+        #Commlib::errPrint( "SQLite3::BusyException retry", $!, e )
+        ecount += 1
+        sleep( ecount )
+        DBlog::sto("retry")
+        retry
       end
-      @db.rollback
-      ecount += 1
-      sleep( 1 )
-      retry
     rescue => e
-      DBlog::sto("SQLite3::another error")
-      DBlog::sto( $! )
-      DBlog::sto( e.backtrace.first + ": #{e.message} (#{e.class})")
-      e.backtrace[1..-1].each { |m| DBlog::sto("\tfrom #{m}") }
+      Commlib::errPrint( "SQLite3::another error", $!, e )
       begin
-        @db.rollback() if tran == true
+        @db.rollback() if roll == true
       rescue
-        #DBlog::sto("rollback fail #{$!}")
+        DBlog::sto("rollback fail #{$!}")
       end
       return
     ensure

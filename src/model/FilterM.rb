@@ -102,12 +102,15 @@ class FilterM
   #  削除
   #
   def del( id )
-    if $debug == true
-      DBlog::sto("Fileter.del(#{id})" )
-    end
     filter = DBfilter.new
     filterR = DBfilterResult.new
     DBaccess.new().open( tran: true ) do |db|
+      fd = filter.select( db, id: id )
+      if fd.size > 0
+        tmp = fd[0]
+        tmp2 = tmp[:title] != "" ? tmp[:title] : tmp[:key]
+        DBlog::sto("フィルター or 自動予約 を削除しました (#{tmp2})" )
+      end
       reserve = DBreserve.new
       reserve.delete( db, keyid: id, start: Time.now.to_i )
       filter.delete( db, id )

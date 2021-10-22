@@ -9,6 +9,17 @@
 module Commlib
 
   #
+  #  例外発生時のメッセージ出力
+  #
+  def errPrint( mesg, exc, e )
+    DBlog::sto( mesg)
+    DBlog::sto( exc )
+    DBlog::sto( e.backtrace.first + ": #{e.message} (#{e.class})")
+    e.backtrace[1..-1].each { |m| DBlog::sto("\tfrom #{m}") if m =~ /raspirec/ }
+  end
+  module_function :errPrint
+
+  #
   #  プロセスが生きているか？ true = 生きている, false = 存在しない
   #
   def alivePid?( pid )
