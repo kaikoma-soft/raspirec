@@ -68,7 +68,7 @@ class Reservation
     row1.each do |r|
       row2 = programs.selectSP( db, chid: r[:chid], evid: r[:evid], skip: 0 )
       if row2.size > 0
-        row.each do |pro|
+        row2.each do |pro|
           come1 = "番組復帰"
           (day, time, w) = Commlib::stet_to_s( pro[:start], pro[:end] )
           come2 = sprintf("%s: %s %s %s %s",come1, day, time, r[:name],r[:title])

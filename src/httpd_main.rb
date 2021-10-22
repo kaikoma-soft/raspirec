@@ -76,7 +76,7 @@ end
 #  録画開始(timer からのsignal)に伴うモニタ終了処理
 #
 def sigUsr1()
-  DBlog::sto( "sigUsr1()" )
+  DBlog::stoD( "sigUsr1()" )
   moni_stop( "録画開始の為、モニタを停止しました。" )
 end
 
@@ -84,10 +84,10 @@ end
 #   初期化
 #
 Signal.trap( :CHLD ) { childWait() }
-Signal.trap( :HUP )  { DBlog::sto("httpd :HUP") ; endParoc() }
-Signal.trap( :INT )  { DBlog::sto("httpd :INT") ; endParoc() }
-Signal.trap( :TERM ) { DBlog::sto("httpd :TERM") ; endParoc() }
-Signal.trap( :USR1 ) { DBlog::sto("httpd :USR1") ; sigUsr1() }
+Signal.trap( :HUP )  { DBlog::stoD("httpd :HUP") ; endParoc() }
+Signal.trap( :INT )  { DBlog::stoD("httpd :INT") ; endParoc() }
+Signal.trap( :TERM ) { DBlog::stoD("httpd :TERM") ; endParoc() }
+Signal.trap( :USR1 ) { DBlog::stoD("httpd :USR1") ; sigUsr1() }
 
 DBlog::info(nil,"httpd_main start #{$httpd_pid} (#{Const::ProgVer})")
 

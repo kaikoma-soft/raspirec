@@ -32,7 +32,7 @@ def endParoc()
         begin
           Process.kill(:HUP, pid );
           Process.waitpid( pid, Process::WNOHANG )
-        rescue Errno::ECHILD
+        rescue Errno::ECHILD, Errno::ESRCH
         end
         DBlog::puts( "timer:endParoc() kill #{pid}" )
       end
@@ -60,7 +60,7 @@ def childWait()
             DBlog::sto("timer:childWait() pid=#{k} Terminated") # 成仏
             $rec_pid.delete(k)
           end
-        rescue Errno::ECHILD
+        rescue Errno::ECHILD, Errno::ESRCH
           $rec_pid.delete(k)
         end
       end

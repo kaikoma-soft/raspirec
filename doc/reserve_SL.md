@@ -5,7 +5,7 @@
 
 ## 書式
 
-   reserve_SL.rb [オプション]
+   reserve_SL.rb [Options1]  [Options2...]  file
 
 ## 説明
 
@@ -13,23 +13,44 @@
 
 ## オプション
 
--s  &emsp; 
+### Options1
+
+-s,--save  &emsp; 
 データセーブモード : DBの中の予約関係データ を yaml 形式でダンプする。
 
--l  &emsp; 
-データロードモード : ダンプしたファイルを読み込む。
+-l,--load  &emsp; 
+データロードモード : ダンプしたファイルを DBに読み込む。
 
--f  file名 &emsp; 
-出力先又は入力先のファイル名を指定する。デフォルトは標準出力、標準入力。
+### Options2
 
--o &emsp; 
-データロード時に、現在より古いデータは無視する。
+-f, --filter &emsp;
+フィルターデータ
+
+-a, --auto  &emsp;
+自動予約データ
+
+-r, --reserv  &emsp;
+未録画   予約データ
+
+-o, --old  &emsp;
+録画済み 予約データ
+
+-A, --ALL   &emsp;
+全部(-f,-a,-r,-o)
+
+-d, --db  db_file &emsp;
+DBファイルの指定(デフォルトは config.rb 中の DbFname )
+
+-C, --clearTable  &emsp;
+読み込む前にデータ削除
+
+file &emsp;  yaml 入力(-l時),出力(-s時) ファイル名
 
 ## 例
 
 ```
-% ruby tool/reserve_SL.rb
-
+% ruby tool/reserve_SL.rb --save -A backup.yaml        # バックアップ
+% ruby tool/reserve_SL.rb --load -f -a  backup.yaml    # restore
 ```
 
 
