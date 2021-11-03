@@ -54,13 +54,13 @@ class DBaccess
       rescue
         DBlog::sto("rollback fail #{$!}")
       end
-      if ecount > 20
+      if ecount > 59
         Commlib::errPrint( "SQLite3::BusyException exit", $!, e )
         return
       else
         #Commlib::errPrint( "SQLite3::BusyException retry", $!, e )
         ecount += 1
-        sleep( ecount )
+        sleep( 1 )
         DBlog::sto("retry")
         retry
       end
