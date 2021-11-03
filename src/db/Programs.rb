@@ -34,6 +34,24 @@ class DBprograms
     @list.each_pair { |k,v| @para << v }
     @tbl_name = "programs"
     @now = Time.now.to_i
+
+    @diffKey = []
+    @list.each_pair do |k,v|
+      case k
+      when :id then ;
+      when :evid then ;
+      when :duration then ;
+      when :category then ;
+      when :attachinfo then ;
+      when :video then ;
+      when :audio then ;
+      when :wday then ;
+      when :updtime then ;
+      else
+        @diffKey << v
+      end
+    end
+    
   end
 
   def update( db, id, data )
@@ -43,15 +61,16 @@ class DBprograms
   
   def diff( old, new )
     dr = {}
-    @list.each_pair do |k,v|
-      next if k == :id or k == :updtime
+    count = 0
+    @diffKey.each do |k|
       if new[k] != old[k]
-        dr[k] ||= {}
-        dr[k][:new] = new[k]
-        dr[k][:old] = old[k]
+        # dr[k] ||= {}
+        # dr[k][:new] = new[k]
+        # dr[k][:old] = old[k]
+        count += 1
       end
     end
-    if dr.size > 0
+    if count > 0
       #diffDump( old, dr )
       return true
     else

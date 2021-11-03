@@ -111,8 +111,8 @@ class GetEPG
   #  json ファイルの読み込み
   #
   def readJson( fname, ch, fpw )
-    #DBlog::stoD("readJson(#{fname},#{ch}) start")
-
+    #DBlog::stoD("readJson(#{ch}) start")
+    @ts = Time.now
     unless test(?f, fname )
       fpw.close if fpw != nil
       return false
@@ -133,8 +133,11 @@ class GetEPG
     programs = DBprograms.new
     category = DBcategory.new
     phchid   = DBphchid.new
+    dataI = []              # data insert
+    dataU = {}              # data update
+    dataC = {}              # ch update time
 
-    DBaccess.new().open( tran: true ) do |db|
+    DBaccess.new().open(  ) do |db|
       data.each do |d|
         ch2 = channel.select( db, chid: d["id"] )
         data2 = channel.dataConv( d, ch, $epgPatch )
@@ -156,19 +159,33 @@ class GetEPG
         # EPG 更新日付
         if @timeUpdate == true
           now = Time.now.to_i
-          channel.update( db, d["id"], :updatetime, now )
-          phchid.add(db, ch, d["id"], now )
+          dataC[ d["id"] ] = ch
         end
-        
-        datas = []
+
+        chid = ch2[0][:chid]
+        r = programs.select( db, chid: chid )
+        cache = {}
+        r.each do |r2|
+          cache[ r2[ :evid ]] ||= []
+          cache[ r2[ :evid ]] << r2
+        end
+        if $debug == true
+          cache.each_pair do |k,v|
+            if v.size > 1
+              str = sprintf( "Warn: evid dup (%s, %s)", chid.to_s, k.to_s )
+              DBlog::sto( str )
+            end
+          end
+        end
+
         d["programs"].each do |pro|
           cateId = category.conv2id(db, pro["category"] )
           pro2 = programs.dataConv( db, pro, ch2[0][:chid],cateId )
-          r = programs.select( db, chid: pro2[:chid], evid: pro2[:evid] )
-          if r.size == 0
-            #programs.insert( db, data )
+          #r = programs.select( db, chid: pro2[:chid], evid: pro2[:evid] )
+          r = cache[ pro2[:evid] ]
+          if r == nil or r.size == 0
             next if pro2[:title] == nil or pro2[:title] == ""
-            datas << pro2
+            dataI << pro2
             count[:ins] += 1
           else
             r.each do |r2|
@@ -178,7 +195,7 @@ class GetEPG
                 pro2[:extdetail] = r2[:extdetail]
               end
               if programs.diff( r2, pro2 ) == true
-                programs.update( db, r2[:id], pro2 )
+                dataU[ r2[:id] ] = pro2 
                 count[:upd] += 1
               else
                 count[:same] += 1
@@ -186,13 +203,25 @@ class GetEPG
             end
           end
         end
-        if datas.size > 0
-          programs.bulkinsert2( db, datas )
-        end
       end
-      str = sprintf("%-9s : ins=>%4d,upd=>%4d,same=>%4d",
-                    "Ch=#{ch}",count[:ins],count[:upd],count[:same])
-      DBlog::debug(db, str )
+    end
+
+    #
+    #  トランザクション時間を最小にするため分離
+    #
+    ts2 = Time.now
+    DBaccess.new().open( tran: true ) do |db|
+      now = Time.now.to_i
+      dataC.each_pair do |id,ch|
+        channel.update( db, id, :updatetime, now )
+        phchid.add( db, ch, id, now )
+      end
+      if dataI.size > 0
+        programs.bulkinsert2( db, dataI )
+      end
+      dataU.each_pair do |id, v|
+        programs.update( db, id, v )
+      end
     end
 
     if fpw != nil
@@ -201,7 +230,13 @@ class GetEPG
       fpw.puts("same=#{count[:same]}")
       fpw.close
     end
-    #DBlog::stoD("readJson(#{fname},#{ch}) end")
+
+    str = sprintf("%-9s : ins=>%4d, upd=>%4d, same=>%4d",
+                  "Ch=#{ch}",count[:ins],count[:upd],count[:same] )
+    lap = ( Time.now - @ts ).to_f
+    lap2 = ( Time.now - ts2 ).to_f
+    str += sprintf( " : %.2f Sec (Tx %.2f Sec)",lap, lap2 )
+    DBlog::sto( str )
   end
 
   #
@@ -300,7 +335,7 @@ class GetEPG
           pids << Thread.new(phch, band, tune, outfname) do |phch, band,tune,outfname|
             tune.used = true
             execEpgRec( recpt1, phch, band, outfname )
-            DBlog::stoD("execEpgRec() end #{phch}" )
+            #DBlog::stoD("execEpgRec() end #{phch}" )
             tune.used = false
             rjd = ReadjsonData.new( outfname, phch, count )
             addQueue( rjd )
@@ -340,7 +375,7 @@ class GetEPG
       end
     end
 
-    str = sprintf("ins=>%4d,upd=>%4d,same=>%4d,del=>%4d",
+    str = sprintf("ins=>%4d, upd=>%4d, same=>%4d, del=>%4d",
                   count[:ins],count[:upd],count[:same],count[:del] )
 
     DBaccess.new().open( tran: true ) do |db|
@@ -400,7 +435,7 @@ class GetEPG
     begin
       File.unlink( outfname ) if test(?f, outfname )
       time = getRecTime( ch )
-      DBlog::stoD("execEpgRec() #{ch} #{time}" )
+      #DBlog::stoD("execEpgRec() #{ch} #{time}" )
       recpt1.getEpgJson( ch, time, thc[:outfname_tmp] )
       if test( ?f, thc[:outfname_tmp] ) and
         File.size( thc[:outfname_tmp] ) > 100
@@ -410,8 +445,6 @@ class GetEPG
         return
       end
     rescue
-      #puts $!
-      #puts $@
       errorProc( ch )
       return
     end
@@ -425,7 +458,7 @@ class GetEPG
     pid = fork do  
       reader.close
       begin
-        Timeout.timeout( 10 ) do
+        Timeout.timeout( 30 ) do
           readJson( fname, ch, writer )
         end
       rescue Timeout::Error
@@ -553,14 +586,22 @@ if File.basename($0) == "GetEPG.rb"
   end
 
   $tunerArray = TunerArray.new
-  
-  phchid  = DBphchid.new
-  DBaccess.new().open( tran: true ) do |db|
-    #phchid.touch( db, (Time.now - 3600 * 24 ).to_i, chid: "BS_141" )
-  end
-  
   ge = GetEPG.new
-  ge.start( Time.now.to_i + 600 )
+  type = 1
+  
+  if type == 0
+    phchid  = DBphchid.new
+    DBaccess.new().open( tran: true ) do |db|
+      #phchid.touch( db, (Time.now - 3600 * 24 ).to_i, chid: "BS_141" )
+    end
+  
+    ge.start( Time.now.to_i + 600 )
+  elsif type == 1
+    fname = ENV["HOME"] + "/data/rrtest/json/CS4.json"
+    ch = "CS4"
+    fpw = STDOUT
+    ge.readJson( fname, ch, fpw )
+  end
   
   exit
   
