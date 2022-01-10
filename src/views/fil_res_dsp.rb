@@ -47,6 +47,7 @@ class FilterDisp
           trcl = %W(color#{cate})
           res = reserve.select( db, evid: t[:evid], chid: t[:chid] )
           res2 =  ""
+          resid = nil
           if res.size > 0
             if @freeOnly == true
               total -= 1
@@ -57,10 +58,11 @@ class FilterDisp
             else
               res2 = "×"
             end
+            resid = res[0][:id]
           end
           name = %Q(<a href="/ch_tbl/#{t[:chid]}"> #{t[:name]}</a>)
           data = [ count,name, day,time,res2,t[:title],t[:detail] ]
-          tmp << Commlib::printTR2( data, rid: t[:pid], trcl: trcl, tdcl: tdclas, tdclf: 2)
+          tmp << Commlib::printTR2( data, rid: t[:pid], trcl: trcl, tdcl: tdclas, tdclf: 2, resid: resid )
           count += 1
         end
         r[:title] = sprintf("<h1 id=\"title\" fa_flag=\"#{@fa_flag}\">検索結果 %d 件</h1>", total )

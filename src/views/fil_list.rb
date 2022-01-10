@@ -67,10 +67,28 @@ class FilterList
   def getData()
     data = nil
     DBaccess.new().open do |db|
-      filter = DBfilter.new()
-      category = DBcategory.new
+      filter   = DBfilter.new()
+      category = DBcategory.new()
+      reserve  = DBreserve.new()
       
       data = filter.select( db, type: @type )
+      if @type == FilConst::AutoRsv
+        rsvd = reserve.select( db, stat: RsvConst::Normal )
+        rsvd2 = {}
+        rsvd.each do |tmp|
+          id = tmp[:keyid]
+          rsvd2[id] = 0 if rsvd2[id] == nil
+          rsvd2[id] += 1
+        end
+        data.each do |tmp|
+          id = tmp[:id]
+          if rsvd2[id] == nil
+            tmp[:result2] = 0
+          else
+            tmp[:result2] = rsvd2[id]
+          end
+        end
+      end
 
       # カテゴリの文字列化
       data.each do |t|
@@ -125,7 +143,7 @@ class FilterList
       when ARSort::Title then data.sort_by! {|a| [a[:title2],a[:id]] }
       when ARSort::Reg   then data.sort_by! {|a| a[:id] }
       when ARSort::Cate  then data.sort_by! {|a| [a[:cate], a[:title2]] }
-      when ARSort::Num   then data.sort_by! {|a| [a[:result], a[:title2]] }
+      when ARSort::Num   then data.sort_by! {|a| [a[:result2], a[:result],a[:title2]] }
       end
       if @sort_reverse == ARSort::On
         data.reverse!
@@ -133,16 +151,28 @@ class FilterList
       data.each do |t|
         b = sprintf( b1 + b2 + b3, t[:id],t[:id],t[:id] )
         title = ( t[:title] != nil and t[:title] != "" )? t[:title] : t[:key]
-        if t[:result] == 0
-          result = %Q( <font color="red" > #{t[:result]} </font>)
+
+        r1 = zeroRed( t[:result] )
+        r2 = zeroRed( t[:result2] )
+        if @type == FilConst::AutoRsv
+          result = sprintf( "%s/%s", r2, r1 )
         else
-          result = t[:result]
+          result = sprintf( "%s", r1 )
         end
+
         r << printTR( t[:id], classs, count, title, t[:cate], result, b )
         count += 1
       end
     end
     r.join("\n")
+  end
+
+  def zeroRed( val )
+    if val == 0
+      return %Q( <font color="red" > #{val} </font>)
+    else
+      return val.to_s
+    end
   end
 end
   

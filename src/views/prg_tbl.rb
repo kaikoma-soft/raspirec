@@ -100,7 +100,7 @@ class PrgTbl
       row = reserve.select(db, tstart: start, tend: fin)
       row.each do |tmp|
         rsv[ tmp[:chid] ] ||= {}
-        rsv[ tmp[:chid] ][ tmp[:evid] ] = tmp[:stat]
+        rsv[ tmp[:chid] ][ tmp[:evid] ] = tmp
       end
     end
     
@@ -282,20 +282,27 @@ class PrgTbl
         l = tmp[:end] - tmp[:start] + hosei
 
         cls = [ "item", sprintf("color%d",tmp[:cate1m]) ]
+        resid = nil
         if @rsvData[ tmp[:chid] ] != nil
           if @rsvData[ tmp[:chid] ][ tmp[:evid] ] != nil
-            if @rsvData[ tmp[:chid] ][ tmp[:evid] ] == 0
+            tmp2 = @rsvData[ tmp[:chid] ][ tmp[:evid] ]
+            if tmp2[ :stat ] == 0
               cls << "alertR"
             else
               cls << "alertBD"
             end
+            resid  = sprintf(%Q{resid="%d" }, tmp2[ :id] )
           end
         end
         tmp[:title] = "NULL" if tmp[:title] == nil or tmp[:title] == ""
         
         px = (( l.to_f / 3600 ) *  @hour_pixel ).to_i
         style = sprintf(%Q{style="height:%dpx;" },px)
-        pid   = sprintf(%Q{pid="%d" }, tmp[:pid])
+        if resid == nil         
+          pid = sprintf(%Q{pid="%d" }, tmp[:pid])
+        else
+          pid = resid           # 予約済みの場合
+        end
         stime = Time.at( tmp[:start] ).strftime("%H:%M")
         etime = Time.at( tmp[:end] ).strftime("%H:%M")
         moni2 = "off"

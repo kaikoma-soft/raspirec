@@ -65,7 +65,7 @@ css:
         - if dp.type == FilConst::Filter
           span#rb 一致件数順
         - else
-          span#rb 予約件数順
+          span#rb 有効予約／一致件数順
 
     label
       input.cb#cb type="checkbox" name="reverse" checked=(dp.radioST[ARSort::Reverse])
@@ -78,7 +78,7 @@ css:
       th タイトル or 検索文字列
       th ジャンル(大項目)
       - if dp.type == FilConst::AutoRsv
-        th 予約件数
+        th 有効予約／一致件数
       - else 
         th 一致件数
       th アクション
