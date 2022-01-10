@@ -102,9 +102,11 @@
     };
 
 
-
+    //  視聴・予約・自動予約
     $(".item").click(function(event){
         var proid = $(this).attr('pid');
+        if ( proid === void 0 ) return false    // undef の場合
+        
         var moni = $(this).attr('moni');
         //event.preventDefault();
         $("#sample-dialog").load('/prg_dialog/' + proid );
@@ -149,6 +151,52 @@
         return false;
     });
 
+
+    //  予約済みに対する修正・削除
+    $(".item").click(function(event){
+        var resid = $(this).attr('resid');
+        if ( resid === void 0 ) return false    // undef の場合
+
+        var resid = $(this).attr('resid');
+        console.log( resid );
+        //event.preventDefault();
+        $("#sample-dialog").load('/rsv_list_D/' + resid );
+        $("#sample-dialog").dialog({
+             modal: true,
+             maxWidth: 1200,
+             width:    1000,
+             buttons: { //ボタン
+               "修正": function() {
+                   $.ajax({
+                       url: '/rsv_list/Mod/' + resid,
+                       type:"POST",
+                       data:  $('form').serialize() + '&param=1',
+                       async: true,
+                       timeout: 30000
+                   }).done( function(results) {
+                       location.reload();
+                   })
+               },
+               "削除": function() {
+                   $.ajax({
+                       url: '/rsv_list/Del/' + resid,
+                       type:"POST",
+                       async: true,
+                       timeout: 30000
+                   }).done( function(results) {
+                       location.reload();
+                   })
+               },
+               "閉じる": function() {
+                   $(this).dialog("close");
+               }
+             },
+             open: function() {
+               $( this ).siblings('.ui-dialog-buttonpane').find('button:eq(2)').focus();
+             }
+           });
+        return false;
+    });
 
     function confirmDialog( proid ) {
       $("#sample-dialog2").dialog({

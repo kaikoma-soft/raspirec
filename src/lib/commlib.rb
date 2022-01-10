@@ -179,19 +179,20 @@ module Commlib
   module_function :printTR
 
 
-  def printTR2( data, rid: nil, trcl: nil, tdcl: nil, id: nil, tdclf: nil )
+  def printTR2( data, rid: nil, trcl: nil, tdcl: nil, id: nil, tdclf: nil, resid: nil )
     trcls  = trcl  != nil ? "class=\"" + trcl.join(" ") + "\"" : ""
     tdcls  = tdcl  != nil ? "class=\"" + tdcl.join(" ") + "\"" : ""
-    rids = rid != nil ? "rid=\"#{rid}\""  :  ""
-    ids  = id  != nil ? "id=\"#{id}\"" : ""
+    rids   = rid   != nil ? "rid=\"#{rid}\""  :  ""
+    ids    = id    != nil ? "id=\"#{id}\"" : ""
+    resids = resid != nil ? "resid=\"#{resid}\"" : ""
 
     a = [ %Q{ <tr #{ids} #{trcls}> } ]
     n = 1
     data.each do |tmp|
       if tdclf == nil or n > tdclf
-        a << %Q{ <td #{tdcls} #{rids}> #{tmp} </td>}
+        a << %Q{ <td #{tdcls} #{rids} #{resids}> #{tmp} </td>}
       else
-        a << %Q{ <td #{rids}> #{tmp} </td>}
+        a << %Q{ <td #{rids} #{resids}> #{tmp} </td>}
       end
       n += 1
     end

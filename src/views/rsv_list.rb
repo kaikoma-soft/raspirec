@@ -84,9 +84,10 @@ class ReservationList
         st = ( Time.at(t[:start]) - 3600 ).strftime("%Y-%m-%d/%H")
         day = %Q(<a href="rsv_tbl/#{st}"> #{time[0]} </a>)
         time2 = %Q(<a href="rsv_tbl/#{st}"> #{time[1]} #{time[2]} </a>)
+        name2 = %Q(<a href="ch_tbl/#{t[:chid]}"> #{t[:name]} </a>)
         td = []
         td << printTD( count, clas: clas )
-        td << printTD( t[:name],clas: clas )
+        td << printTD( name2,clas: clas )
         td << printTD( day,clas: clas )
         td << printTD( time2,clas: clas )
         td << printTD( stat,clas: clasS, id: id )

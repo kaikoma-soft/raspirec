@@ -66,10 +66,11 @@ class ChTbl
         rsvData[ day ] << r
       end
 
-      row = reserve.selectSP( db ) # stat: RsvConst::ActStat
+      fin = zeroji + 24 * 3600 * 8
+      row = reserve.select( db, tstart: zeroji, tend: fin)
       row.each do |tmp|
         @rsv[ tmp[:chid] ] ||= {}
-        @rsv[ tmp[:chid] ][ tmp[:evid] ] = tmp[:stat]
+        @rsv[ tmp[:chid] ][ tmp[:evid] ] = tmp
       end
 
     end
@@ -105,15 +106,17 @@ class ChTbl
     r.join("\n")
   end
 
-  def printItem( time, text, cls: nil, pid: nil, tip: nil )
+  def printItem( time, text, cls: nil, pid: nil, tip: nil, resid: nil )
     px = ((( time ).to_f / 3600 ) *  @hour_pixel ).to_i
     style = sprintf(%Q{style="height:%dpx;" },px)
     cls2 = cls != nil ? %Q{class='#{cls.join(" ")}'} : ""
     tip2 = tip != nil ? %Q{data-text="#{tip}"} : ""
     pid2 = pid != nil ? %Q{pid="#{pid}"} : ""
+    resid2 = resid != nil ? %Q{resid="#{resid}"} : ""
     moni = %Q(moni="off")
 
-    sprintf(%Q{  <div %s %s %s %s %s> %s </div>},cls2, pid2,tip2,style,  moni,text )
+    sprintf(%Q{  <div %s %s %s %s %s %s> %s </div>},
+            cls2, pid2, resid2, tip2, style, moni, text )
   end
 
   #
@@ -155,34 +158,31 @@ class ChTbl
 
           cls = [ "item", sprintf("color%d",tmp[:categoryA][0][0]) ]
 
+          resid = nil
           if @rsv[chid] != nil and @rsv[chid][tmp[:evid]] != nil
-            stat = @rsv[chid][tmp[:evid]]
+            stat = @rsv[chid][tmp[:evid]][:stat]
             cls << case stat
                    when RsvConst::Normal, RsvConst::RecNow
                    then "alertR"
                    when RsvConst::NotUse, RsvConst::RecStop,RsvConst::RecStop2
                    then "alertBD"
+                   when RsvConst::NormalEnd
+                   then "alertB"
                    end
-            # if stat == RsvConst::Normal or stat == RsvConst::RecNow
-            #   cls << "alertR"
-            # elsif stat == RsvConst::NotUse or
-            #      stat == RsvConst::RecStop or
-            #      stat == RsvConst::RecStop2
-            #   cls << "alertBD"
-            # end
+            resid  = @rsv[chid][tmp[:evid]][:id]
           elsif tmp[:jitanExe] == RsvConst::JitanEOn
             cls << "alertGD"
           end
 
           chname= tmp[:name]
           rid   = tmp[:id]
-          pid   = tmp[:pid]
+          pid   = resid == nil ? tmp[:pid] : nil
           title = tmp[:title].gsub(/\"/,"&quot;")
 
           stime = Time.at( tmp[:start] ).strftime("%H:%M")
           etime = Time.at( tmp[:end] ).strftime("%H:%M")
           tip   = %Q{#{chname}<br>#{title}<br>#{stime} 〜 #{etime}}
-          r << printItem( l, title, pid: pid, tip: tip, cls: cls )
+          r << printItem( l, title, pid: pid, tip: tip, cls: cls, resid: resid )
 
           ct = tmp[:end]
           if tmp[:end] > et

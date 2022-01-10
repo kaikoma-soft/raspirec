@@ -172,9 +172,10 @@ class ReservationListOld
           end
         end
         
+        name2 = %Q(<a href="ch_tbl/#{t[:chid]}"> #{t[:name]} </a>)
         td = []
         td << printTD( count, clas: clas )
-        td << printTD( t[:name],clas: clas )
+        td << printTD( name2, clas: clas )
         td << printTD( day,clas: clas )
         td << printTD( time2,clas: clas )
         td << printTD( stat,clas: clasS, id: id )
