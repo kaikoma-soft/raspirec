@@ -42,7 +42,7 @@ class FilterM
     d[:result] = 0
     d[:jitan] = params["jitan"] == "on" ? RsvConst::JitanOn : RsvConst::JitanOff
     d[:subdir] = params["dir"]
-    d[:freeonly] = params["freeonly"] == "on" ? RsvConst::FO : RsvConst::Off
+    d[:freeonly] = params["freeOnly"] == "on" ? RsvConst::FO : RsvConst::Off
     d[:dedupe] = params["dedupe"] == "on" ? RsvConst::Dedupe : RsvConst::Off
 
     # 時短に放送時間のデータを重畳
