@@ -61,7 +61,7 @@ EOS
 
     "RecExt" => <<-EOS,
 AutoRecExt          自動録画延長機能  true で有効。 詳細は
-+                   <a href="https://kaikoma-soft.github.io/raspirec-RecExt.html"> こちら </a> を参照
++                   <a href="https://kaikoma-soft.github.io/src/raspirec-RecExt.html"> こちら </a> を参照
 ARE_sampling_time   番組終了の n 秒前に EPG 採取
 ARE_epgdump_opt     最後尾切り出しの epgdump のオプション
 EOS
@@ -85,7 +85,7 @@ EOS
 
     "hlsMon" => <<-EOS,
 MonitorFunc       true=モニタ機能を有効, false=無効。 無効の場合は、下記のパラメータは無視される。
-+                設定方法は <a href="https://kaikoma-soft.github.io/raspirec-option.html"> こちら </a> を参照して下さい。
++                設定方法は <a href="https://kaikoma-soft.github.io/src/raspirec-option.html"> こちら </a> を参照して下さい。
 StreamDir        ストリーム出力先ディレクトリ
 MonitorWidth     モニタ画面の横幅
 HlsConvCmd       HLS変換コマンド
@@ -95,7 +95,7 @@ EOS
 
     "mpvMon" => <<-EOS,
 MPMonitor        true = mpv モニタ機能を有効、false = 無効 <br>無効の場合は、下記のパラメータは無視される。
-+                設定方法は <a href="https://kaikoma-soft.github.io/raspirec-option.html"> こちら </a> を参照して下さい。
++                設定方法は <a href="https://kaikoma-soft.github.io/src/raspirec-option.html"> こちら </a> を参照して下さい。
 DevAutoDetection  DeviceList_GR, DeviceList_BSCS, DeviceList_GBC を自動設定する。 
 +                 <br> true = 有効。 
 +                 詳細は <a href="../help#DevAutoDetection"> 補足説明 </a> を参照して下さい。

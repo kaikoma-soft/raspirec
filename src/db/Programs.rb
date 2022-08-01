@@ -48,7 +48,7 @@ class DBprograms
       when :wday then ;
       when :updtime then ;
       else
-        @diffKey << v
+        @diffKey << k
       end
     end
     
@@ -60,7 +60,7 @@ class DBprograms
   end
   
   def diff( old, new )
-    dr = {}
+    #dr = {}
     count = 0
     @diffKey.each do |k|
       if new[k] != old[k]

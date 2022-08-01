@@ -104,10 +104,10 @@ class Recpt1
             end
           end
         rescue Errno::EPIPE
-          DBlog::sto( "Broken pipe;  kill #{wait1.pid}" )
+          DBlog::sto("getEpgJson() Broken pipe;  kill #{wait1.pid}" )
           Process.kill(:KILL, wait1.pid)
         rescue Timeout::Error
-          DBlog::sto("timer timeout ; kill #{wait1.pid}" )
+          DBlog::sto("getEpgJson() timer timeout ; kill #{wait1.pid}" )
           Process.kill(:KILL, wait1.pid)
         end
         stdin2.close
