@@ -19,6 +19,7 @@ require 'require.rb'
 require_relative 'src/TV/Video.rb'
 require_relative 'src/TV/misc.rb'
 require_relative 'src/TV/Arguments.rb'
+require_relative 'src/lib/YamlWrap.rb'
 
 $arg   = Arguments.new( ARGV )
 $queue = Array.new                       # event queue

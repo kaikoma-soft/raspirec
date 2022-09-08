@@ -126,7 +126,7 @@ elsif $opt[:mode] == :load
   else
     str = STDIN.read()
   end
-  data = YAML.load( str )
+  data = YamlWrap.load( str )
 
   DBaccess.new( $opt[:db] ).open( tran: true ) do |db|
 

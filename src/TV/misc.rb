@@ -59,7 +59,7 @@ class Prog
         ret += tmp.prog_detail + "\n"
       end
       if tmp.prog_extdetail != nil and tmp.prog_extdetail.strip != ""
-        if ( data = YAML.load( tmp.prog_extdetail)).size > 0
+        if ( data = YamlWrap.load( tmp.prog_extdetail)).size > 0
           ret += "\n-----  詳細情報  ------\n" 
           data.each do |tmp|
             title = tmp[ "item_description" ]
