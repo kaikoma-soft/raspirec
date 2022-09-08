@@ -60,18 +60,22 @@ class DBprograms
   end
   
   def diff( old, new )
-    #dr = {}
+    dr = {} if $debug == true
     count = 0
     @diffKey.each do |k|
       if new[k] != old[k]
-        # dr[k] ||= {}
-        # dr[k][:new] = new[k]
-        # dr[k][:old] = old[k]
+        if $debug == true
+          dr[k] ||= {}
+          dr[k][:new] = new[k]
+          dr[k][:old] = old[k]
+        end
         count += 1
       end
     end
     if count > 0
-      #diffDump( old, dr )
+      if $debug == true
+        diffDump( old, dr )
+      end
       return true
     else
       return false
@@ -79,13 +83,27 @@ class DBprograms
   end
 
   def  diffDump( data, dr )
-    fname = LogDir + "/" + Time.now.strftime("epg_diff_%m%d.log")
+
+    now = Time.now
+    fname = LogDir + "/" + now.strftime("epg_diff_%a.log")
+
+    # 一週前が残っていれば事前に削除
+    if test( ?f, fname )
+      mtime = File.mtime( fname )
+      if mtime < now - ( 3600 * 24 * 3 )
+        File.unlink( fname )
+        DBlog::sto("epg_diff unlink #{fname}")
+      end
+    end
+    
     File.open( fname, "a") do |fp|
-      fp.printf("%s %s %s %s\n",data[:chid],data[:evid],Time.at(data[:start]), data[:title])
+      st = Time.at(data[:start]).strftime("%m/%d %R")
+      fp.printf("\n%s %s %s\n", ">" * 5, now.strftime("%m/%d %R:%S"),"<" * 5 )
+      
+      fp.printf("%s %s %s %s\n",data[:chid],data[:evid], st, data[:title])
       dr.each_pair do |k,v|
         fp.printf("--- %s ---\nold:%s\nnew:%s\n",k.to_s,v[:old],v[:new])
       end
-      fp.print( "-" * 30 + "\n")
     end
   end
 

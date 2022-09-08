@@ -74,7 +74,7 @@ class Dialog_pid
       end
         
       if tmp[:extdetail] != nil and tmp[:extdetail].strip != ""
-        if ( data = YAML.load( tmp[:extdetail])).size > 0
+        if ( data = YamlWrap.load( tmp[:extdetail])).size > 0
           r << printTable2("詳細情報", extdetail2table( data ))
         end
       end

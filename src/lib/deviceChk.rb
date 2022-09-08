@@ -1,6 +1,7 @@
 # coding: utf-8
 
 require 'yaml'
+require 'lib/YamlWrap.rb'
 
 #
 #  デバイスのチェック
@@ -26,12 +27,12 @@ class DeviceChk
   def load( )
     @data = nil
     File.open( DeviceChkFN, "r") do |fp|
-      @data = YAML.load(fp)
+      @data = YamlWrap.load_file(fp)
     end
     return @data
   end
-  
 end
+
 
 class DeviceChkData
 
