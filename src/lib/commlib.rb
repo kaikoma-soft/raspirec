@@ -9,6 +9,18 @@
 module Commlib
 
   #
+  #  Version
+  #
+  def getVer()
+    ver = Const::ProgVer
+    if $debug == true
+      ver += "  (" + Const::GitTag.sub(/ver/i,"") + ")"
+    end
+    return ver
+  end
+  module_function :getVer
+  
+  #
   #  例外発生時のメッセージ出力
   #
   def errPrint( mesg, exc, e )
@@ -342,7 +354,7 @@ EOS
     when RsvConst::RecStop,RsvConst::RecStop2 then
       stat =  "中止"
       stat += " (#{come})" if come != nil
-    when RsvConst::NotUse then
+    when RsvConst::NotUse,RsvConst::NotUseA then
       stat =  "無効"
       stat += " (#{come})" if come != nil
       bg = %Q(colorGray)

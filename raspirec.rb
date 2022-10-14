@@ -92,7 +92,7 @@ $httpd_main = "#{SrcDir}/httpd_main.rb"
 #  main loop
 #
 def mainLoop()
-  DBlog::sto("main loop start (#{Const::ProgVer})")
+  DBlog::sto("main loop start #{Commlib::getVer()}")
 
   File.open( PidFile, "w") do |fp|
     fp.puts( Process.pid  )

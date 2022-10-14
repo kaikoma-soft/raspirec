@@ -89,8 +89,7 @@ Signal.trap( :INT )  { DBlog::stoD("httpd :INT") ; endParoc() }
 Signal.trap( :TERM ) { DBlog::stoD("httpd :TERM") ; endParoc() }
 Signal.trap( :USR1 ) { DBlog::stoD("httpd :USR1") ; sigUsr1() }
 
-DBlog::info(nil,"httpd_main start #{$httpd_pid} (#{Const::ProgVer})")
-
+DBlog::info(nil,"httpd_main start #{Commlib::getVer()}")
 
 enable :sessions
 set :server, "webrick"

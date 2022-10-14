@@ -164,7 +164,7 @@ class ChTbl
             cls << case stat
                    when RsvConst::Normal, RsvConst::RecNow
                    then "alertR"
-                   when RsvConst::NotUse, RsvConst::RecStop,RsvConst::RecStop2
+                   when RsvConst::NotUse, RsvConst::NotUseA,RsvConst::RecStop,RsvConst::RecStop2
                    then "alertBD"
                    when RsvConst::NormalEnd
                    then "alertB"
