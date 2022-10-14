@@ -29,7 +29,7 @@ class Timer
     DBaccess.new().open do |db|
       row = reserve.selectSP( db, stat: RsvConst::Normal, order: "order by start" )
       row.each do |r|
-        next if r[:stat] == RsvConst::NotUse
+        next if r[:stat] == RsvConst::NotUse or r[:stat] == RsvConst::NotUseA
         if r[:stat] == RsvConst::Normal
           start2 = r[:start] - Start_margin
           nextRecTime = start2 if start2 < nextRecTime
@@ -348,12 +348,11 @@ class Timer
           DBlog::warn(db, "ファイル名長(#{bs}) > 255")
         end
       end
-      if AutoRecExt == true
-        duration *= 2
-      end
+
+      duration2 = AutoRecExt == true ? duration * 2 : duration
       arg = [ ]
       arg += Recpt1_opt if Recpt1_opt != nil
-      arg += ch + [ duration.to_s, fname ]
+      arg += ch + [ duration2.to_s, fname ]
       waitT = retryC + 2
       if data[:svid] == 101 or data[:svid] == 102 # NHK BS は遅い
         waitT = retryC + 5
@@ -412,6 +411,26 @@ class Timer
         rescue => e
           Commlib::errPrint("Error: ReservExt()", $!, e )
         end
+
+        #
+        #  デバックの為のデータ書き換え(録画開始後のタイトル変更)
+        #
+        # DBaccess.new.open(tran: true ) do |db|
+        #   reserve = DBreserve.new
+        #   programs = DBprograms.new
+        #   row = reserve.select( db, stat: RsvConst::RecNow )
+        #   row.each do |r|
+        #     printf("# %d %s\n",r[:id], r[:title])
+        #     row2 = programs.select( db, chid: r[:chid], evid: r[:evid] )
+        #     row2.each do |r2|
+        #       printf("> %d %s\n",r2[:id], r2[:title])
+        #       title = r2[:title] + " TEST"
+        #       db.execute( "update programs set title = ? where id = ?", title,r2[:id] )
+        #     end
+        #   end
+        # end
+        # FilterM.new.update() # 再スケージュール
+        
       end
     end
 
@@ -462,6 +481,29 @@ class Timer
         DBupdateChk.new.touch()          
       end
     end
+
+    #
+    # 番組途中のタイトル変更に伴う、TSファイル名変更
+    #
+    DBaccess.new.open( ) do |db|
+      row = reserve.selectSP( db, id: data[:id] )
+      if row == nil or row.size == 0
+        pp "error"
+      else
+        r = row[0]
+        fname2 = makeTSfname2( r, duration, retryC )
+        if fname2 != fname
+          DBlog::sto( "出力ファイル名を変更します。#{File.basename(fname)} -> #{File.basename(fname2)}")
+          if test( ?f, fname )
+            File.rename( fname, fname2 )
+            reserve.updateStat( db, r[:id], fname: File.basename(fname2) )
+          else
+            pp "Error: file not found (#{fname})"
+          end
+        end
+      end
+    end
+    
   end
 
 

@@ -154,7 +154,8 @@ class ReservationListOld
           if t[:stat] == RsvConst::AbNormalEnd or
             t[:stat] == RsvConst::RecStop or
             t[:stat] == RsvConst::RecStop2 or
-            t[:stat] == RsvConst::NotUse 
+            t[:stat] == RsvConst::NotUse or
+            t[:stat] == RsvConst::NotUseA
             pc = "-"
           elsif t[:dropNum ] != nil 
             ( drer, pcr, execerror ) = @reserve.parseDropNum( t[:dropNum ] )

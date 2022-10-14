@@ -105,7 +105,7 @@ EOS
 
     chk = %q(checked="checked")
     jitanchk = dp[:jitan] == 0 ? chk :  ""
-    usechk   = dp[:stat] == RsvConst::NotUse ? chk :  ""
+    usechk = ( dp[:stat] == RsvConst::NotUse or dp[:stat] == RsvConst::NotUseA ) ? chk :  ""
     subdir = dp[:subdir] 
       
     str1 = <<EOS

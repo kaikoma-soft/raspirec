@@ -107,7 +107,7 @@ class Recpt1
           DBlog::sto("getEpgJson() Broken pipe;  kill #{wait1.pid}" )
           Process.kill(:KILL, wait1.pid)
         rescue Timeout::Error
-          DBlog::sto("getEpgJson() timer timeout ; kill #{wait1.pid}" )
+          #DBlog::sto("getEpgJson() timer timeout ; kill #{wait1.pid}" )
           Process.kill(:KILL, wait1.pid)
         end
         stdin2.close

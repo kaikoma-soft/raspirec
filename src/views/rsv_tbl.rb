@@ -65,7 +65,7 @@ class RsvTbl
     DBaccess.new().open do |db|
       row = reserve.selectSP(db, tstart: st, tend: et)
       row.each do |r|
-        next if r[:stat] == RsvConst::NotUse
+        next if r[:stat] == RsvConst::NotUse or r[:stat] == RsvConst::NotUseA
         next if r[:stat] == RsvConst::RecStop2
         #next if r[:stat] == RsvConst::NormalEnd
         band = r[:band] == Const::GR ? Const::GR : Const::BSCS

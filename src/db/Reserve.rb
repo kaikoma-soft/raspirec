@@ -108,6 +108,9 @@ class DBreserve
     elsif title !=  nil 
       where << " r.title = ?"
       argv << title
+    elsif id !=  nil 
+      where << " r.id = ?"
+      argv << id
     end
 
     if titleL !=  nil 
@@ -357,6 +360,21 @@ class DBreserve
       #pp "#{id} #{title} #{titleH} #{tunerNum2}" if $debug == true
     end
     
+  end
+
+  #
+  #  予約テーブルの title と programs のtitle を比較する。
+  #
+  def titleChk( db )
+    sql = "select r.id, r.title, p.title from reserve r inner join programs p on p.chid = r.chid and p.evid = r.evid and r.title != p.title and r.end > ? ; "
+
+    row = db.execute( sql, Time.now.to_i - 3600 )
+    if row != nil and row.size > 0
+      row.each do |r|
+        str = sprintf("Error: titleChk() %8d : %s : %s",r[0],r[1],r[2] )
+        DBlog::sto(str)
+      end
+    end
   end
 
   

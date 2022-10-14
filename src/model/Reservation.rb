@@ -24,21 +24,19 @@ class Reservation
     ts1 = Time.now
     reserve = DBreserve.new
     programs = DBprograms.new
-    row1 = reserve.selectSP( db, stat: RsvConst::ActStat )
-    dupchk = []
+
+    row1 = reserve.selectSP( db, tend: Time.now.to_i )
     #ppp("Reservation.check() P1")
     row1.each do |r|
-      next if r[:stat] == RsvConst::NotUse
-      if r[:dedupe] == RsvConst::Dedupe
-        dupchk << r
-      end
       row2 = programs.selectSP( db, chid: r[:chid], evid: r[:evid], skip: 0 )
       if row2.size == 0
-        (day, time, w) = Commlib::stet_to_s( r[:start], r[:end] )
-        come1 = "番組消失"
-        come2 = sprintf("%s: %s %s %s %s", come1, day, time, r[:name],r[:title])
-        DBlog::warn(db, come2 )
-        reserve.updateStat( db,r[:id],stat: RsvConst::RecStop, comment: come1 )
+        if r[:stat] != RsvConst::RecStop
+          (day, time, w) = Commlib::stet_to_s( r[:start], r[:end] )
+          come1 = "番組消失"
+          come2 = sprintf("%s: %s %s %s %s", come1, day, time, r[:name],r[:title])
+          DBlog::warn(db, come2 )
+          reserve.updateStat( db,r[:id],stat: RsvConst::RecStop, comment: come1 )
+        end
       else
         row2.each do |pro|
           if pro[:start] != r[:start] or pro[:end] != r[:end]
@@ -88,24 +86,40 @@ class Reservation
     #
     # 重複 check
     #
-    ts2 = Time.now
+    dupchk = reserve.selectSP( db, tend: Time.now.to_i, order: "order by start" )
     dupchk.each do |r|
-      # title = Commlib::deleteOptStr( r[:title] )
+      next if r[:dedupe] == RsvConst::Off
+      next if r[:type] == RsvConst::Manual
       title = r[:title].sub(/【再】/,'').sub(/^\[[無新]\]/,'')
       titleH = Commlib::makeHashKey( title )
       row1 = reserve.select( db, stat: RsvConst::NormalEnd, recpt1pid: titleH.to_i )
-      row1.each do |r2|
-        if r2[:title] == title
+      
+      if row1 == nil or row1.size == 0
+        if r[:stat] == RsvConst::NotUseA
+          come1 = "重複無効を解除"
+          (day, time, w) = Commlib::stet_to_s( r[:start], r[:end] )
+          come2 = sprintf("%s %s %s %s %s",come1, day, time, r[:name],r[:title])
+          DBlog::atte(db, come2 )
+          reserve.updateStat( db,r[:id],stat: RsvConst::Normal, comment: come1 )
+        end
+      else
+        r2 = row1.first
+        if ( r[:stat] == RsvConst::Normal or r[:stat] == RsvConst::Conflict ) and r2[:title] == title
           come1 = "重複の為無効化:"
           (day, time, w) = Commlib::stet_to_s( r[:start], r[:end] )
           come2 = sprintf("%s %s %s %s %s",come1, day, time, r[:name],r[:title])
           DBlog::atte(db, come2 )
           come1 = "重複"
-          reserve.updateStat( db,r[:id],stat: RsvConst::NotUse, comment: come1 )
-          break
+          reserve.updateStat( db,r[:id],stat: RsvConst::NotUseA, comment: come1 )
         end
       end
     end
+
+    #
+    # 予約テーブルのtitle のchk
+    #
+    reserve.titleChk( db )
+    
     #ppp("Reservation.check() P5")
 
     TunerAssignNew.new.schedule2(db)

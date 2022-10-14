@@ -120,7 +120,10 @@ create table reserve (
                                    --            2:終了   正常
                                    --            3:終了   異常
                                    --            4:録画中
-                                   --            5:録画中止
+                                   --            5:番組消失
+                                   --            6:録画中止
+                                   --            7:予約無効(自動予約)
+                                   --            9:予約無効(手動)
     comment             text,      -- コメント
     subdir              text,      -- 格納 subDir
     fname               text,      -- TS ファイル名
