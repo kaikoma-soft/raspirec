@@ -9,6 +9,14 @@
 module Commlib
 
   #
+  #  現在時刻の取得（デバックの為に過去に戻れるように。)
+  def getNow()
+    #return 1665829800 - 3600    # 2022-10-15 18:30:00 +0900
+    return Time.new.to_i
+  end
+  module_function :getNow
+
+  #
   #  Version
   #
   def getVer()

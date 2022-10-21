@@ -8,8 +8,8 @@
 module Const
 
   ProgName = "raspirec"
-  ProgVer  = "Ver 1.3.7"
-  GitTag   = "Ver1.3.7"
+  ProgVer  = "Ver 1.3.8"
+  GitTag   = "Ver1.3.8"
 
   GR   = "GR"
   GRJ  = "地デジ"
@@ -55,7 +55,7 @@ module RsvConst
   RecStop2   = 6                   # 手動操作による録画中止
   NotUseA    = 7                   # 予約無効(自動予約)
   NotUse     = 9                   # 予約無効(手動)
-  WaitStat   = [0,1]               # 予約中の status
+  WaitStat   = [0,1,7,9]           # 予約中の status
   EndStat    = [2,3,5]             # 終了した status
   RecStat    = [4]                 # 録画中の status
   ActStat    = [0,1,4]             # 有効な status

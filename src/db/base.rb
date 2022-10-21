@@ -60,9 +60,14 @@ module Base
       args << updatetime
     end
 
-    if stat != nil 
-      where << " stat = ?  "
-      args << stat
+    if stat != nil
+      if stat.class == Array
+        where << " (" + Array.new( stat.size, "stat = ? " ).join(" or ") + ") "
+        args += stat
+      else
+        where << " stat = ?  "
+        args << stat
+      end
     end
 
     if recpt1pid != nil 
@@ -80,7 +85,7 @@ module Base
     end
     
     if order == nil
-      sql += "order by id "
+      sql += " order by id "
     else
       sql += order
     end

@@ -20,7 +20,7 @@ class Timer
     reserve = DBreserve.new
     channel = DBchannel.new
     keyval = DBkeyval.new
-    now = Time.now.to_i
+    now = Commlib::getNow  #Time.now.to_i
     readyTime = now + Start_margin + 10
     nextRecTime = now + 3600 * 24
     queue = []
