@@ -198,7 +198,7 @@ class FilterM
       id2 = id == nil ? t[:id] : id
       row2 = programs.selectSP(db, proid: proids )
       row2.each do |r|
-        row3 = reserve.select(db, chid: r[:chid], evid: r[:evid] )
+        row3 = reserve.select(db, chid: r[:chid], evid: r[:evid], stat: RsvConst::WaitStat )
         if row3.size == 0
           ( jitan, timeLimitF, timeLimitV ) = Commlib::jitanSep( t[:jitan] )
           data = {
@@ -338,10 +338,8 @@ class FilterM
     else
       sql += " where p.start > ?"
     end
-    args << Time.new.to_i
+    args << Commlib::getNow()  # Time.new.to_i
 
-    #pp sql
-    #pp args
     row = db.execute( sql, *args )
     row2 = DBprograms.new.row2hash( list, row )
 
@@ -397,12 +395,12 @@ class FilterM
       end
     end
 
-    if $debug == true
-      #id = fd[:id] == nil ? 0 : fd[:id]
-      #tmp = sprintf("search3() id = %5d, result = %3d, time=%.3f",
-      #              id,r.size,Time.now - startT)
-      #DBlog::sto( tmp )
-    end
+    # if $debug == true
+    #   id = fd[:id] == nil ? 0 : fd[:id]
+    #   tmp = sprintf("search3() id = %5d, result = %3d, time=%.3f",
+    #                 id,r.size,Time.now - startT)
+    #   DBlog::sto( tmp )
+    # end
 
     r
   end
