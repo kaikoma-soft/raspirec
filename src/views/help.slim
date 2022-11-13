@@ -8,6 +8,31 @@ css:
   .title2 {
     margin: 0.5em 0.5em 0.5em 0.5em ;
   }
+  td {
+    padding: 0.3em 0.3em 0.3em 0.3em ;
+    margin:  0.3em 0.3em 0.3em 0.3em ;
+    border:  2px #aaaaaa solid;
+  }
+  .tw {
+    border:  2px #aaaaaa solid;
+    width:   20%;
+    padding: 0.5em 0.5em 0.5em 0.5em ;
+    margin:  0.5em 0.5em 0.5em 0.5em ;
+  }
+  ul.browser-default {
+    padding-left: 40px;
+  }
+  ul.browser-default li {
+    list-style-type: inherit;
+  }
+  pre {
+    overflow: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    border: 1px solid #aaaaaa;
+    padding: 0.3em 0.3em 0.3em 0.3em ;
+    margin:  0.3em 0.3em 0.3em 0.3em ;
+  }
 
 h2.title
   | 目次
@@ -18,6 +43,8 @@ h2.title
       a href="#TSnameFormat" TS ファイル名の生成ルール
     li.title2
       a href="#DevAutoDetection" デバイスファイルの自動検出
+    li.title2
+      a href="#EpgPatch" Epg データを修正する機能
 
 hr
 
@@ -130,8 +157,7 @@ div
           <pre>
           DeviceList_GR      # 地デジ チューナー デバイスファイル 
           DeviceList_BSCS    # BS/CS                  〃
-          DeviceList_GBC     # 地デジ/BS/CS           〃
-          </pre>
+          DeviceList_GBC     # 地デジ/BS/CS           〃       </pre>
           ただし自動認識するデバイスファイル名は次のものに限る。
         table
           tr 
@@ -238,4 +264,80 @@ div
                 /dev/dvb/adapter7/frontend0
             td -
 
+    li.title
+      a name="EpgPatch" Epg データを修正する機能
 
+    ul.collection.with-header
+      li.collection-header
+        |  
+        |  技術的な詳細は不明だが、環境により EPG データの正規のスロット番号で受信出来ない場合がある。<p>
+        |   例： 放送大学ex (BS11_2, 231ch) は
+        |  物理チャンネル 11,スロット番号 2 だが、スロット0,1 が停波して空いた為
+        |  スロット番号 0 として、ずらして選局しなければならない。
+        p
+        |
+          現状で判明している、ズレが発生する／しないの条件は下記の通り。
+        table.tw 
+          tr
+            td   px4_drv + recpt1 
+            td ずれる 
+          tr
+            td  pt1_drv + recpt1 
+            td  ずれる
+          tr 
+            td earth_pt1 + recdvb
+            td ずれない
+          
+        p
+        |  このズレを補正するために EpgPatch ディレクトリの下に補正値を設定し
+        | config.rb に "EpgPatchEnable = true" を記述する。
+        p
+        |
+            補正値ファイルのフォーマットは次の通り。
+
+        ul.browser-default
+          li.browser-default ファイル名の拡張子は .dat とする。
+             <br>       例 2020-04-01.dat
+
+          li.browser-default
+            |  ファイルに記述する書式は、
+
+            ul.browser-default
+               li.browser-default # の後ろはコメント
+               li.browser-default チャンネルID は [] で囲む<br> 例 [BS_101]
+               li.browser-default 書き換え対象を キーワード + 空白文字 + 値 で指定する
+                   <br> 例 "stinfo_slot 1"
+               li.browser-default 
+                 | 書き換え可能なキーワード は以下のもの
+                 table.tw 
+                   tr
+                     td tsid
+                     td transport_stream_id
+                   tr
+                     td onid
+                     td original_network_id
+                   tr
+                     td svid
+                     td service_id
+                   tr
+                     td name
+                     td 放送局名
+                   tr
+                     td stinfo_tp
+                     td トランスポート番号
+                   tr
+                     td stinfo_slot
+                     td スロット番号
+
+
+          li.browser-default 記述例
+            <pre>
+            [BS_231]                # 放送大学ex のスロット番号を 0 に
+            stinfo_slot    0
+
+            [BS_232]                # 放送大学on のスロット番号を 0 に
+            stinfo_slot    0
+
+            [BS_251]                # ＢＳ釣りビジョンのスロット番号を 1 に
+            stinfo_slot    1        </pre>
+          li.browser-default 変更した場合は、プログラムの再起動とEPG更新が必要。
