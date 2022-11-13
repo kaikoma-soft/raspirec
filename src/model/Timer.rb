@@ -401,6 +401,9 @@ class Timer
         begin
           Thread.current[:oldet2] = endTime2
           ( endTime1, endTime2 ) = ReservExt( fname,pid,endTime1,endTime2, data )
+          if Thread.current[:oldet2] > endTime2
+            DBlog::stoD("Warn: 終了時間が早まりました。 #{Time.at(endTime2).to_s}")
+          end
           if Thread.current[:oldet2] != endTime2
             DBlog::stoD("ReservExt endTime diff ")
             raise ReservExtOn
