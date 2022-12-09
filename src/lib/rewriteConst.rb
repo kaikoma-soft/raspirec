@@ -14,7 +14,9 @@ def constRewrite( name, val)
 end
 
 
-
+#  
+#  チューナーデバイスの自動設定
+#
 if Object.const_defined?(:RewriteConst) == true and
   RewriteConst == true and
   Object.const_defined?(:DevAutoDetection) == true and
@@ -26,6 +28,21 @@ if Object.const_defined?(:RewriteConst) == true and
       constRewrite( "DeviceList_GBC",  data.listGBC )
     else
       DBlog::error(nil,"デバイスの自動検出に失敗しました。 DevAutoDetection を false にして、手動で設定して下さい。")
+    end
+  end
+end
+
+#
+# EpgPatchEnable = :auto の場合の自動設定
+#
+if ( Object.const_defined?(:EpgPatchEnable) == true ) &&
+   EpgPatchEnable == :auto
+
+  if ( Object.const_defined?(:Recpt1_cmd) == true )
+    if Recpt1_cmd =~ /recdvb/
+      constRewrite( "EpgPatchEnable", false )
+    else
+      constRewrite( "EpgPatchEnable", true )
     end
   end
 end

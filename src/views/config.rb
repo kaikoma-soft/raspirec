@@ -146,8 +146,9 @@ TitleRegex        「自動予約」ボタンを押して番組検索に遷移�
 SearchStringRegex  「自動予約」ボタンを押して番組検索に遷移した時に、
 +                 番組タイトルから「検索文字列」を生成する為の、余計な文字を
 +                 削除する正規表現の配列
-EpgPatchEnable    EPGPatch機能を有効にする。 false = 無効。デフォルトは有効<br>
-+                 dvbドライバー + recdvb の場合は false に設定する。
+EpgPatchEnable    EPGPatch機能の制御。
++                 true/false/:auto = 有効/無効/自動設定<br>
++                 詳細は<a href="/help#EpgPatch"> 補足説明<a>を参照
 EOS
   }
 
