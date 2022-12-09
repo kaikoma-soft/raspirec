@@ -66,7 +66,7 @@ class PacketChk < FileCopy      # FileCopy を流用
           abNormal << [ l[:id], l[:fname] ]
         end
       else
-        tmp = sprintf("PacketChk 失敗: %s", l[:fname] )
+        tmp = sprintf("PacketChk 失敗(not found): %s", l[:fname] )
         DBlog::sto( tmp )
         abNormal << [ l[:id], l[:fname] ]
       end
@@ -114,6 +114,8 @@ class PacketChk < FileCopy      # FileCopy を流用
         end
       end
     end
+    size = File.size( logfname )
+    DBlog::stoD( "PacketCheck end #{drer},#{pcr},#{speed},#{size}")
     return [ drer,pcr,speed]
   end
 end

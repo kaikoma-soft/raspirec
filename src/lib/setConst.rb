@@ -92,4 +92,3 @@ else
   Object.const_set("PacketChkRun", false )
 end
 
-

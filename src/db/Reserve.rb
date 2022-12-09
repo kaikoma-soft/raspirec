@@ -377,5 +377,20 @@ class DBreserve
     end
   end
 
+  #
+  #   二重録画の検出
+  #
+  def dupRecChk( db )
+    sql = "select title from reserve where stat = 2 GROUP BY title,evid,chid  HAVING COUNT(title) > 1"
+    row = db.execute( sql)
+    if row != nil and row.size > 0
+      row.each do |r|
+        str = sprintf("Error: dupRecChk() %s",r[0] )
+        DBlog::sto(str)
+      end
+    end
+    
+  end
+  
   
 end

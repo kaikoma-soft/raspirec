@@ -289,13 +289,24 @@ div
             td ずれない
           
         p
-        |  このズレを補正するために EpgPatch ディレクトリの下に補正値を設定し
-        | config.rb に "EpgPatchEnable = true" を記述する。
-        p
-        |
-            補正値ファイルのフォーマットは次の通り。
+        |  このズレを補正するために EpgPatch ディレクトリの下に
+        |   補正値ファイルを置く。そのフォーマットは次の通り。
 
         ul.browser-default
+          li.browser-default
+            | 補正値ファイルを読み込むかは config.rb 中の EpgPatchEnable で制御する。
+            table.tw
+              tr
+                td true
+                td 読み込みを行う
+              tr
+                td false
+                td 読み込みを行わない
+              tr
+                td 
+                  | :auto
+                td 定数 Recpt1_cmd が "recdvb" ならば false, それ以外は true に再設定する。
+
           li.browser-default ファイル名の拡張子は .dat とする。
              <br>       例 2020-04-01.dat
 
@@ -341,3 +352,4 @@ div
             [BS_251]                # ＢＳ釣りビジョンのスロット番号を 1 に
             stinfo_slot    1        </pre>
           li.browser-default 変更した場合は、プログラムの再起動とEPG更新が必要。
+

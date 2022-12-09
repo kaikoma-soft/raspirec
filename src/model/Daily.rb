@@ -30,7 +30,18 @@ class Daily
 
     threshold = (Time.now - ( 24 * 3600 )).to_i
     if @@lastTime < threshold
-
+      
+      #
+      #   二重録画のチェック(デバック時のみ)
+      #
+      if $debug == true
+        DBlog::sto("++++  二重録画のチェック  ++++")
+        DBaccess.new().open( ) do |db|
+          reserve = DBreserve.new
+          reserve.dupRecChk( db )
+        end
+      end
+      
       #
       #  古いデータの削除
       #
