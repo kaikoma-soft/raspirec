@@ -488,7 +488,7 @@ class Timer
     #
     # 番組途中のタイトル変更に伴う、TSファイル名変更
     #
-    DBaccess.new.open( ) do |db|
+    DBaccess.new.open( tran: true ) do |db|
       row = reserve.selectSP( db, id: data[:id] )
       if row == nil or row.size == 0
         pp "error"
@@ -541,8 +541,9 @@ class Timer
         reserve = DBreserve.new
         programs = DBprograms.new
 
+        st = Time.now.to_i - 3600 * 24 # evid が重複する可能性があるので時間で制限
         DBaccess.new().open do |db|
-          row = reserve.select( db, chid: data[:chid], evid: data[:evid] )
+          row = reserve.select( db, chid: data[:chid], evid: data[:evid], tstart: st )
           if row.size > 0
             newEndTime1 = row[0][:end]
             newEndTime2 = endTImeCalc( row[0] )
