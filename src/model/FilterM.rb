@@ -190,15 +190,15 @@ class FilterM
     filterResult = DBfilterResult.new
     programs = DBprograms.new
     reserve = DBreserve.new
+    st = Time.now.to_i - 3600 * 24
 
-    now = Time.now.to_i
     filter.select( db, id: id, type: FilConst::AutoRsv ).each do |t|
       row1 = filterResult.select( db, pid: t[:id] )
       proids = row1.map{|v| v[:rid] }
       id2 = id == nil ? t[:id] : id
       row2 = programs.selectSP(db, proid: proids )
       row2.each do |r|
-        row3 = reserve.select(db, chid: r[:chid], evid: r[:evid], stat: RsvConst::WaitStat )
+        row3 = reserve.select(db, chid: r[:chid], evid: r[:evid], tstart: st, stat: RsvConst::WaitStat )
         if row3.size == 0
           ( jitan, timeLimitF, timeLimitV ) = Commlib::jitanSep( t[:jitan] )
           data = {

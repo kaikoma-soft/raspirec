@@ -43,12 +43,6 @@ module Base
     elsif chid != nil and evid != nil
       where << " chid = ? and evid = ? "
       args += [ chid, evid ]
-    elsif tstart != nil and tend != nil
-      where << " ( ? < end and start < ? ) "
-      args += [ tstart, tend ]
-    elsif tstart == nil and tend != nil
-      where << " ? < end "
-      args << tend
     elsif chid != nil
       where << " chid = ? "
       args << chid
@@ -58,8 +52,50 @@ module Base
     elsif updatetime != nil 
       where << " updatetime < ?  "
       args << updatetime
+    elsif evid != nil
+      where << " evid = ? "
+      args << evid
+    # else # デバック用
+    #   if tstart == nil and tend == nil and stat == nil
+    #     DBlog::sto( "Error: makeSelectSql()" )
+    #     if $debug == true
+    #       DBlog::sto( caller(0)[0..9].join("\n" ))
+    #     end
+    #   end
     end
 
+    # ## デバック用
+    # found = []
+    # %W( id pid type name chid keyid updatetime evid tstart tend ).each do |n|
+    #   r = if eval( "defined? #{n}" )
+    #         eval( n )
+    #       else
+    #         nil
+    #       end
+    #   found << n if r != nil
+    # end
+    # if found.size > 1
+    #   tmp = found.join(",") 
+    #   if tmp != "chid,evid" and
+    #     tmp != "chid,evid,tstart" and
+    #     tmp != "id,type" and
+    #     tmp = sprintf("@@@: makeSelectSql %d %s\n%s\n",found.size, found.join(","),caller(0).join("\n"))
+    #     DBlog::sto( tmp )
+    #   end
+    # end
+                                                               
+    if tstart != nil and tend != nil
+      where << " ( ? < end and start < ? ) " # 番組表の top と Bottom
+      args += [ tstart, tend ]
+    elsif tstart == nil and tend != nil
+      where << " ? < end "
+      args << tend
+    elsif tstart != nil and tend == nil
+      where << " ? < start "
+      args << tstart
+    end
+
+    
     if stat != nil
       if stat.class == Array
         where << " (" + Array.new( stat.size, "stat = ? " ).join(" or ") + ") "
