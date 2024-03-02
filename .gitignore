@@ -1,1 +1,3 @@
 tmp/epg.db
+.ruby-version
+.gitignore
