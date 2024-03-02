@@ -109,6 +109,15 @@ tools.each do |tool|
   end
 end
 
+#
+#  チューナーデバイスの読み書き権限のチェック
+#
+devList =  ( DeviceList_GR + DeviceList_BSCS + DeviceList_GBC )
+DeviceChk.new.devRWchk( devList )
+
+#
+#  メモリ使用量のモニタ
+#
 if $debug == true and Debug_mem == true
   Thread.new do
     while true

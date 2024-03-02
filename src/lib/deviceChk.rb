@@ -31,6 +31,36 @@ class DeviceChk
     end
     return @data
   end
+
+  #
+  # パーミッションのチェック
+  #
+  def devRWchk( list )
+    list.sort.each do |devfn|
+      if devfn =~ /frontend0/
+        base = File.dirname( devfn )
+        chkRW( File.join( base,"demux0" ))
+        chkRW( File.join( base,"dvr0" ) )
+        chkRW( devfn )
+      else
+        chkRW( devfn )
+      end
+    end
+  end
+
+  def chkRW( fn )
+    if FileTest.chardev?( fn ) or FileTest.blockdev?( fn )
+      if FileTest.writable?( fn ) == true and FileTest.readable?( fn ) == true
+        # DBlog::sto("device R/W check OK #{fn}")
+      else
+        DBlog::error(nil, "Error: device R/W check NG #{fn}")
+      end
+    else
+      DBlog::error(nil, "Error: device file not found #{fn}")
+    end
+  end
+
+  
 end
 
 
@@ -88,9 +118,8 @@ class DeviceChkData
     makeDevName( "dvb/adapter%d/frontend0", numS2, BC ) # dvb
 
     @total = @listGR.size +  @listBC.size + @listGBC.size
-    
-  end
 
+  end
 
 end
 
