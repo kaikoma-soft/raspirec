@@ -1,4 +1,14 @@
 
+ver 1.4.3         2024/06/01
+  * ubuntu 24.04 LTS 対応
+    ubuntu 24.04 LTS では、パッケージの ruby-gtk2 がインストール出来な
+    くなっている。その結果それに依存した raspirecTV.rb が動作しなくな
+    るので、gtk2 -> gtk3 変更対応を行った。(機能は変わらず)
+       https://github.com/kaikoma-soft/raspirec/issues/11
+
+    その為 raspirecTV.rb をお使いの方は ruby-gtk3 をインストールする必
+    要があります。
+
 ver 1.4.2         2024/03/01
   * 機能追加
     * 起動時にチューナーデバイスの読み書き権限のチェックをするように。

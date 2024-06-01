@@ -5,7 +5,7 @@
 #  mpvモニタの GUI独立版
 #
 
-require 'gtk3'
+require 'gtk2'
 
 =begin
 TODO
@@ -31,6 +31,7 @@ class RaspirecTV
 
     @ws = {}                                  # ウィジェットの格納
     @ta = TunerArray.new                      # チューナー配列
+    @tblarg = [ Gtk::FILL,Gtk::EXPAND, 6, 8 ] # table属性
     @ch2num = {}                              # chlist の保存
     @prog   = Prog.new()                      # 番組情報
     @chinfo = ChList.new()                    # チャンネル情報
@@ -39,7 +40,7 @@ class RaspirecTV
     @pto = nil                                # 番組表オプションの値
     @page2name = {}                           # page -> pageName 変換
     @dialog = false                            # ダイアログ中は ch 変更なし
-
+    
     setup()
     dataSetUp()
     worker()
@@ -294,32 +295,16 @@ class RaspirecTV
       Gtk::Settings.default.gtk_font_name= $arg.font
     end
     
-    vbox1 = Gtk::Box.new(:vertical, 0 ) 
+    vbox1 = Gtk::VBox.new(false, 0)
     window.add( vbox1 )
 
     @ws[:note] = Gtk::Notebook.new( )
-    @ws[:note].margin = 5
-    vbox1.pack_start(@ws[:note], :expand => true, :fill => true, :padding => 5)
-  
+    vbox1.pack_start(@ws[:note], true, true, 5)
     @ws[:note].scrollable = true
     @ws[:note].signal_connect("switch-page") do
       $queue.push($event.new(:status,nil,nil))
     end
 
-    def attach( pw, lw, rw, y )
-      grid_attach( pw, lw, rw, y )
-    end
-
-    def table_attach( pw, lw, rw, y )
-      pw.attach( lw, 0, 1, y, y+1 )
-      pw.attach( rw, 1, 2, y, y+1 )
-    end
-
-    def grid_attach( pw, lw, rw, y )
-      pw.attach( lw, 0, y, 1, 1 ) # 左
-      pw.attach( rw, 1, y, 1, 1 ) # 右
-    end
-    
     @ta.each_with_index do |t1,n|
       pageName = t1.name
       @ws[pageName] ||= {}
@@ -329,52 +314,32 @@ class RaspirecTV
       ######  チューナー選択 TAB ########
       label =  Gtk::Label.new( " #{pageName} " )
       
-      tbl = Gtk::Grid.new
-      tbl.row_spacing    = 10
-      tbl.column_spacing = 10
-      tbl.margin_top     = 20
-      tbl.margin_bottom  = 20
-      
+      tbl = Gtk::Table.new(4, 2, false)
       @ws[:note].append_page(tbl, label )
       @ws[pageName][:tab] = tbl
       
       ######  デバイス  ########
       y = 0
-      label1 = Gtk::Label.new("デバイス")
+      label = Gtk::Label.new("デバイス")
+      tbl.attach( label, 0, 1, y, y+1, *@tblarg )
+      hbox = Gtk::HBox.new(false, 0)
+      tbl.attach( hbox, 1, 2, y, y+1, *@tblarg )
 
-      hbox = Gtk::Box.new(:horizontal, 0 )
-      label2 = Gtk::Label.new( t1.devfn )
-      label2.set_xalign(0)
-      hbox.pack_start( label2 )
-      
-      label3 = Gtk::Label.new( "-" )
-      @ws[pageName][:stat] = label3
-      hbox.pack_start( label3, :padding => 10 )
-
-      attach( tbl, label1, hbox, y )
-      
-      ######  ディスプレイ On/Off  ########
-      y += 1
-      label = Gtk::Label.new( "ディスプレイ")
-      bon = Gtk::ToggleButton.new( :label => "On/Off")
-      @ws[pageName][:mpv] = bon
-      hbox = Gtk::Box.new(:horizontal, 0 )
-      hbox.pack_start(bon, :padding => 10)
-      bon.signal_connect("toggled") do |bon|
-        if bon.active? == true
-          $queue.push($event.new(:mpvOpen,page, t1))
-        else
-          $queue.push($event.new(:mpvStop,page, t1))
-        end
-      end
-      attach( tbl, label, hbox, y )
+      label = Gtk::Label.new( t1.devfn )
+      label.set_xalign(0)
+      hbox.pack_start( label, false, false, 5)
+      label = Gtk::Label.new( "-" )
+      @ws[pageName][:stat] = label
+      hbox.pack_start( label, false, false, 5)
 
       ######  放送局選択  ########
       y += 1
       label = Gtk::Label.new("選局")
-      hbox = Gtk::Box.new(:horizontal, 0)
+      tbl.attach( label, 0, 1, y, y+1, *@tblarg )
+      hbox = Gtk::HBox.new(false, 0)
+      tbl.attach( hbox, 1, 2, y, y+1, *@tblarg )
 
-      cb = Gtk::ComboBoxText.new
+      cb = Gtk::ComboBox.new
       @ws[pageName][:cb] = cb
       cb.set_width_request(250)
       setChList( t1, cb )
@@ -386,25 +351,24 @@ class RaspirecTV
         
         $queue.push($event.new(:chChange, page, t1))
       end
-      attach( tbl, label, hbox, y )
       
-      hbox.pack_start(@ws[pageName][:cb], :padding => 10)
+      hbox.pack_start(@ws[pageName][:cb], true, true, 0)
 
-      bon = Gtk::Button.new( :label => "↑")
-      hbox.pack_start( bon, :padding => 5)
+      bon = Gtk::Button.new("↑")
+      hbox.pack_start( bon, false, false, 5)
       bon.signal_connect("clicked") do
         upDown( t1, cb, :up )
       end
-      bon = Gtk::Button.new( :label => "↓")
-      hbox.pack_start( bon, :padding => 5)
+      bon = Gtk::Button.new("↓")
+      hbox.pack_start( bon, false, false, 5)
       bon.signal_connect("clicked") do
         upDown( t1, cb, :down )
       end
      
       if $arg.round != nil
-        bon = Gtk::ToggleButton.new( :label => "巡回")
+        bon = Gtk::ToggleButton.new("巡回")
         @ws[pageName][:round] = bon
-        hbox.pack_start( bon, :padding => 5)
+        hbox.pack_start(bon, false, false, 5)
         bon.signal_connect("toggled") do |bon|
           if bon.active? == true
             @ws[pageName][:roundTH] = Thread.new do
@@ -424,61 +388,75 @@ class RaspirecTV
       
       ######  番組名  ########
       y += 1
-      label1 = Gtk::Label.new("番組名")
+      label = Gtk::Label.new("番組名")
+      tbl.attach( label, 0, 1, y, y+1, *@tblarg )
       
       tmp = @prog.getData( t1.chid )
       tmp = tmp == nil ? "-" : tmp.prog_name
+      label = Gtk::Label.new( tmp)
+      label.set_xalign(0)
+      label.set_max_width_chars(25)
+      @ws[pageName][:progname] = label
+      tbl.attach( label, 1, 2, y, y+1, *@tblarg )
 
-      label2 = Gtk::Label.new( tmp )
-      label2.set_xalign(0)
-      label2.set_max_width_chars(25)
-      label2.line_wrap = true
-      label2.set_hexpand( true )
-      @ws[pageName][:progname] = label2
 
-      attach( tbl, label1, label2, y )
-
+      ######  ディスプレイ On/Off  ########
+      y += 1
+      label = Gtk::Label.new("ディスプレイ")
+      tbl.attach( label, 0, 1, y, y+1, *@tblarg )
+      bon = Gtk::ToggleButton.new("On/Off")
+      @ws[pageName][:mpv] = bon
+      hbox = Gtk::HBox.new( false, 0 )
+      hbox.pack_start(bon, false, false, 10)
+      tbl.attach( hbox, 1, 2, y, y+1, *@tblarg )
+      bon.signal_connect("toggled") do |bon|
+        if bon.active? == true
+          $queue.push($event.new(:mpvOpen,page, t1))
+        else
+          $queue.push($event.new(:mpvStop,page, t1))
+        end
+      end
     end
 
     @ws[:sb] = Gtk::Statusbar.new
-    vbox1.pack_start( @ws[:sb], :padding => 1)
+    vbox1.pack_start( @ws[:sb], false, false, 5)
     
-    hbox = Gtk::Box.new(:horizontal, 0 )
-    vbox1.pack_start(hbox, :padding => 1)
+    hbox = Gtk::HBox.new( false, 0 )
+    vbox1.pack_start(hbox, false, false, 5)
 
     ######  番組概要  ########
-    bon3 = Gtk::Button.new(:label => "番組概要")
-    hbox.pack_start(bon3, :expand => true, :fill => true, :padding => 10)
+    bon3 = Gtk::Button.new("番組概要")
+    hbox.pack_start(bon3, true, true, 10)
     bon3.signal_connect("clicked") do
       para = getPara()
       prog_detail( para, window )
     end
 
     ######  ミニ番組表  ########
-    bon3 = Gtk::Button.new( :label => "ミニ番組表")
-    hbox.pack_start(bon3, :expand => true, :fill => true, :padding => 10)
+    bon3 = Gtk::Button.new("ミニ番組表")
+    hbox.pack_start(bon3, true, true, 10)
     bon3.signal_connect("clicked") do
       page = @ws[:note].page
       miniPrgTbl( @ta[ page ].name, window )
     end
     
     ######  番組表  ########
-    bon3 = Gtk::Button.new( :label => "番組表")
-    hbox.pack_start(bon3, :expand => true, :fill => true, :padding => 10)
+    bon3 = Gtk::Button.new("番組表")
+    hbox.pack_start(bon3, true, true, 10)
     bon3.signal_connect("clicked") do
       page = @ws[:note].page
       prgTbl( @ta[ page ].name, window )
     end
     
     ######  終了  ########
-    bon3 = Gtk::Button.new( :label => "終了")
-    hbox.pack_start(bon3, :expand => true, :fill => true, :padding => 10)
+    bon3 = Gtk::Button.new("終了")
+    hbox.pack_start(bon3, true, true, 10)
     bon3.signal_connect("clicked") do
       window.destroy
       Gtk.main_quit
       exit!()
     end
-
+    
     if $arg.w != nil and $arg.h != nil
       window.set_size_request( $arg.w, $arg.h)
     end
@@ -491,10 +469,8 @@ class RaspirecTV
       Gtk.main
       sleep( 0.1 )
     end
-
   end
 
-  
   #
   #  パラメータの取得
   #
@@ -600,25 +576,20 @@ class RaspirecTV
   #
   def prog_detail( para, window )
     prog_detail = @prog.getDetail( para[:chid] )
-
-    d = Gtk::Dialog.new( :title => "番組概要",
-                         :parent => window,
-                         :flags => [:modal ],
-                         :buttons => nil)
-    
+    d = Gtk::Dialog.new("番組概要",window, Gtk::Dialog::MODAL )
     @dialog = true
 
     sw = Gtk::ScrolledWindow.new
-    sw.set_policy(:automatic, :automatic)
-    sw.set_size_request(600, 400)
-    
+    sw.set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC)
+
     text = Gtk::TextView.new
     text.set_editable( false )
-    text.set_wrap_mode( :char )
+    text.set_wrap_mode(Gtk::TextTag::WRAP_CHAR)
     text.buffer.set_text( prog_detail )
+    text.set_size_request(600, 400)
 
     sw.add( text )
-    d.child.add(sw)
+    d.vbox.add(sw)
     d.add_buttons(["閉じる", 1])
     d.show_all
     d.run
@@ -678,10 +649,7 @@ class RaspirecTV
     band = para[:band]
     progdata = @prog.data
 
-    d = Gtk::Dialog.new( :title => "ミニ番組表",
-                         :parent => window,
-                         :flags => [:modal ],
-                         :buttons => [["閉じる", :ok]] )
+    d = Gtk::Dialog.new("ミニ番組表",window, Gtk::Dialog::MODAL )
     d.set_size_request(600, 300)
     @dialog = true
 
@@ -721,20 +689,19 @@ class RaspirecTV
     
     sw = Gtk::ScrolledWindow.new
     sw.add_with_viewport(view)
-    sw.set_size_request(600, 300)
     
-    d.child.add(sw)
+    d.vbox.add(sw)
+    d.add_buttons(["閉じる", 1])
     d.show_all
-
-    response = d.run
-    if response == :ok
-      begin
-        d.destroy if d != nil
-      rescue
-        dlog( "destroy error" )
+    d.run do |response|
+      if response == 1          # 閉じる
+        begin
+          d.destroy if d != nil
+        rescue
+          dlog( "destroy error" )
+        end
       end
     end
-
     @dialog = false
   end
   
