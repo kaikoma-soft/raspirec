@@ -1,4 +1,11 @@
 
+ver 1.4.4         2024/06/23
+
+  * 機能追加
+    * 起動時に DataDir, LogDir, JsonDir, DBDir, TSDir, StreamDir に、
+      ファイルの書き込みが出来るかのチェックを追加。
+      (エラーメッセージのみで、異常終了にはしない。)
+
 ver 1.4.3         2024/06/01
   * ubuntu 24.04 LTS 対応
     ubuntu 24.04 LTS では、パッケージの ruby-gtk2 がインストール出来な
