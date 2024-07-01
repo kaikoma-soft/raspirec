@@ -33,7 +33,6 @@ class Control
       subdir = File.dirname( fname )
       errmsg = nil
       fc = FileCopy.new
-      #( speed, errmsg )  = fc.ssh_nc( TSFT_toDir, subdir, from )
       ( speed, errmsg )  = fc.scp( TSFT_toDir, subdir, from )
 
       if errmsg == nil

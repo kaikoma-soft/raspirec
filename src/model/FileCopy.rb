@@ -117,68 +117,6 @@ class FileCopy
   end
 
   
-  #
-  #  ssh & nc によるファイル転送
-  #
-  def ssh_nc( toDir, subDir, fromFname )
-    if subDir != nil and subDir != ""
-      toDir2  = Shellwords.escape(toDir + "/" + subDir)
-    else
-      toDir2  = Shellwords.escape(toDir)
-    end
-    fname   = Shellwords.escape( File.basename( fromFname ))
-    
-    
-    cmds = [ %Q(test -d #{toDir2} || mkdir -p #{toDir2}),
-             sprintf("%s -l %s > %s/%s &",TSFT_ncbin,TSFT_ncport,toDir2,fname ),
-           ]
-    Net::SSH.start( TSFT_host, TSFT_user ) do |ssh|
-      cmds.each do |cmd|
-        cmd.force_encoding("ASCII-8BIT")
-        ssh.exec!( cmd )
-      end
-    end
-
-    sleep 5
-    st = Time.now
-    begin
-      digest = Digest::MD5.new
-      sock = TCPSocket.open( TSFT_host, TSFT_ncport )
-      bsize = 1024 * 256
-      outbuf = "x" * bsize;
-      
-      File.open( fromFname, "r") do |fpr|
-        while fpr.read( bsize, outbuf) != nil
-          sock.write(outbuf)
-          digest.update(outbuf)
-        end
-      end
-      sock.close
-    rescue
-      return [ 0, "write error" ]
-    end
-    
-    Net::SSH.start( TSFT_host, TSFT_user ) do |ssh|
-      str = "#{TSFT_md5bin} #{toDir2}/#{fname}".force_encoding("ASCII-8BIT")
-      ssh.exec!( str ).each_line do |line|
-        if line =~ /(\h{32})\s/
-          md5 = $1
-          if digest.hexdigest != md5
-            return [ 0, "MD5 chk fail" ]
-          end
-        end
-      end
-    end
-
-    lap = Time.now - st
-    fs = File.size( fromFname )
-    fs2 = fs / 2 ** 20
-    speed = fs2 / lap
-    #printf( "lap = %.2f  fileSize = %d Mbyte speed = %d Mbyte/sec\n",lap, fs2, speed )
-    return  [ speed, nil ]
-    
-  end
-
 
   #
   #  scp によるファイル転送
@@ -186,30 +124,36 @@ class FileCopy
   def scp( toDir, subDir, fromFname )
 
     st = Time.now
-
-    toDir2  = Shellwords.escape(toDir)
+    toDir2  = toDir
     if subDir != nil and subDir != ""
-      toDir3  = Shellwords.escape(toDir + "/" + subDir)
-    else
-      toDir3  =  toDir2
+      toDir2  = File.join( toDir, subDir )
     end
-    fname = Shellwords.escape( fromFname  )
+    toPath = File.join( toDir2, File.basename( fromFname ))
+    toDir3 = Shellwords.shellescape( toDir2 )
 
     errmsg = nil
-    mkdir = %Q(test -d #{toDir3} || mkdir -p #{toDir3})
+
+    def ssh_exec( ssh, cmd, n = 0 )
+      #DBlog::stoD( "scp#{n}a: " + cmd.to_s )
+      ret = ssh.exec!( cmd )
+      #DBlog::stoD( "scp#{n}b: " + ret )
+      return ret
+    end
+    
     begin
       Net::SSH.start( TSFT_host, TSFT_user ) do |ssh|
-        ret = ssh.exec!( "echo testOK" )
+        ret = ssh_exec( ssh, "echo testOK" )
         if ret =~ /testOK/
-          cmd = "test -d #{toDir2} && echo found"
-          ret = ssh.exec!( cmd.force_encoding("ASCII-8BIT") )
-          unless ret =~ /found/
+          cmd = %Q( test -d #{toDir} && echo OK )
+          ret = ssh_exec( ssh, cmd, 1 )
+          unless ret =~ /OK/
             errmsg = "転送先 Dir がありません。"
           else
-            ssh.exec!( mkdir.force_encoding("ASCII-8BIT") )
-            cmd = "test -d #{toDir3} && echo found"
-            ret = ssh.exec!( cmd.force_encoding("ASCII-8BIT") )
-            unless ret =~ /found/
+            cmd = %Q( test -d #{toDir3} || mkdir -p #{toDir3} )
+            ret = ssh_exec( ssh, cmd, 2 )
+            cmd = %Q( test -d #{toDir3} && echo OK )
+            ret = ssh_exec( ssh, cmd, 3 )
+            unless ret =~ /OK/
               errmsg = "転送先 Dir がありません。"
             end
           end
@@ -226,10 +170,13 @@ class FileCopy
       return  [ 0, errmsg ]
     end
 
-    cmd = %Q(scp #{fname} #{TSFT_user}@#{TSFT_host}:"#{toDir3}")
-    ret = system( cmd )
-    if ret != true
-      DBlog::debug( nil,"error scp cmd=#{cmd}") 
+    cmd = [ "scp", fromFname, "#{TSFT_user}@#{TSFT_host}:#{toPath}" ]
+    #DBlog::stoD( "scp: " + cmd.join(" ") )
+    pid = spawn( *cmd )
+    paid, status = Process.wait2( pid )
+    DBlog::stoD( "status: " + status.to_s )
+    if status.exitstatus != 0
+      DBlog::sto( "error scp cmd=#{cmd}") 
       return  [ 0, "scp error" ]
     end
     

@@ -1,4 +1,10 @@
 
+ver 1.4.5         2024/07/01
+  * Raspberry Pi OS (Debian version: 12 (bookworm)) 対応
+    Buster -> bookworm に OS を update したところ、scpによるファイル転
+    送時に、ファイル名が文字化けする現象が起きたので、その対応。
+    ＃ 多分 locale 絡みだと思うが、旧環境が残っていないので詳細は不明
+
 ver 1.4.4         2024/06/23
 
   * 機能追加
