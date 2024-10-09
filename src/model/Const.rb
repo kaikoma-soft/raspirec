@@ -8,7 +8,7 @@
 module Const
 
   ProgName = "raspirec"
-  ProgVer  = "Ver 1.4.5"
+  ProgVer  = "Ver 1.4.6"
   GitTag   = "Ver1.4.5"
 
   GR   = "GR"

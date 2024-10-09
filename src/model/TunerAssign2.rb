@@ -192,7 +192,7 @@ class TunerAssignNew
           if n > ( Total_tuner_limit - 1 )
             t[:comment] = "トタール制限"
             t[:stat] = RsvConst::Conflict
-            r[:tunerNum] = 1
+            t[:tunerNum] = 1
           end
         end
       end
