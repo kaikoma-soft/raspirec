@@ -531,6 +531,11 @@ class GetEPG
       BS_EPG_channel.each {|v| chs << v if chlist[v] == nil }
       CS_EPG_channel.each {|v| chs << v if chlist[v] == nil }
     end
+    if GBC_tuner_num > 0
+      GR_EPG_channel.each {|v| chs << v if chlist[v] == nil }
+      BS_EPG_channel.each {|v| chs << v if chlist[v] == nil }
+      CS_EPG_channel.each {|v| chs << v if chlist[v] == nil }
+    end
     
     return chs
   end
