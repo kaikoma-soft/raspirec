@@ -47,7 +47,6 @@ def childWait()
   end
 end
 
-#$mpvMon = MpvMonMain.new
 $tunerArray = TunerArray.new
 
 #

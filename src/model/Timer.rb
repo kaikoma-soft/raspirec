@@ -273,18 +273,6 @@ class Timer
   end
 
 
-
-  #
-  #  recpt1 のチャンネル指定
-  #
-  def makeCh( data )
-    r = []
-    phch = Commlib::makePhCh( data )
-    r << phch
-    r += [ "--sid", data[:svid].to_s + ",epg" ]
-    r
-  end
-
   #
   #   duration の計算
   #
@@ -324,7 +312,9 @@ class Timer
   #
   def recStart( data )
 
-    ch = makeCh( data )
+    phch = Commlib::makePhCh( data )
+    sid  = [ data[:svid].to_s, "epg" ]
+    
     startT = data[:start] - Start_margin
 
     now = Time.now.to_i
@@ -350,15 +340,13 @@ class Timer
       end
 
       duration2 = AutoRecExt == true ? duration * 2 : duration
-      arg = [ ]
-      arg += Recpt1_opt if Recpt1_opt != nil
-      arg += ch + [ duration2.to_s, fname ]
       waitT = retryC + 2
       if data[:svid] == 101 or data[:svid] == 102 # NHK BS は遅い
         waitT = retryC + 5
       end
 
       recpt1 = Recpt1.new
+      arg = recpt1.makeCmd( phch, duration2, outfn: fname, sid: sid )
       pid = recpt1.recTS( arg, fname, waitT, finish.to_i )
       DBlog::stoD( "pid=#{pid}")
       DBlog::info( nil,"録画開始: #{data[:title]} : pid=#{pid}")

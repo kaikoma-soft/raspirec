@@ -15,7 +15,7 @@ css:
   }
   .tw {
     border:  2px #aaaaaa solid;
-    width:   20%;
+    width:   30%;
     padding: 0.5em 0.5em 0.5em 0.5em ;
     margin:  0.5em 0.5em 0.5em 0.5em ;
   }
@@ -265,18 +265,18 @@ div
             td -
 
     li.title
-      a name="EpgPatch" Epg データを修正する機能
+      a name="EpgPatch" Epg データを自動で修正する機能
 
     ul.collection.with-header
       li.collection-header
         |  
-        |  技術的な詳細は不明だが、環境により EPG データの正規のスロット番号で受信出来ない場合がある。<p>
+        |  BS放送において、環境により EPG データが示すスロット番号で受信出来ない場合がある。<p>
         |   例： 放送大学ex (BS11_2, 231ch) は
         |  物理チャンネル 11,スロット番号 2 だが、スロット0,1 が停波して空いた為
-        |  スロット番号 0 として、ずらして選局しなければならない。
-        p
-        |
-          現状で判明している、ズレが発生する／しないの条件は下記の通り。
+        |  スロット番号 0 として、ずらして選局しなければならない。（2022-11-01)
+
+      li.collection-header
+        |  現状で判明している、ズレが発生する／しないの条件は下記の通り。
         table.tw 
           tr
             td   px4_drv + recpt1 
@@ -287,69 +287,26 @@ div
           tr 
             td earth_pt1 + recdvb
             td ずれない
-          
-        p
-        |  このズレを補正するために EpgPatch ディレクトリの下に
-        |   補正値ファイルを置く。そのフォーマットは次の通り。
+        
+      li.collection-header
+        |  このズレを自動補正する機能を
+        |   config.rb 中の EpgPatchEnable で制御する。
+        table.tw
+          tr
+            td false
+            td 自動補正を行わない。
+          tr
+            td 
+              | :auto
+            td 定数 Recpt1_cmd が "recpt1" ならば、自動補正を行う。
+          tr
+            td false
+            td 自動補正を行う。
 
-        ul.browser-default
-          li.browser-default
-            | 補正値ファイルを読み込むかは config.rb 中の EpgPatchEnable で制御する。
-            table.tw
-              tr
-                td true
-                td 読み込みを行う
-              tr
-                td false
-                td 読み込みを行わない
-              tr
-                td 
-                  | :auto
-                td 定数 Recpt1_cmd が "recdvb" ならば false, それ以外は true に再設定する。
+      li.collection-header
+        | トランスポンダの移動があった場合、EPG更新が必要。
 
-          li.browser-default ファイル名の拡張子は .dat とする。
-             <br>       例 2020-04-01.dat
-
-          li.browser-default
-            |  ファイルに記述する書式は、
-
-            ul.browser-default
-               li.browser-default # の後ろはコメント
-               li.browser-default チャンネルID は [] で囲む<br> 例 [BS_101]
-               li.browser-default 書き換え対象を キーワード + 空白文字 + 値 で指定する
-                   <br> 例 "stinfo_slot 1"
-               li.browser-default 
-                 | 書き換え可能なキーワード は以下のもの
-                 table.tw 
-                   tr
-                     td tsid
-                     td transport_stream_id
-                   tr
-                     td onid
-                     td original_network_id
-                   tr
-                     td svid
-                     td service_id
-                   tr
-                     td name
-                     td 放送局名
-                   tr
-                     td stinfo_tp
-                     td トランスポート番号
-                   tr
-                     td stinfo_slot
-                     td スロット番号
-
-
-          li.browser-default 記述例
-            <pre>
-            [BS_231]                # 放送大学ex のスロット番号を 0 に
-            stinfo_slot    0
-
-            [BS_232]                # 放送大学on のスロット番号を 0 に
-            stinfo_slot    0
-
-            [BS_251]                # ＢＳ釣りビジョンのスロット番号を 1 に
-            stinfo_slot    1        </pre>
-          li.browser-default 変更した場合は、プログラムの再起動とEPG更新が必要。
-
+      li.collection-header
+        | 自動補正の情報は、
+        | <a href="/ch_info#BSSLOT">「コントロール パネル/チャンネル情報」</a>
+        | で表示。

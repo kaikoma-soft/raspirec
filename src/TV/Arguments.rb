@@ -11,11 +11,13 @@ class Arguments
   attr_reader :font             # font名
   attr_reader :d                # debug level 
   attr_reader :round            # 巡回ボタン
-
+  attr_reader :epg              # EPG 取得
+  
   def initialize(argv)
     @x = @y = @w = @h = @font = nil
     @round = nil
     @d = 0
+    @epg = false
 
     if Object.const_defined?( :RaspirecTV_font ) == true
       @font = RaspirecTV_font
@@ -43,6 +45,9 @@ class Arguments
       }
       op.on('-r', '--round time',Integer,'巡回ボタン表示(time=巡回時間(秒))'){ |t|
         @round = t.to_i
+      }
+      op.on('-e', '--epg','EPG取得'){ |t|
+        @epg = true
       }
       op.on('-d', '--debug','debug mode'){ |t|
         @d += 1

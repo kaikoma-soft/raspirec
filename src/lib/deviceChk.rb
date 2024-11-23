@@ -26,8 +26,12 @@ class DeviceChk
 
   def load( )
     @data = nil
-    File.open( DeviceChkFN, "r") do |fp|
-      @data = YamlWrap.load_file(fp)
+    if test( ?f, DeviceChkFN )
+      File.open( DeviceChkFN, "r") do |fp|
+        @data = YamlWrap.load_file(fp)
+      end
+    else
+      run()
     end
     return @data
   end

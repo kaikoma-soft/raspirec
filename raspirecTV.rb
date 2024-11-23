@@ -6,6 +6,7 @@
 #
 
 require 'gtk3'
+require 'thread'
 
 =begin
 TODO
@@ -14,7 +15,9 @@ TODO
 
 base = File.dirname( $0 )
 $: << base + "/src"
+
 RewriteConst = true
+
 require 'require.rb'
 require_relative 'src/TV/Video.rb'
 require_relative 'src/TV/misc.rb'
@@ -22,8 +25,11 @@ require_relative 'src/TV/Arguments.rb'
 require_relative 'src/lib/YamlWrap.rb'
 
 $arg   = Arguments.new( ARGV )
-$queue = Array.new                       # event queue
+#$queue = Array.new                       # event queue
+$queueCh = Queue.new
+$queueOt = Queue.new
 $event = Struct.new(:cmd, :page, :val)   # queue に積む event Data
+#DeviceChk.new.run
 
 class RaspirecTV
 
@@ -40,14 +46,34 @@ class RaspirecTV
     @page2name = {}                           # page -> pageName 変換
     @dialog = false                            # ダイアログ中は ch 変更なし
 
-    setup()
-    dataSetUp()
-    worker()
-    statCheckLoop()
-    createGUI()
-    cleanUp()
+    if $arg.epg == true
+      getEPG()
+    else
+      if @chinfo.getChList.size == 0
+        puts("Error: EPG 情報が取得できませんでした。")
+        exit
+      end
+    
+      setup()
+      dataSetUp()
+      worker()
+      statCheckLoop()
+      createGUI()
+      cleanUp()
+    end
   end
 
+  #
+  #  EPG 取得
+  #
+  def getEPG()
+    $baseDir = File.join( BaseDir, "src" )
+    $tunerArray = TunerArray.new
+    $rec_pid = []
+
+    GetEPG.new.start( Time.now.to_i + 600  ) 
+  end
+  
   #
   #  初期設定
   #
@@ -66,6 +92,8 @@ class RaspirecTV
         exit()
       end
     end
+
+    Commlib::makeSubDir()
 
   end
 
@@ -122,12 +150,26 @@ class RaspirecTV
           end
         end
         if msg != nil
-          $queue.push($event.new(:msg,nil,msg ))
+          $queueOt.push($event.new(:msg,nil,msg ))
         end
         sleep( 5 )
-        $queue.push($event.new(:status,nil,nil))
+        $queueOt.push($event.new(:status,nil,nil))
         sleep( 170 )
       end
+    end
+  end
+
+  #
+  #  ボタンを連打されている間 wait する。
+  #
+  def queueWait( q )
+    oldQsize = q.size
+    sleep( 0.5 )
+    loop do
+      n = q.size
+      break if n <= oldQsize
+      sleep(1)
+      oldQsize = n
     end
   end
   
@@ -135,72 +177,65 @@ class RaspirecTV
   #  event worker 
   #
   def worker()
-    block = false               # チャンネル変更後のクールタイム
     
     Thread.start do
       sleep(3)
-      loop do
-        sleep( 0.3 )
-        if $queue.size > 0
-          if $queue[0].cmd == :chChange
-            next if block == true or @dialog == true
+      while qu = $queueCh.pop
+        if qu.cmd == :chChange
+          next if @dialog == true
+          queueWait( $queueCh )
+          $queueCh.clear()
 
-            last = nil
-            $queue.delete_if do |tmp| # 最後を残して削除
-              if tmp.cmd == :chChange
-                last = tmp
-                true
-              else
-                false
-              end
-            end
-            if last != nil
-              page = last.page
-              pageName = @page2name[page]
-              tun      = last.val
-              para = getPara( page )
-              chname   = para[:chname]
-              if @video[pageName] != nil
-                tmp = @chinfo.getPhCh( para[:chid] )
-                if @video[pageName].chChange( tmp, tun.devfn, pageName ) == true
-                  statmesg( "チャンネル変更: #{chname}  #{tmp.phch}  #{tmp.svid}" )
-                end
-              end
-              block = true
-              Thread.new do
-                sleep(5)        # クールタイム
-                block = false
-              end
-            end
-          else
-            resource = $queue.shift # FIFO
-            page = resource.page
-            pageName = @page2name[ page ]
-            para = getPara( page )
-            case resource.cmd
-            when :mpvOpen then
-              tun      = resource.val
-              if @video[pageName] == nil
-                @video[pageName] = Video.new(para[:tun].serial)
-              end
-              tmp = @chinfo.getPhCh( para[:chid] )
-              @video[pageName].play( tmp, tun )
-              statmesg( "起動: #{pageName}" )
-            when :mpvStop then
-              if @video[pageName] != nil
-                @video[pageName].stop( )
-                statmesg( "停止: #{pageName}" )
-              end
-            when :msg then
-              statmesg( resource.val )
+          page = qu.page
+          pageName = @page2name[page]
+          tun      = qu.val
+          para = getPara( page )
+          chname   = para[:chname]
+          if @video[pageName] != nil
+            tmp = @chinfo.getPhCh( para[:chid] )
+            if @video[pageName].chChange( tmp, tun.devfn, pageName ) == true
+              statmesg( "チャンネル変更: #{chname}  #{tmp.phch}  #{tmp.svid}" )
             end
           end
+          sleep(3)        # クールタイム
+        end
+      end
+    end
+
+    Thread.start do
+      sleep(3)
+      while resource = $queueOt.pop
+        page = resource.page
+        pageName = @page2name[ page ]
+        para = getPara( page )
+        case resource.cmd
+        when :mpvOpen then
+          tun      = resource.val
+          if @video[pageName] == nil
+            @video[pageName] = Video.new(para[:tun].serial)
+          end
+          tmp = @chinfo.getPhCh( para[:chid] )
+          @video[pageName].play( tmp, tun )
+          statmesg( "起動: #{pageName}" )
+        when :mpvStop then
+          if @video[pageName] != nil
+            @video[pageName].stop( )
+            statmesg( "停止: #{pageName}" )
+          end
+        when :msg then
+          statmesg( resource.val )
+        when :status then
           @ta.chkDeviceStat()
           statUpdate()
-          $queue.delete_if do |tmp| # 重複削除
-            tmp.cmd == :status ? true : false
-          end
         end
+      end
+    end
+    
+    Thread.start do
+      sleep(3)
+      while true
+        $queueOt.push($event.new(:status,nil,nil))
+        sleep(10)
       end
     end
   end
@@ -303,7 +338,7 @@ class RaspirecTV
   
     @ws[:note].scrollable = true
     @ws[:note].signal_connect("switch-page") do
-      $queue.push($event.new(:status,nil,nil))
+      $queueOt.push($event.new(:status,nil,nil))
     end
 
     def attach( pw, lw, rw, y )
@@ -362,9 +397,9 @@ class RaspirecTV
       hbox.pack_start(bon, :padding => 10)
       bon.signal_connect("toggled") do |bon|
         if bon.active? == true
-          $queue.push($event.new(:mpvOpen,page, t1))
+          $queueOt.push($event.new(:mpvOpen,page, t1))
         else
-          $queue.push($event.new(:mpvStop,page, t1))
+          $queueOt.push($event.new(:mpvStop,page, t1))
         end
       end
       attach( tbl, label, hbox, y )
@@ -384,7 +419,7 @@ class RaspirecTV
         tmp = tmp != nil ? tmp.prog_name : "-"
         @ws[pageName][:progname].set_text( tmp )
         
-        $queue.push($event.new(:chChange, page, t1))
+        $queueCh.push($event.new(:chChange, page, t1))
       end
       attach( tbl, label, hbox, y )
       
@@ -532,8 +567,8 @@ class RaspirecTV
   def setChList( tun, cb )
     count = 0
     tun.band.each_pair do |band,v|
-      if v == true
-        count += @chList[ band ].size
+      if v == true and @chList[ band ] != nil
+        count += @chList[ band ].size 
       end
     end
     wrap = ( count / 15 ).round
@@ -551,10 +586,12 @@ class RaspirecTV
           end
         end
         count = 0
-        @chList[ band ].each_pair do |k,v|
-          cb.append_text( k )
-          count += 1
-          @ch2num[tun.name] << k 
+        if @chList[ band ] != nil
+          @chList[ band ].each_pair do |k,v|
+            cb.append_text( k )
+            count += 1
+            @ch2num[tun.name] << k
+          end
         end
       end
     end

@@ -79,8 +79,9 @@ class Video
     rescue
     end
     @recPid = nil
-    Thread.new() do
-      sleep( 0.5 )
+    sepT = RaspirecTV_GAPT
+    sleep( sepT )
+    th = Thread.new() do
       cmd = makeRecCmd( chinfo, devfn )
       dlog( cmd.join(" ") )
       opt = {}
@@ -99,9 +100,9 @@ class Video
         $queue.push($event.new(:msg, nil, msg ))
       end
     end
-    sleep(1.0)
+    sleep( sepT )
     ipcSendMsg( @ipc, "loadfile #{@videoPort}" )
-    sleep(2.0)
+    sleep( 3 )
     tmp = sprintf("\"%s : %s\"" ,pageName, chinfo.chname )
     ipcSendMsg( @ipc, "set title #{tmp}" )
     return true
@@ -113,32 +114,21 @@ class Video
   #   recpt1/recdvb のコマンド組み立て
   #
   def makeRecCmd( chinfo, devfn )
-    ret = [ Recpt1_cmd ] + Recpt1_opt
-    ret << "--b25" unless Recpt1_opt.join(" ") =~ /--b25/
-    ret += case chinfo.band
-           when Const::GR then
-             %W( #{chinfo.phch} --sid hd )
-           when Const::BS,Const::CS  then
-             %W( #{chinfo.phch} --sid #{chinfo.svid} )
-           end
-    if Recpt1_cmd =~ /recpt1/
-      ret += %W( --device #{devfn} )
-    elsif Recpt1_cmd =~ /recdvb/
-      if devfn =~ /adapter(\d)/
-        num = $1
-        ret += %W( --dev #{num} )
-      end
-    end
-    ret += %W( 9999  --udp --port #{@port} --addr )
-    if RemoteMonitor == false
-      ret << "localhost"
-    else
-      ret << XServerName
-    end
 
+    ch = chinfo.phch
+    sid = chinfo.band == Const::GR ? "hd" : chinfo.svid
+    dev = devfn
+    time = 9999
+    udp = true
+    port = @port 
+    addr = RemoteMonitor == false ? "localhost" : XServerName
+
+    pt1 = Recpt1.new
+    ret = pt1.makeCmd( ch,time,b25: true,sid: sid, dev: dev,udp: udp, port: port, addr: addr )
+    
     return ret
   end
-
+  
   #
   #  recdvb を起動
   #

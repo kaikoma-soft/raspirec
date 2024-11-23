@@ -162,28 +162,29 @@ class Tuner
       end
     end
 
-    cmd1 = %W( #{Recpt1_cmd} --b25 #{@phch} --sid #{@svid}  )
-    if Recpt1_cmd =~ /recpt1/
-      cmd1 += [ "--device",@devfn ]
-    elsif Recpt1_cmd =~ /recdvb/
-      if @devfn =~ /adapter(\d)/
-        num = $1
-        cmd1 += [ "--dev", num ]
-      end
-    end
+    dev  = @devfn
+    outfn = udp  = addr = port = nil
       
     if RemoteMonitor == true
       port = UDPbasePort + @serial
-      cmd1 += %W( --udp --addr #{XServerName} --port #{port} 99999 )
+      addr = XServerName
+      udp  = true
       cmd2 = %W( ssh -t -t #{XServerName} env DISPLAY=:0 )
       cmd2 += [ Mpv_cmd ] + Mpv_opt + %W( udp://#{RecHostName}:#{port}/ )
     else
       @fifo  = makeFifo( @serial ) if @fifo == nil
-      cmd1 += %W( 99999 #{@fifo} )
+      outfn = @fifo
       cmd2 = [ Mpv_cmd ] + Mpv_opt + %W( #{@fifo} )
     end
     cmd2.push( %Q(--title="#{@chName}" )) if Mpv_cmd =~ /mpv/
-    
+    cmd1 = Recpt1.new.makeCmd( @phch, 99999,
+                               outfn: outfn,
+                               b25:   true,
+                               sid:   @svid,
+                               dev:   dev,
+                               udp:   udp,
+                               port:  port,
+                               addr:  addr )
     @rec_pid = cmdStart( cmd1 )
     @mpv_pid = cmdStart( cmd2 )
   end

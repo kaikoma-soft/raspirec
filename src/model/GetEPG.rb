@@ -35,9 +35,6 @@ class GetEPG
   def initialize(  )
     @shortTime = false          # EPG取得時間短縮モード
     @timeUpdate = true          # EPG取得時間の更新をする
-    if $epgPatch == nil
-      $epgPatch = EpgPatch.new.getData()
-    end
 
     #
     #  readjsonProc() へのキュー 初期化
@@ -140,7 +137,7 @@ class GetEPG
     DBaccess.new().open(  ) do |db|
       data.each do |d|
         ch2 = channel.select( db, chid: d["id"] )
-        data2 = channel.dataConv( d, ch, $epgPatch )
+        data2 = channel.dataConv( d, ch, nil )
         if ch2.size == 0
           channel.insert( db, data2 )
           DBlog::debug(db,"channel情報追加 #{d["name"]}" )
@@ -258,7 +255,7 @@ class GetEPG
     start = Time.now
 
     return false if Time.now.to_i > ( timeLimit - 90 )
-    
+
     if EpgBanTime != nil and EpgBanTime.class == Array
       EpgBanTime.each do |h|
         if h == start.hour
@@ -277,7 +274,6 @@ class GetEPG
     else
       chs = getUpdCh()          # 定例の EPG更新
     end
-    #pp chs
     
     return false if chs.size == 0 
     
@@ -384,6 +380,9 @@ class GetEPG
       DBkeyval.new.upsert( db, StatConst::KeyName, StatConst::None )
     end
 
+    # BS slot の補正値の算出
+    EpgAutoPatch.new( true )
+    
     return true if count[:ins] > 0 or count[:upd] > 0
     return false
   end
@@ -536,7 +535,7 @@ class GetEPG
       BS_EPG_channel.each {|v| chs << v if chlist[v] == nil }
       CS_EPG_channel.each {|v| chs << v if chlist[v] == nil }
     end
-    
+
     return chs
   end
 

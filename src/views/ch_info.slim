@@ -5,12 +5,16 @@
 css:
   td,th {
     padding: 5px ;
+    white-space: nowrap; 
   }
   span { color: #000000} 
-
+  td.ex_border {
+    border: 2px dotted black;
+  }
 
 - require_relative 'ch_info.rb'
 - dp = ChaneruInfo.new(  )
+- eap = EpgAutoPatch.new()
 
 
 .row
@@ -71,17 +75,27 @@ div
 
 p style="padding-top:3em"
 
+a name="BSSLOT"
+
+.row
+  .col.s10
+    .card.tbl
+      .card-content
+        span#title.card-title BSデジタル放送のチャンネル割当
+        table
+          == eap.printBschHtml()
+
 .row
   .col.s6
     .card.tbl
       .card-content
-        span#title.card-title EPG パッチ
+        span#title.card-title BS チャンネルの自動補正
         table
           tr
-            th chid
-            th 変更対象
-            th 変更内容
-          == dp.epgPatchTable()
+            th 局名
+            th 変更前
+            th 変更後
+          == eap.printConvHtml()
 
 
 

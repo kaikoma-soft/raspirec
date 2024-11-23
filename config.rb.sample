@@ -103,6 +103,7 @@ Browser_cmd      = "/usr/bin/firefox"
 RaspirecTV_font  = "Sans 12"
 RaspirecTV_GEO   = "50+50"          # WxH+X+Y or X+Y
 RaspirecTV_SOCAT = "/usr/bin/socat" # RemoteMonitor == true の時のみ
+RaspirecTV_GAPT  = 1.0              # チャンネル切り替え時の間隔(秒)
 
 #
 #   パケットチェック機能
@@ -130,7 +131,7 @@ DiskKeepPercent = false    # 古いTSファイルを削除してDiskの容量確
 Local_jquery    = false    # jquery等をローカルに用意した場合に true
 StationPage     = 7        # 番組表で、1ページ当たりの放送局数 (個)
 TSnameFormat    = "%YEAR%-%MONTH%-%DAY%_%HOUR%:%MIN%_%DURATION%_%TITLE%_%CHNAME%" # TS ファイル名の書式
-EpgPatchEnable  = :auto     # EPGPatch機能の制御。true/false/:auto = 有効/無効/自動設定(詳細は補足説明を参照)
+EpgPatchEnable  = :auto     # EPGPatch機能の制御。false/:auto/true = 無効/自動設定/有効 (詳細は補足説明を参照) 推奨は :auto
 
 TitleRegex = [        # 題名の削除フィルター
     /【N】/,

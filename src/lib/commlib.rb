@@ -8,6 +8,29 @@
 
 module Commlib
 
+
+  #
+  # 各ディレクトリの初期化
+  #
+  def makeSubDir()
+    [ DataDir, LogDir, JsonDir, DBDir, TSDir, StreamDir ].each do |dir|
+      Dir.mkdir( dir ) unless test( ?d, dir )
+      raise "can not make dir(#{dir})" unless test( ?d, dir )
+
+      testfn = File.join( dir, "test.file" )
+      begin
+        FileUtils.touch( testfn )
+      rescue
+      end
+      if test( ?f, testfn )
+        File.unlink( testfn )
+      else
+        DBlog::error( nil, "Error: ディレクトリに書き込み出来ません。(#{dir})")
+      end
+    end
+  end
+  module_function :makeSubDir
+
   #
   #  現在時刻の取得（デバックの為に過去に戻れるように。)
   def getNow()

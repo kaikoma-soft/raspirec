@@ -11,8 +11,9 @@ require 'lib/setConst.rb'   # 最初に
 
 require 'lib/httpd_sub.rb'
 require 'lib/commlib.rb'
-require 'lib/misc.rb'
+Commlib::makeSubDir()
 
+require 'lib/misc.rb'
 require 'db/DB.rb'
 require 'db/base.rb'
 require 'db/Category.rb'
@@ -45,10 +46,8 @@ require 'model/DiskKeep.rb'
 require 'model/LogRote.rb'
 require 'model/ChannelM.rb'
 require 'model/Monitor.rb'
-require 'model/EpgPatch.rb'
-require 'model/MpvMonM.rb'
 require 'model/PacketChk.rb'
 require 'model/EpgNearCh.rb'
 require 'model/GetEPG.rb'
 require 'model/Daily.rb'
-
+require 'model/EpgAutoPatch.rb'

@@ -32,17 +32,16 @@ if Object.const_defined?(:RewriteConst) == true and
   end
 end
 
-#
-# EpgPatchEnable = :auto の場合の自動設定
-#
-if ( Object.const_defined?(:EpgPatchEnable) == true ) &&
-   EpgPatchEnable == :auto
-
-  if ( Object.const_defined?(:Recpt1_cmd) == true )
-    if Recpt1_cmd =~ /recdvb/
-      constRewrite( "EpgPatchEnable", false )
-    else
-      constRewrite( "EpgPatchEnable", true )
-    end
-  end
-end
+# #
+# # EpgPatchEnable = :auto の場合の自動設定
+# #
+# if ( Object.const_defined?(:EpgPatchEnable) == true ) &&
+#    EpgPatchEnable == :auto
+#   if ( Object.const_defined?(:Recpt1_cmd) == true )
+#     if Recpt1_cmd =~ /recdvb/
+#       constRewrite( "EpgPatchEnable", false )
+#     else
+#       constRewrite( "EpgPatchEnable", true )
+#     end
+#   end
+# end

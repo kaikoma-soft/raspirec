@@ -55,7 +55,7 @@ class Recpt1
     errbuf = ""
     loop = true
     outbuf = "x" * bsize;
-    arg1 = %W( #{Recpt1_cmd} --sid epg  #{ch} #{time} - )
+    arg1 = makeCmd( ch, time, sid: "epg", outfn: "-" )
     arg2 = %W( #{Epgdump} json - #{outfname} )
     ndc = 0                       # no data count
     startTime = Time.now
@@ -161,7 +161,7 @@ class Recpt1
       txt = sprintf("%s: %s\n",now.strftime("%H:%M:%S"),args.join(" "))
       STDOUT.puts( txt )
       STDOUT.flush
-      exec( Recpt1_cmd, *args, :err=>:out )
+      exec( *args, :err=>:out )
     end
     $rec_pid[ pid ] = true
 
@@ -185,4 +185,53 @@ class Recpt1
     return pid
   end
 
+  #
+  # recpt1 の実行コマンドの生成
+  #
+  def makeCmd(
+        ch, time,
+        outfn: nil,
+        b25:  nil,
+        udp:  nil,
+        addr: nil,
+        port: nil,
+        dev:  nil,
+        lnb:  nil,
+        sid:  nil,
+        other: nil  )
+    cmd = [ Recpt1_cmd ]
+    cmd << "--b25" if b25 == true 
+    cmd << "--udp" if udp != nil
+    cmd += %W( --addr #{addr} )  if addr != nil
+    cmd += %W( --port #{port} )  if port != nil
+    cmd += %W( --lnb #{lnb} )  if lnb != nil
+    if sid != nil
+      if sid.class == Array
+        cmd += %W( --sid #{sid.join(",")} )
+      elsif sid.class == String or sid.class == Integer
+        cmd += %W( --sid #{sid.to_s} )
+      end
+    end
+    if dev != nil
+      if Recpt1_cmd =~ /recdvb/
+        dev = $1 if dev =~ /adapter(\d)/
+      end
+      cmd += %W( --device #{dev} )
+    end
+    if Recpt1_opt.class == Array
+      cmd += Recpt1_opt
+    elsif Recpt1_opt.class == String
+      cmd << Recpt1_opt
+    end
+
+    raise "makeCmd() channel is nil" if ch == nil
+    raise "makeCmd() time is nil" if time == nil
+
+    ch2 = EpgAutoPatch.new.bsSlotAdj( ch )
+    
+    cmd += [ ch2.to_s, time.to_s ]
+    cmd << outfn if outfn != nil
+
+    return cmd
+  end
 end

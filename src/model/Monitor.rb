@@ -59,17 +59,14 @@ class MonitorM
   #
   def tuner_cmd( chid )
 
-    args = [ Recpt1_cmd ]
     DBaccess.new().open do |db|
       channel = DBchannel.new
       row = channel.select( db, chid: chid )
       if row.size > 0
-        args += Recpt1_opt
         data = row.first
         phch = Commlib::makePhCh( data )
-        args << phch
-
-        args += [ "--sid", data[:svid].to_s, "3600" ]
+        sid = data[:svid].to_s
+        args = Recpt1.new.makeCmd( phch, 3600, sid: sid )
         return [ args.join(" "), "-" ]
       else
         raise "channel 取得出来ませんでした。(chid = #{chid})"
@@ -78,7 +75,8 @@ class MonitorM
 
     return nil
   end
-    
+
+  
   #
   #   録画中のファイルをopen
   #

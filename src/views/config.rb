@@ -146,8 +146,11 @@ TitleRegex        「自動予約」ボタンを押して番組検索に遷移�
 SearchStringRegex  「自動予約」ボタンを押して番組検索に遷移した時に、
 +                 番組タイトルから「検索文字列」を生成する為の、余計な文字を
 +                 削除する正規表現の配列
-EpgPatchEnable    EPGPatch機能の制御。
-+                 true/false/:auto = 有効/無効/自動設定<br>
+EpgPatchEnable    BS放送の EPG自動補正機能の制御。<br>
++                 true = EPGPatch機能を有効にする。<br>
++                 false = EPGPatch機能を無効にする。<br>
++                 :auto = Recpt1_cmd が recpt1 ならば有効にする。<br>
++                 推奨は :auto   &nbsp; 
 +                 詳細は<a href="/help#EpgPatch"> 補足説明<a>を参照
 EOS
   }
