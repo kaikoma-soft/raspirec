@@ -74,7 +74,7 @@ class EpgAutoPatch
   # 参考 https://github.com/tsukumijima/ISDBScanner/blob/master/isdb_scanner/analyzer.py
   #
   def calc()
-    @@convTable = nil
+    @@convTable = {}
     @@bsChSlot.keys.sort.each do |ch|
       slots = @@bsChSlot[ch].keys.sort
       max   = slots.max
@@ -92,12 +92,25 @@ class EpgAutoPatch
           slots.each do |slot|
             from = sprintf("BS%d_%d",ch, slot )
             to   = sprintf("BS%d_%d",ch, slot - lost )
-            @@convTable ||= {}
             @@convTable[ from ] = to
           end
         end
       end
     end
+
+    # 自動で対応できないものを追加
+    extra = File.join( BaseDir, "EpgPatch/extra.rb" )
+    if test( ?f, extra )
+      require extra
+      if Object.const_defined?(:ExtraPatch) == true
+        if ExtraPatch.class == Hash
+          ExtraPatch.each_pair do |k,v|
+            @@convTable[ k ] = v
+          end
+        end
+      end
+    end
+    
     return @@convTable
   end
     
@@ -253,7 +266,7 @@ if $0 == __FILE__
   eap.set( 11, 2, "放送大学" )
   pp eap.calc()
   
-  test = %W( BS23_2 BS13_4 BS3_1 BS9_0 BS3_3 )
+  test = %W( BS23_2 BS13_4 BS3_1 BS9_0 BS3_3 BS15_3 )
   test.each do |tmp|
     tmp2 = eap.bsSlotAdj( tmp )
     printf("%s -> %s\n",tmp,tmp2 )
