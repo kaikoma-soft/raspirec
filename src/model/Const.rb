@@ -8,8 +8,8 @@
 module Const
 
   ProgName = "raspirec"
-  ProgVer  = "Ver 1.5.1"
-  GitTag   = "Ver1.5.1"
+  ProgVer  = "Ver 1.5.2"
+  GitTag   = "Ver1.5.2"
 
   GR   = "GR"
   GRJ  = "地デジ"

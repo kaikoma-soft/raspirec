@@ -215,8 +215,10 @@ class Recpt1
     if dev != nil
       if Recpt1_cmd =~ /recdvb/
         dev = $1 if dev =~ /adapter(\d)/
+        cmd += %W( --dev #{dev} )
+      else
+        cmd += %W( --device #{dev} )
       end
-      cmd += %W( --device #{dev} )
     end
     if Recpt1_opt.class == Array
       cmd += Recpt1_opt
