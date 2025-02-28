@@ -17,10 +17,10 @@ class EpgAutoPatch
       @@bsChSlot = nil 
       @@convTable = nil
     end
-    if Object.const_defined?(:EpgPatchEnable) == true
-      if ( EpgPatchEnable == :auto and Recpt1_cmd =~ /recpt1/ ) or EpgPatchEnable == true
-        if @@bsChSlot == nil
-          count = chList()
+    if @@bsChSlot == nil
+      count = chList()
+      if Object.const_defined?(:EpgPatchEnable) == true
+        if ( EpgPatchEnable == :auto and Recpt1_cmd =~ /recpt1/ ) or EpgPatchEnable == true
           if count < 10             # 正常なら 10局以上あるはず
             @@convTable = nil
           else
